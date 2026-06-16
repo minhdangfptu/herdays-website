@@ -7,8 +7,8 @@ Dự án được chia làm 2 phần độc lập: **Frontend** (React/Vite) và
 ### ⚙️ Backend
 
 1. Di chuyển vào thư mục backend: `cd backend`
-2. Cài đặt các gói phụ thuộc: `npm install` (hoặc `yarn install`)
-3. Tạo file biến môi trường: Copy file `.env.example` thành `.env` và điền đầy đủ các thông số (Database, JWT, Port...).
+2. Cài đặt các gói phụ thuộc: `npm install` 
+3. Tạo file biến môi trường: Copy file https://docs.google.com/document/d/1aOzmDLZUFFHWy24ILuZBzH9LbrAgBva5oZ3pCtw4jyM/edit?usp=drive_link vào `.env`
 4. Khởi động server dev: `npm run dev`
    _(Server sẽ chạy bằng nodemon, tự động reload khi bạn sửa code)._
 
