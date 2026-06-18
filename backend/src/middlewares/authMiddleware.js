@@ -15,14 +15,14 @@ const authMiddleware = async (req, res, next) => {
     const payload = jwt.verify(token, env.jwtSecret);
     const user = await User.findById(payload.id);
 
-    if (!user || user.status !== 'active') {
+    if (!user || !user.isVerified) {
       throw new HttpError(401, 'Unauthorized');
     }
 
     req.user = {
       id: user._id.toString(),
       email: user.email,
-      phoneNumber: user.phoneNumber
+      phone: user.phone
     };
 
     next();

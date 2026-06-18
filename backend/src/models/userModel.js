@@ -4,57 +4,46 @@ const userSchema = new mongoose.Schema(
   {
     email: {
       type: String,
+      required: true,
       trim: true,
       lowercase: true,
-      unique: true,
-      sparse: true
+      unique: true
     },
-    phoneNumber: {
+    password: {
       type: String,
-      trim: true,
-      unique: true,
-      sparse: true
-    },
-    passwordHash: {
-      type: String,
+      required: true,
       select: false
+    },
+    phone: {
+      type: String,
+      required: true,
+      trim: true
     },
     fullName: {
       type: String,
       trim: true
     },
-    avatarUrl: {
+    role: {
       type: String,
-      trim: true
+      enum: ['user_free', 'user_premium', 'admin', 'others'],
+      required: true,
+      default: 'user_free'
     },
-    provider: {
+    targetStatus: {
       type: String,
-      enum: ['local', 'google'],
-      default: 'local'
+      enum: ['tryingToConceive', 'pregnant', 'ivf', 'normal', 'periodTracking', 'relatives', null],
+      default: null
     },
-    providerId: {
-      type: String,
-      trim: true
-    },
-    isEmailVerified: {
+    isVerified: {
       type: Boolean,
       default: false
-    },
-    isPhoneVerified: {
-      type: Boolean,
-      default: false
-    },
-    status: {
-      type: String,
-      enum: ['pending', 'active', 'disabled'],
-      default: 'pending'
     }
   },
   {
     timestamps: true,
     toJSON: {
       transform(doc, ret) {
-        delete ret.passwordHash;
+        delete ret.password;
         delete ret.__v;
         return ret;
       }
@@ -63,10 +52,10 @@ const userSchema = new mongoose.Schema(
 );
 
 userSchema.index(
-  { provider: 1, providerId: 1 },
+  { phone: 1 },
   {
     unique: true,
-    partialFilterExpression: { providerId: { $exists: true, $type: 'string' } }
+    partialFilterExpression: { phone: { $exists: true, $type: 'string' } }
   }
 );
 

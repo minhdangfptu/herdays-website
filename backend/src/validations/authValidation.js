@@ -25,31 +25,39 @@ const validatePassword = (password, fieldName = 'password') => {
 
 export const validateRegister = (body) => {
   const email = normalizeEmail(body.email);
-  const phoneNumber = normalizePhoneNumber(body.phoneNumber);
+  const phone = normalizePhoneNumber(body.phone);
   const otpChannel = body.otpChannel?.trim();
 
-  if (!email && !phoneNumber) {
-    throw new HttpError(400, 'Email or phoneNumber is required');
-  }
+  if (!email) throw new HttpError(400, 'email is required');
+  if (!phone) throw new HttpError(400, 'phone is required');
 
-  if (email && !isEmail(email)) throw new HttpError(400, 'Invalid email');
-  if (phoneNumber && !isPhoneNumber(phoneNumber)) throw new HttpError(400, 'Invalid phoneNumber');
+  if (!isEmail(email)) throw new HttpError(400, 'Invalid email');
+  if (!isPhoneNumber(phone)) throw new HttpError(400, 'Invalid phone');
   if (otpChannel && !['email', 'phone'].includes(otpChannel)) {
     throw new HttpError(400, 'otpChannel must be email or phone');
   }
-  if (otpChannel === 'email' && !email) throw new HttpError(400, 'email is required when otpChannel is email');
-  if (otpChannel === 'phone' && !phoneNumber) {
-    throw new HttpError(400, 'phoneNumber is required when otpChannel is phone');
+
+  if (body.role && !['user_free', 'user_premium', 'admin', 'others'].includes(body.role)) {
+    throw new HttpError(400, 'Invalid role');
+  }
+
+  if (
+    body.targetStatus &&
+    !['tryingToConceive', 'pregnant', 'ivf', 'normal', 'periodTracking', 'relatives'].includes(body.targetStatus)
+  ) {
+    throw new HttpError(400, 'Invalid targetStatus');
   }
 
   validatePassword(body.password);
 
   return {
     email,
-    phoneNumber,
-    otpChannel: otpChannel || (email ? 'email' : 'phone'),
+    phone,
+    otpChannel: otpChannel || 'email',
     password: body.password,
-    fullName: body.fullName?.trim()
+    fullName: body.fullName?.trim(),
+    role: body.role,
+    targetStatus: body.targetStatus
   };
 };
 
@@ -91,10 +99,10 @@ export const validateForgotPasswordEmail = (body) => {
 };
 
 export const validateForgotPasswordPhoneNumber = (body) => {
-  const phoneNumber = normalizePhoneNumber(body.phoneNumber);
-  if (!phoneNumber || !isPhoneNumber(phoneNumber)) throw new HttpError(400, 'Invalid phoneNumber');
+  const phone = normalizePhoneNumber(body.phone || body.phoneNumber);
+  if (!phone || !isPhoneNumber(phone)) throw new HttpError(400, 'Invalid phone');
 
-  return { phoneNumber };
+  return { phone };
 };
 
 export const validateResetPassword = (body) => {

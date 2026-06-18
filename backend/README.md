@@ -1,8 +1,8 @@
 # HerDays Backend
 
-Backend Node.js/Express cho HerDays, dùng MongoDB qua Mongoose.
+Backend Node.js/Express for HerDays, using MongoDB through Mongoose.
 
-## Chạy local
+## Run Local
 
 ```bash
 cd backend
@@ -10,7 +10,7 @@ npm install
 npm run dev
 ```
 
-Base URL local:
+Base URL:
 
 ```text
 http://localhost:8080/herdays-api
@@ -24,13 +24,13 @@ GET /status
 
 ## Auth API
 
-Tat ca request JSON can header:
+All JSON requests need:
 
 ```http
 Content-Type: application/json
 ```
 
-### 1. Đăng ký bằng email
+### Register, OTP By Email
 
 ```http
 POST /auth/register
@@ -38,48 +38,50 @@ POST /auth/register
 
 ```json
 {
-  "email": "test@example.com", # Mail thật nha mấy con vk 
+  "email": "test@example.com",
+  "phone": "+84901234567",
   "otpChannel": "email",
   "password": "Password123",
-  "fullName": "Test User"
+  "fullName": "Test User",
+  "role": "user_free"
 }
 ```
 
-Response:
+### Register, OTP By Phone
+
+```http
+POST /auth/register
+```
+
+```json
+{
+  "email": "test@example.com",
+  "phone": "+84901234567",
+  "otpChannel": "phone",
+  "password": "Password123",
+  "fullName": "Test User",
+  "role": "user_free"
+}
+```
+
+Register response includes:
 
 ```json
 {
   "message": "Register successfully. Please confirm OTP.",
   "otpChannel": "email",
   "otpIdentifier": "test@example.com",
-  "user": { #thông tin user }
+  "user": {}
 }
 ```
 
-### 2. Đăng ký bằng sđt (chưa có ssdt twilio)
-
-```http
-POST /auth/register
-```
-
-```json
-{
-  "phoneNumber": "+84901234567",
-  "otpChannel": "phone",
-  "password": "Password123",
-  "fullName": "Test User"
-}
-```
-
-FE Cho người dùng chọn nhập `gmail` hoặc `sđt` và gọi đến các api đăng ký tương ứng.
-
-### 3. Xác thực OTP đăng ký
+### Confirm Register OTP
 
 ```http
 POST /auth/confirm-otp
 ```
 
-Dùng `otpIdentifier` nhận được từ response register.
+Use the `otpIdentifier` returned by register.
 
 ```json
 {
@@ -89,7 +91,7 @@ Dùng `otpIdentifier` nhận được từ response register.
 }
 ```
 
-Với sđt:
+For phone OTP:
 
 ```json
 {
@@ -99,11 +101,13 @@ Với sđt:
 }
 ```
 
-### 5. Đăng nhập
+### Login
 
 ```http
 POST /auth/login
 ```
+
+By email:
 
 ```json
 {
@@ -112,7 +116,7 @@ POST /auth/login
 }
 ```
 
-Hoặc đăng nhập bằng sđt:
+By phone:
 
 ```json
 {
@@ -131,11 +135,9 @@ Response:
 }
 ```
 
-## Forgot password / Reset password
+### Forgot Password
 
-### 1. Gửi OTP quên password
-
-Tự điền email hoặc sđt:
+Auto-detect email or phone:
 
 ```http
 POST /auth/forgot-password
@@ -147,7 +149,7 @@ POST /auth/forgot-password
 }
 ```
 
-Endpoint rieng cho email:
+Email-specific:
 
 ```http
 POST /auth/forgot-password/email
@@ -159,7 +161,7 @@ POST /auth/forgot-password/email
 }
 ```
 
-Endpoint rieng cho sđt:
+Phone-specific:
 
 ```http
 POST /auth/forgot-password/phone-number
@@ -167,11 +169,11 @@ POST /auth/forgot-password/phone-number
 
 ```json
 {
-  "phoneNumber": "+84901234567"
+  "phone": "+84901234567"
 }
 ```
 
-### 2. Xác thực OTP quên mật khẩu
+### Confirm Reset Password OTP
 
 ```http
 POST /auth/confirm-otp
@@ -181,7 +183,7 @@ POST /auth/confirm-otp
 {
   "identifier": "test@example.com",
   "otp": "123456",
-  "purpose": "reset-password" #Thay đổi purpose so với xác nhận email lúc đăng ký
+  "purpose": "reset-password"
 }
 ```
 
@@ -194,7 +196,7 @@ Response:
 }
 ```
 
-### 3. Đặt lại mật khẩu
+### Reset Password
 
 ```http
 POST /auth/reset-password
@@ -207,11 +209,7 @@ POST /auth/reset-password
 }
 ```
 
-Sau khi reset thành công đăng nhập lại bằng mật khẩu mới
-
-## Token API
-
-### Refresh token
+### Refresh Token
 
 ```http
 POST /auth/refresh-token
@@ -222,8 +220,6 @@ POST /auth/refresh-token
   "refreshToken": "{{refreshToken}}"
 }
 ```
-
-Refresh token cũ sẽ bị revoke sau khi rotate thành công.
 
 ### Logout
 
@@ -237,15 +233,13 @@ POST /auth/logout
 }
 ```
 
-Sau logout, refresh token trên sẽ không dùng được nữa.
-
-## Change password
+### Change Password
 
 ```http
 PUT /auth/change-password
 ```
 
-Header:
+Headers:
 
 ```http
 Authorization: Bearer {{accessToken}}
@@ -261,9 +255,9 @@ Body:
 }
 ```
 
-Sau khi đổi mật khẩu thành công, các refresh của user sẽ bị revoke.
+### Google Social Login
 
-## Google social login
+Google social login only works for an existing verified user whose email already exists in `users`.
 
 ```http
 POST /auth/social-login
@@ -276,11 +270,11 @@ POST /auth/social-login
 }
 ```
 
-Cần cấu hình `GOOGLE_CLIENT_ID` dùng trong `.env`.
+## Postman Notes
 
-## Ghi chu test Postman
-
-- Password tối thiểu 8 ký tự.
-- OTP gồm 6 số.
-- OTP không trả trực tiếp trong API response; hãy kiểm tra email/SMS.
-- `resetToken` đang lưu trong memory server, nên restart backend sẽ làm token reset hiện tại mất hiệu lực.
+- Body must use `raw` and `JSON`.
+- Password must be at least 8 characters.
+- OTP is 6 digits.
+- Phone should use E.164 format, for example `+84901234567`.
+- OTP is sent by email/SMS and is not returned in the API response.
+- `resetToken` is stored in server memory, so restarting backend invalidates existing reset tokens.

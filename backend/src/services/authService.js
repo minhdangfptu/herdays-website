@@ -68,10 +68,10 @@ const findUserByIdentifier = async (identifier, includePassword = false) => {
   const normalizedIdentifier = normalizeIdentifier(identifier);
   const query = isEmail(normalizedIdentifier)
     ? { email: normalizedIdentifier }
-    : { phoneNumber: normalizedIdentifier };
+    : { phone: normalizedIdentifier };
 
   const userQuery = User.findOne(query);
-  if (includePassword) userQuery.select('+passwordHash');
+  if (includePassword) userQuery.select('+password');
 
   return userQuery;
 };
@@ -80,7 +80,7 @@ const signAccessToken = (user) => jwt.sign(
   {
     id: user._id.toString(),
     email: user.email,
-    phoneNumber: user.phoneNumber
+    phone: user.phone
   },
   env.jwtSecret,
   { expiresIn: env.accessTokenExpiresIn }
@@ -138,28 +138,30 @@ const consumeResetToken = (resetToken) => {
   return tokenRecord.userId;
 };
 
-export const register = async ({ email, phoneNumber, otpChannel, password, fullName }) => {
+export const register = async ({ email, phone, otpChannel, password, fullName, role, targetStatus }) => {
   const normalizedEmail = normalizeEmail(email);
-  const normalizedPhoneNumber = normalizePhoneNumber(phoneNumber);
-  const duplicateConditions = [];
+  const normalizedPhone = normalizePhoneNumber(phone);
 
-  if (normalizedEmail) duplicateConditions.push({ email: normalizedEmail });
-  if (normalizedPhoneNumber) duplicateConditions.push({ phoneNumber: normalizedPhoneNumber });
+  const existingUser = await User.findOne({
+    $or: [
+      { email: normalizedEmail },
+      { phone: normalizedPhone }
+    ]
+  });
+  if (existingUser) throw new HttpError(409, 'Email or phone already exists');
 
-  const existingUser = await User.findOne({ $or: duplicateConditions });
-  if (existingUser) throw new HttpError(409, 'Email or phoneNumber already exists');
-
-  const passwordHash = await bcrypt.hash(password, env.bcryptSaltRounds);
+  const hashedPassword = await bcrypt.hash(password, env.bcryptSaltRounds);
   const user = await User.create({
     email: normalizedEmail,
-    phoneNumber: normalizedPhoneNumber,
-    passwordHash,
+    phone: normalizedPhone,
+    password: hashedPassword,
     fullName,
-    provider: 'local',
-    status: 'pending'
+    role: role || 'user_free',
+    targetStatus,
+    isVerified: false
   });
 
-  const otpIdentifier = otpChannel === 'phone' ? normalizedPhoneNumber : normalizedEmail;
+  const otpIdentifier = otpChannel === 'phone' ? normalizedPhone : normalizedEmail;
   await sendOtp(otpIdentifier, 'register');
 
   return {
@@ -199,9 +201,7 @@ export const confirmOtp = async ({ identifier, otp, purpose }) => {
   if (!user) throw new HttpError(404, 'User not found');
 
   if (purpose === 'register') {
-    if (isEmail(normalizedIdentifier)) user.isEmailVerified = true;
-    if (isPhoneNumber(normalizedIdentifier)) user.isPhoneVerified = true;
-    user.status = 'active';
+    user.isVerified = true;
     await user.save();
 
     return {
@@ -218,12 +218,12 @@ export const confirmOtp = async ({ identifier, otp, purpose }) => {
 
 export const login = async ({ identifier, password }) => {
   const user = await findUserByIdentifier(identifier, true);
-  if (!user || !user.passwordHash) throw new HttpError(401, 'Invalid credentials');
+  if (!user || !user.password) throw new HttpError(401, 'Invalid credentials');
 
-  const isMatched = await bcrypt.compare(password, user.passwordHash);
+  const isMatched = await bcrypt.compare(password, user.password);
   if (!isMatched) throw new HttpError(401, 'Invalid credentials');
 
-  if (user.status !== 'active') throw new HttpError(403, 'Please confirm OTP before login');
+  if (!user.isVerified) throw new HttpError(403, 'Please confirm OTP before login');
 
   const tokens = await issueTokens(user);
 
@@ -244,15 +244,15 @@ export const forgotPassword = async ({ identifier }) => {
 
 export const forgotPasswordByEmail = async ({ email }) => forgotPassword({ identifier: email });
 
-export const forgotPasswordByPhoneNumber = async ({ phoneNumber }) => forgotPassword({ identifier: phoneNumber });
+export const forgotPasswordByPhoneNumber = async ({ phone }) => forgotPassword({ identifier: phone });
 
 export const resetPassword = async ({ resetToken, newPassword }) => {
   const userId = consumeResetToken(resetToken);
-  const user = await User.findById(userId).select('+passwordHash');
+  const user = await User.findById(userId).select('+password');
   if (!user) throw new HttpError(404, 'User not found');
 
-  user.passwordHash = await bcrypt.hash(newPassword, env.bcryptSaltRounds);
-  user.status = 'active';
+  user.password = await bcrypt.hash(newPassword, env.bcryptSaltRounds);
+  user.isVerified = true;
   await user.save();
 
   await RefreshToken.updateMany(
@@ -264,13 +264,13 @@ export const resetPassword = async ({ resetToken, newPassword }) => {
 };
 
 export const changePassword = async (userId, { currentPassword, newPassword }) => {
-  const user = await User.findById(userId).select('+passwordHash');
-  if (!user || !user.passwordHash) throw new HttpError(404, 'User not found');
+  const user = await User.findById(userId).select('+password');
+  if (!user || !user.password) throw new HttpError(404, 'User not found');
 
-  const isMatched = await bcrypt.compare(currentPassword, user.passwordHash);
+  const isMatched = await bcrypt.compare(currentPassword, user.password);
   if (!isMatched) throw new HttpError(400, 'Current password is incorrect');
 
-  user.passwordHash = await bcrypt.hash(newPassword, env.bcryptSaltRounds);
+  user.password = await bcrypt.hash(newPassword, env.bcryptSaltRounds);
   await user.save();
 
   await RefreshToken.updateMany(
@@ -308,7 +308,7 @@ export const refreshToken = async ({ refreshToken: token }) => {
   if (!tokenRecord) throw new HttpError(401, 'Invalid or expired refresh token');
 
   const user = await User.findById(payload.id);
-  if (!user || user.status !== 'active') throw new HttpError(401, 'Invalid or expired refresh token');
+  if (!user || !user.isVerified) throw new HttpError(401, 'Invalid or expired refresh token');
 
   tokenRecord.revokedAt = new Date();
   await tokenRecord.save();
@@ -322,30 +322,9 @@ export const socialLogin = async ({ idToken }) => {
 
   if (!email) throw new HttpError(400, 'Google account does not include an email');
 
-  let user = await User.findOne({
-    $or: [
-      { provider: 'google', providerId: googleProfile.sub },
-      { email }
-    ]
-  });
-
-  if (!user) {
-    user = await User.create({
-      email,
-      fullName: googleProfile.name,
-      avatarUrl: googleProfile.picture,
-      provider: 'google',
-      providerId: googleProfile.sub,
-      isEmailVerified: Boolean(googleProfile.email_verified),
-      status: 'active'
-    });
-  } else {
-    user.provider = user.provider || 'google';
-    user.providerId = user.providerId || googleProfile.sub;
-    user.isEmailVerified = user.isEmailVerified || Boolean(googleProfile.email_verified);
-    user.status = 'active';
-    await user.save();
-  }
+  const user = await User.findOne({ email });
+  if (!user) throw new HttpError(404, 'Please register with email, phone and password before social login');
+  if (!user.isVerified) throw new HttpError(403, 'Please confirm OTP before login');
 
   const tokens = await issueTokens(user);
 
