@@ -22,6 +22,18 @@ Health check:
 GET /status
 ```
 
+## Email OTP Config
+
+To show HerDays as the sender display name and render the pink/white OTP template:
+
+```env
+EMAIL_FROM=your_email@gmail.com
+EMAIL_FROM_NAME=HerDays
+EMAIL_LOGO_URL=https://your-public-logo-url.png
+```
+
+When using Gmail SMTP, `EMAIL_FROM` still has to be the authenticated Gmail address or an allowed alias. `EMAIL_FROM_NAME` only changes the display name.
+
 ## Auth API
 
 All JSON requests need:

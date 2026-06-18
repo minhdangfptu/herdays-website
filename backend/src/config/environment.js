@@ -37,7 +37,9 @@ const env = {
     secure: parseBoolean(process.env.SMTP_SECURE, false),
     user: process.env.EMAIL_USER,
     password: process.env.EMAIL_PASSWORD,
-    from: process.env.EMAIL_FROM || process.env.EMAIL_USER
+    from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+    fromName: process.env.EMAIL_FROM_NAME || 'HerDays',
+    logoUrl: process.env.EMAIL_LOGO_URL
   },
   google: {
     clientId: process.env.GOOGLE_CLIENT_ID
