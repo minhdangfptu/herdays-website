@@ -3,28 +3,21 @@
  * All our efforts are for a brighter future, where we can freely eat bread and drink bubble tea without worrying about someone stealing it.
  * Updated by Louis on 2026-06-16
  */
-import dotenv from 'dotenv';
-dotenv.config();
-
 import express from 'express';
-import { connect } from 'mongoose';
 import morgan from 'morgan';
 import cors from 'cors';
 import bodyParser from 'body-parser';
 
+import env from './config/environment.js';
 import connectDB from './config/mongodb.js';
+import errorMiddleware from './middlewares/errorMiddleware.js';
 import router from './routes/index.js';
-
-import passport from 'passport';
 
 const app = express();
 
-const PORT = process.env.PORT || 8080;
-
-// CORS configuration - QUAN TRỌNG!
 const corsOptions = {
   origin: [
-    process.env.FRONTEND_URL || 'http://localhost:5173',
+    env.frontendUrl
   ],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -43,7 +36,8 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use('/herdays-api', router);
+app.use(errorMiddleware);
 
-app.listen(PORT, () => {
-  console.log(`Server is running at http://localhost:${PORT}`);
+app.listen(env.port, () => {
+  console.log(`Server is running at http://localhost:${env.port}`);
 });

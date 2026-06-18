@@ -5,10 +5,14 @@
 */
 import express from 'express';
 
+import authRoute from './authRoute.js';
+
 const router = express.Router();
 
 router.get('/status', (req, res) => {
     res.status(200).json({ message: 'API HerDays is running' });
 });
+
+router.use('/auth', authRoute);
 
 export default router;

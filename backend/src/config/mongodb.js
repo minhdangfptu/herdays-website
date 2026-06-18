@@ -5,10 +5,14 @@
 */
 import mongoose from 'mongoose';
 
+import env from './environment.js';
+
 const connectDB = async () => {
     try {
-        const conn = await mongoose.connect(process.env.MONGODB_URI);
-        console.log(`MongoDB is connected successfully at host: ${conn.connection.host}`);
+        const conn = await mongoose.connect(env.mongodbUri, {
+            dbName: env.mongodbDbName
+        });
+        console.log(`MongoDB is connected successfully at host: ${conn.connection.host}, database: ${conn.connection.name}`);
     } catch (error) {
         console.error(`Error connect to MongoDB: ${error.message}`);
         process.exit(1);
