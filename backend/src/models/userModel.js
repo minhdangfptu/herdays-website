@@ -37,6 +37,15 @@ const userSchema = new mongoose.Schema(
     isVerified: {
       type: Boolean,
       default: false
+    },
+    dateOfBirth: {
+      type: Date,
+      default: null
+    },
+    address: {
+      type: String,
+      trim: true,
+      default: null
     }
   },
   {
