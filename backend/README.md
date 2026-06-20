@@ -34,6 +34,19 @@ EMAIL_LOGO_URL=https://your-public-logo-url.png
 
 When using Gmail SMTP, `EMAIL_FROM` still has to be the authenticated Gmail address or an allowed alias. `EMAIL_FROM_NAME` only changes the display name.
 
+## Cloudinary Image Config
+
+Create a Cloudinary account and add these values to `backend/.env`:
+
+```env
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_api_key
+CLOUDINARY_API_SECRET=your_api_secret
+CLOUDINARY_FOLDER=herdays/blog
+```
+
+`CLOUDINARY_API_SECRET` must remain on the backend. Admin users request a short-lived signed upload payload from `POST /admin/uploads/signature`; the frontend then uploads the image directly to Cloudinary and stores the returned HTTPS URL in MongoDB.
+
 ## Auth API
 
 All JSON requests need:

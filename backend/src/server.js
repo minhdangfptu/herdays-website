@@ -11,6 +11,7 @@ import bodyParser from 'body-parser';
 import env from './config/environment.js';
 import connectDB from './config/mongodb.js';
 import errorMiddleware from './middlewares/errorMiddleware.js';
+import notFoundMiddleware from './middlewares/notFoundMiddleware.js';
 import router from './routes/index.js';
 
 const app = express();
@@ -36,6 +37,7 @@ app.use(bodyParser.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 
 app.use('/herdays-api', router);
+app.use(notFoundMiddleware);
 app.use(errorMiddleware);
 
 app.listen(env.port, () => {

@@ -13,11 +13,13 @@
     "dev": "nodemon ./src/server.js",
     "start": "node ./src/server.js",
     "production": "node ./src/server.js",
+    "seed:blog": "node ./src/seeds/blogTopics.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
     "body-parser": "^1.20.2",
+    "cloudinary": "^2.10.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
@@ -27,6 +29,7 @@
     "morgan": "^1.10.0",
     "nodemailer": "^9.0.1",
     "passport": "^0.7.0",
+    "sanitize-html": "^2.17.5",
     "twilio": "^6.0.2"
   },
   "devDependencies": {

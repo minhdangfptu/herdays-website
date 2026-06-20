@@ -138,7 +138,7 @@ const consumeResetToken = (resetToken) => {
   return tokenRecord.userId;
 };
 
-export const register = async ({ email, phone, otpChannel, password, fullName, role, targetStatus }) => {
+export const register = async ({ email, phone, otpChannel, password, fullName, targetStatus }) => {
   const normalizedEmail = normalizeEmail(email);
   const normalizedPhone = normalizePhoneNumber(phone);
 
@@ -156,7 +156,7 @@ export const register = async ({ email, phone, otpChannel, password, fullName, r
     phone: normalizedPhone,
     password: hashedPassword,
     fullName,
-    role: role || 'user_free',
+    role: 'user_free',
     targetStatus,
     isVerified: false
   });
