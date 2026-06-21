@@ -7,6 +7,8 @@ import express from 'express';
 
 import authRoute from './authRoute.js';
 import profileRoute from './profileRoute.js';
+import boxRoute from './boxRoute.js';
+import cartRoute from './cartRoute.js';
 
 const router = express.Router();
 
@@ -16,5 +18,7 @@ router.get('/status', (req, res) => {
 
 router.use('/auth', authRoute);
 router.use('/profile', profileRoute);
+router.use('/box', boxRoute);
+router.use('/cart', cartRoute);
 
 export default router;
