@@ -12,6 +12,8 @@ import adminUploadRoute from './adminUploadRoute.js';
 import blogRoute from './blogRoute.js';
 import { sendSuccess } from '../utils/response.js';
 import profileRoute from './profileRoute.js';
+import contactRoute from './contactRoute.js';
+import adminContactRoute from './adminContactRoute.js';
 
 const router = express.Router();
 
@@ -28,6 +30,8 @@ router.use('/blog', blogRoute);
 router.use('/admin/posts', adminPostRoute);
 router.use('/admin/topics', adminTopicRoute);
 router.use('/admin/uploads', adminUploadRoute);
+router.use('/admin/contacts', adminContactRoute);
 router.use('/profile', profileRoute);
+router.use('/contacts', contactRoute);
 
 export default router;
