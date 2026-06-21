@@ -11,6 +11,7 @@ import adminTopicRoute from './adminTopicRoute.js';
 import adminUploadRoute from './adminUploadRoute.js';
 import blogRoute from './blogRoute.js';
 import { sendSuccess } from '../utils/response.js';
+import profileRoute from './profileRoute.js';
 
 const router = express.Router();
 
@@ -27,5 +28,6 @@ router.use('/blog', blogRoute);
 router.use('/admin/posts', adminPostRoute);
 router.use('/admin/topics', adminTopicRoute);
 router.use('/admin/uploads', adminUploadRoute);
+router.use('/profile', profileRoute);
 
 export default router;
