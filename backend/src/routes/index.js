@@ -14,6 +14,7 @@ import { sendSuccess } from '../utils/response.js';
 import profileRoute from './profileRoute.js';
 import contactRoute from './contactRoute.js';
 import adminContactRoute from './adminContactRoute.js';
+import quizRoute from './quizRoute.js';
 
 const router = express.Router();
 
@@ -33,5 +34,6 @@ router.use('/admin/uploads', adminUploadRoute);
 router.use('/admin/contacts', adminContactRoute);
 router.use('/profile', profileRoute);
 router.use('/contacts', contactRoute);
+router.use('/quiz', quizRoute);
 
 export default router;
