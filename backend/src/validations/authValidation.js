@@ -37,9 +37,7 @@ export const validateRegister = (body) => {
     throw new HttpError(400, 'otpChannel must be email or phone');
   }
 
-  if (body.role && !['user_free', 'user_premium', 'admin', 'others'].includes(body.role)) {
-    throw new HttpError(400, 'Invalid role');
-  }
+  if (body.role) throw new HttpError(403, 'role cannot be assigned during registration');
 
   if (
     body.targetStatus &&
@@ -56,7 +54,6 @@ export const validateRegister = (body) => {
     otpChannel: otpChannel || 'email',
     password: body.password,
     fullName: body.fullName?.trim(),
-    role: body.role,
     targetStatus: body.targetStatus
   };
 };

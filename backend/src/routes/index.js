@@ -6,6 +6,11 @@
 import express from 'express';
 
 import authRoute from './authRoute.js';
+import adminPostRoute from './adminPostRoute.js';
+import adminTopicRoute from './adminTopicRoute.js';
+import adminUploadRoute from './adminUploadRoute.js';
+import blogRoute from './blogRoute.js';
+import { sendSuccess } from '../utils/response.js';
 import profileRoute from './profileRoute.js';
 import boxRoute from './boxRoute.js';
 import cartRoute from './cartRoute.js';
@@ -13,10 +18,18 @@ import cartRoute from './cartRoute.js';
 const router = express.Router();
 
 router.get('/status', (req, res) => {
-    res.status(200).json({ message: 'API HerDays is running' });
+    void req;
+    sendSuccess(res, {
+        message: 'API HerDays đang hoạt động',
+        data: { status: 'running' }
+    });
 });
 
 router.use('/auth', authRoute);
+router.use('/blog', blogRoute);
+router.use('/admin/posts', adminPostRoute);
+router.use('/admin/topics', adminTopicRoute);
+router.use('/admin/uploads', adminUploadRoute);
 router.use('/profile', profileRoute);
 router.use('/box', boxRoute);
 router.use('/cart', cartRoute);
