@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
 
-const boxSchema = new mongoose.Schema(
+const productSchema = new mongoose.Schema(
   {
-    boxName: {
+    productName: {
       type: String,
       required: true,
       trim: true
@@ -42,6 +42,6 @@ const boxSchema = new mongoose.Schema(
   }
 );
 
-const Box = mongoose.model('Box', boxSchema);
+const Product = mongoose.model('Product', productSchema);
 
-export default Box;
+export default Product;
