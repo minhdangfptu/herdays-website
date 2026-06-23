@@ -12,6 +12,11 @@ import adminUploadRoute from './adminUploadRoute.js';
 import blogRoute from './blogRoute.js';
 import { sendSuccess } from '../utils/response.js';
 import profileRoute from './profileRoute.js';
+import boxRoute from './boxRoute.js';
+import cartRoute from './cartRoute.js';
+import productRoute from './productRoute.js';
+import adminOrderRoute from './adminOrderRoute.js';
+import adminUserRoute from './adminUserRoute.js';
 
 const router = express.Router();
 
@@ -29,5 +34,10 @@ router.use('/admin/posts', adminPostRoute);
 router.use('/admin/topics', adminTopicRoute);
 router.use('/admin/uploads', adminUploadRoute);
 router.use('/profile', profileRoute);
+router.use('/box', boxRoute);
+router.use('/cart', cartRoute);
+router.use('/admin/products', productRoute);
+router.use('/admin/orders', adminOrderRoute);
+router.use('/admin/users', adminUserRoute);
 
 export default router;

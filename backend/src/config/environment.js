@@ -48,7 +48,11 @@ const env = {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME,
     apiKey: process.env.CLOUDINARY_API_KEY,
     apiSecret: process.env.CLOUDINARY_API_SECRET,
-    folder: process.env.CLOUDINARY_FOLDER?.trim() || 'herdays/blog'
+    folders: {
+      blog: process.env.CLOUDINARY_FOLDER_BLOG?.trim() || 'herdays/blog',
+      product: process.env.CLOUDINARY_FOLDER_PRODUCT?.trim() || 'herdays/products',
+      box: process.env.CLOUDINARY_FOLDER_BOX?.trim() || 'herdays/boxes'
+    }
   },
   twilio: {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
