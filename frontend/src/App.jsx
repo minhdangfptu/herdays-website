@@ -8,6 +8,7 @@ import BlogPostsPage from "./pages/BlogPostsPage.jsx";
 import BlogTopicsPage from "./pages/BlogTopicsPage.jsx";
 import LoginPage from "./pages/LoginPage.jsx";
 import Footer from "./components/Footer.jsx";
+import ContactUs from "./pages/Common/ContactUs.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -22,6 +23,7 @@ function App() {
         <Route path="/" element={<LoginPage />} />
         <Route element={<BlogShell />}>
           <Route path="/blog" element={<BlogTopicsPage />} />
+          <Route path="/contact-us" element={<ContactUs />} />
           <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
           <Route
             path="/blog/:topicId/posts/:postId"
