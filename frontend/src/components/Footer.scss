@@ -1,0 +1,372 @@
+// Color Variables
+$primary-color: #ED77A5;
+$white-color: #FFFFFF;
+$light-pink: #FCD6E3;
+$bg-pink: #F5E5ED;
+$text-color: #333333;
+$light-text: #666666;
+
+// Footer Styles
+.footer {
+  background: $bg-pink url("../assets/home/footer_bg.png") center center / cover no-repeat;
+  padding: 80px 20px 80px;
+  overflow: hidden;
+  margin-top: 60px;
+  font-family: 'Roboto',-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  position: relative;
+
+  // Background watermark overlay
+  &::before {
+    content: '';
+    position: absolute;
+    bottom: -50px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 600px;
+    height: 600px;
+    background-image: url("/assets/home/logo_mau.png");
+    background-size: contain;
+    background-repeat: no-repeat;
+    background-position: center;
+    opacity: 0.08;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  // White card container
+  &::after {
+    content: '';
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 90%;
+    max-width: 1200px;
+    height: auto;
+    background-color: $white-color;
+    border-radius: 32px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+    z-index: -1;
+    pointer-events: none;
+  }
+}
+
+.footer-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  position: relative;
+  z-index: 1;
+  padding: 60px 40px;
+  background-color: $white-color;
+  border-radius: 32px 32px 0 0;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    padding: 40px 30px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 30px 20px;
+    gap: 30px;
+  }
+}
+
+// Left Section
+.footer-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.footer-logo {
+  img {
+    max-width: 180px;
+    height: auto;
+    display: block;
+  }
+}
+
+.footer-description {
+  font-size: 14px;
+  line-height: 1.6;
+  color: $text-color;
+  margin: 0;
+  font-weight: 500;
+}
+
+.social-links {
+  display: flex;
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.social-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: $primary-color;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white-color;
+  font-size: 20px;
+  transition: all 0.3s ease;
+  text-decoration: none;
+
+  &:hover {
+    box-shadow: 0 8px 16px rgba($primary-color, 0.3);
+  }
+
+  i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+}
+
+// Middle Section - Links
+.footer-links {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 40px;
+  justify-items: end;
+
+  @media (max-width: 768px) {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    justify-items: start;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    justify-items: start;
+  }
+}
+
+.footer-section {
+  h4 {
+    color: $primary-color;
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 0 15px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      margin-bottom: 12px;
+
+      a {
+        color: $text-color;
+        text-decoration: none;
+        font-size: 14px;
+        transition: all 0.3s ease;
+        position: relative;
+        display: inline-block;
+
+        &::after {
+          content: '';
+          position: absolute;
+          bottom: -2px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background-color: $primary-color;
+          transition: width 0.3s ease;
+        }
+
+        &:hover {
+          color: $primary-color;
+
+          &::after {
+            width: 100%;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Right Section - Links and App Store
+.footer-right-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    gap: 30px;
+  }
+}
+
+.app-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  justify-content: flex-end;
+
+  @media (max-width: 768px) {
+    flex-direction: row;
+    gap: 12px;
+    justify-content: flex-start;
+  }
+}
+
+.app-button {
+  display: inline-block;
+  transition: all 0.3s ease;
+  text-decoration: none;
+
+  img {
+    height: 40px;
+    display: block;
+    transition: all 0.3s ease;
+  }
+
+  &:hover img {
+    opacity: 0.8;
+    transform: scale(1.02);
+  }
+
+  &.google-play img {
+    height: 40px;
+  }
+
+  &.app-store img {
+    height:40px;
+  }
+}
+
+// Bottom Section
+.footer-bottom {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px 40px 20px;
+  border-top: 1px solid #E0E0E0;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+  background-color: $white-color;
+  border-radius: 0 0 32px 32px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.08);
+
+  p {
+    color: $light-text;
+    font-size: 13px;
+    margin: 0;
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    padding: 20px 30px 0;
+  }
+
+  @media (max-width: 480px) {
+    padding: 15px 20px 0;
+  }
+}
+
+// Responsive Design
+@media (max-width: 1024px) {
+  .footer-container {
+    grid-template-columns: 1fr 1fr;
+    gap: 40px;
+  }
+
+  .footer-links {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .footer {
+    padding: 40px 15px 30px;
+    margin-top: 40px;
+  }
+
+  .footer-container {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+
+  .footer-links {
+    grid-column: auto;
+  }
+
+  .footer-logo img {
+    max-width: 150px;
+  }
+
+  .section-title {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .footer {
+    padding: 30px 12px 20px;
+  }
+
+  .footer-container {
+    gap: 25px;
+  }
+
+  .social-icon {
+    width: 45px;
+    height: 45px;
+    font-size: 18px;
+  }
+
+  .footer-description {
+    font-size: 13px;
+  }
+
+  .app-buttons {
+    flex-direction: column;
+  }
+
+  .app-button img {
+    height: 35px;
+  }
+
+  .footer-links {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 15px;
+  }
+
+  .footer-section h4 {
+    font-weight: 800;
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+
+  .footer-section ul li {
+    margin-bottom: 8px;
+
+    a {
+      font-size: 12px;
+    }
+  }
+
+  .footer-bottom {
+    margin-top: 25px;
+    padding-top: 20px;
+
+    p {
+      font-size: 12px;
+    }
+  }
+}
