@@ -14,6 +14,7 @@
     "start": "node ./src/server.js",
     "production": "node ./src/server.js",
     "seed:blog": "node ./src/seeds/blogTopics.js",
+    "seed:quiz": "node ./src/seeds/quizQuestions.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
