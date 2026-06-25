@@ -303,3 +303,40 @@ POST /auth/social-login
 - Phone should use E.164 format, for example `+84901234567`.
 - OTP is sent by email/SMS and is not returned in the API response.
 - `resetToken` is stored in server memory, so restarting backend invalidates existing reset tokens.
+
+## Contact API
+
+Users and guests can submit contact information. If an `Authorization` header is provided, it must contain a valid access token.
+
+```http
+POST /contacts
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+```
+
+The `Authorization` header is optional. Authenticated submissions store the user ID; guest submissions store `userId` as `null`.
+
+```json
+{
+  "senderName": "Nguyễn Văn A",
+  "phone": "+84901234567",
+  "email": "user@example.com",
+  "address": "123 Nguyễn Trãi",
+  "province": "Hồ Chí Minh",
+  "topic": "general",
+  "message": "Tôi cần được hỗ trợ..."
+}
+```
+
+`address` is optional. Supported topics are `general`, `account`, `technical`, `partnership`, `feedback`, and `other`. The server generates `createdAt` and ignores client-provided `userId` and `createdAt` values.
+
+### View Contact Submissions (Admin)
+
+Only authenticated users with the `admin` role can view contact submissions. Results are ordered by newest first.
+
+```http
+GET /admin/contacts?page=1&limit=10
+Authorization: Bearer {{adminAccessToken}}
+```
+
+`page` defaults to `1`. `limit` defaults to `10` and is capped at `50`.
