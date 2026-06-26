@@ -94,6 +94,24 @@ export const blogApi = {
   }
 }
 
+export const contactApi = {
+  submitContact: async (data) => {
+    const response = await request('/contacts', {
+      method: 'POST',
+      body: {
+        senderName: data.name,
+        phone: data.phone,
+        email: data.email,
+        address: data.address || null,
+        province: data.city,
+        topic: data.subject,
+        message: data.message
+      }
+    })
+    return { message: response.message, data: response.data }
+  }
+}
+
 export const cloudinaryApi = {
   uploadImage: async (file) => {
     const signatureResponse = await request('/admin/uploads/signature', {

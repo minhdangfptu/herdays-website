@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
-import { EmptyState, ErrorState, LoadingState } from '../components/blog/AsyncState.jsx'
-import PostEditor from '../components/blog/PostEditor.jsx'
-import TopicImageManager from '../components/blog/TopicImageManager.jsx'
-import { blogApi } from '../services/apiService.js'
+import { EmptyState, ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx'
+import PostEditor from '../../components/blog/PostEditor.jsx'
+import TopicImageManager from '../../components/blog/TopicImageManager.jsx'
+import { blogApi } from '../../services/apiService.js'
 
 function AdminPostsPage() {
   const [topics, setTopics] = useState([])
