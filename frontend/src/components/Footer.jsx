@@ -50,6 +50,7 @@ const Footer = () => {
 
   return (
     <footer className="footer">
+      <div className="footer-white-card" />
       <div className="footer-container">
         {/* Left Section - Logo and Description */}
         <div className="footer-left">
@@ -87,7 +88,10 @@ const Footer = () => {
                 <ul>
                   {section.links.map((link, linkIndex) => (
                     <li key={linkIndex}>
-                      <a href={link.href}>{link.name}</a>
+                      <a href={link.href}>
+                        {link.name}
+                        <span className="link-underline" />
+                      </a>
                     </li>
                   ))}
                 </ul>

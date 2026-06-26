@@ -107,8 +107,21 @@ export const contactApi = {
         topic: data.subject,
         message: data.message
       }
-    })
-    return { message: response.message, data: response.data }
+    });
+    return { message: response.message, data: response.data, errors: null };
+  },
+  getFieldErrors: (error) => {
+    const details = error.details;
+    if (!Array.isArray(details)) return {};
+    return {
+      name: details.find(e => e.field === 'senderName')?.message || '',
+      phone: details.find(e => e.field === 'phone')?.message || '',
+      email: details.find(e => e.field === 'email')?.message || '',
+      address: details.find(e => e.field === 'address')?.message || '',
+      city: details.find(e => e.field === 'province')?.message || '',
+      subject: details.find(e => e.field === 'topic')?.message || '',
+      message: details.find(e => e.field === 'message')?.message || '',
+    };
   }
 }
 
