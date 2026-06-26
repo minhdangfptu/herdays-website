@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import facebookLogo from '../assets/facebook-logo.png'
 import googleLogo from '../assets/google-logo.png'
 import herdaysLogo from '../assets/herdays-logo.png'
-import { authApi } from '../services/apiService.js'
+import { authApi, setAuthSession } from '../services/apiService.js'
 import '../App.scss'
 
 function FieldIcon({ type }) {
@@ -123,9 +123,7 @@ function LoginForm() {
         identifier: formData.get('identifier'),
         password: formData.get('password')
       })
-      localStorage.setItem('accessToken', result.accessToken)
-      localStorage.setItem('refreshToken', result.refreshToken)
-      localStorage.setItem('userRole', result.user.role)
+      setAuthSession(result)
       navigate(result.user.role === 'admin' ? '/admin/posts' : '/blog')
     } catch (error) {
       setErrorMessage(error.message)

@@ -23,6 +23,19 @@ export const getTopics = async (req, res, next) => {
   }
 };
 
+export const ingestPosts = async (req, res, next) => {
+  try {
+    void req;
+    const result = await blogService.ingestPostsToKnowledge();
+    sendSuccess(res, {
+      message: result.message,
+      data: result.summary
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getTopicPosts = async (req, res, next) => {
   try {
     const topicId = validateTopicId(req.params.topicId);

@@ -1,28 +1,41 @@
-import { Link, NavLink, Outlet, useLocation, useNavigate } from 'react-router-dom'
+import { useEffect, useState } from 'react'
+import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 
 import herdaysLogo from '../../assets/herdays-logo.png'
-import { authApi } from '../../services/apiService.js'
+import { authApi, clearAuthSession, hasAuthSession } from '../../services/apiService.js'
 
 const getNavClassName = ({ isActive }) => [
   'rounded-full px-4 py-2 text-sm font-semibold transition',
   isActive ? 'bg-pink-500 text-white' : 'text-slate-600 hover:bg-pink-50 hover:text-pink-600'
 ].join(' ')
 
+const getAuthState = () => ({
+  isLoggedIn: hasAuthSession(),
+  isAdmin: localStorage.getItem('userRole') === 'admin'
+})
+
 function BlogShell() {
-  const location = useLocation()
   const navigate = useNavigate()
-  const isAdminPage = location.pathname.startsWith('/admin')
-  const isAdmin = localStorage.getItem('userRole') === 'admin'
+  const [authState, setAuthState] = useState(getAuthState)
+
+  useEffect(() => {
+    const syncAuthState = () => setAuthState(getAuthState())
+
+    window.addEventListener('storage', syncAuthState)
+    window.addEventListener('auth-state-change', syncAuthState)
+    return () => {
+      window.removeEventListener('storage', syncAuthState)
+      window.removeEventListener('auth-state-change', syncAuthState)
+    }
+  }, [])
 
   const handleLogout = async () => {
     try {
       await authApi.logout()
     } catch {
-      // Phiên phía server có thể đã hết hạn; vẫn phải xóa token cục bộ.
+      // The server-side session may already be expired; local credentials still need clearing.
     } finally {
-      localStorage.removeItem('accessToken')
-      localStorage.removeItem('refreshToken')
-      localStorage.removeItem('userRole')
+      clearAuthSession()
       navigate('/', { replace: true })
     }
   }
@@ -36,8 +49,8 @@ function BlogShell() {
           </Link>
           <nav className="flex items-center gap-2" aria-label="Điều hướng blog">
             <NavLink className={getNavClassName} to="/blog">Blog</NavLink>
-            {isAdmin && <NavLink className={getNavClassName} to="/admin/posts">Quản trị</NavLink>}
-            {isAdmin && isAdminPage && (
+            {authState.isAdmin && <NavLink className={getNavClassName} to="/admin/posts">Quản trị</NavLink>}
+            {authState.isLoggedIn ? (
               <button
                 className="rounded-full border border-pink-200 px-4 py-2 text-sm font-semibold text-pink-600 transition hover:bg-pink-50"
                 type="button"
@@ -45,6 +58,8 @@ function BlogShell() {
               >
                 Đăng xuất
               </button>
+            ) : (
+              <NavLink className={getNavClassName} to="/">Đăng nhập</NavLink>
             )}
           </nav>
         </div>

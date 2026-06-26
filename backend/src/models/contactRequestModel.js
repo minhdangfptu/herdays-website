@@ -63,6 +63,7 @@ const contactRequestSchema = new mongoose.Schema({
     immutable: true
   }
 }, {
+  collection: 'contact',
   toJSON: {
     transform(doc, ret) {
       delete ret.__v;

@@ -15,6 +15,7 @@ import profileRoute from './profileRoute.js';
 import contactRoute from './contactRoute.js';
 import adminContactRoute from './adminContactRoute.js';
 import quizRoute from './quizRoute.js';
+import chatRoute from './chatRoute.js';
 
 const router = express.Router();
 
@@ -35,5 +36,6 @@ router.use('/admin/contacts', adminContactRoute);
 router.use('/profile', profileRoute);
 router.use('/contacts', contactRoute);
 router.use('/quiz', quizRoute);
+router.use('/chat', chatRoute);
 
 export default router;
