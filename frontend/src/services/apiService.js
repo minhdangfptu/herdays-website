@@ -33,6 +33,13 @@ export const authApi = {
     const response = await request('/auth/login', { method: 'POST', body: credentials })
     return response.data
   },
+  socialLogin: async ({ provider, idToken }) => {
+    const response = await request('/auth/social-login', {
+      method: 'POST',
+      body: { provider, idToken }
+    })
+    return response.data
+  },
   logout: async () => {
     const refreshToken = localStorage.getItem('refreshToken')
     if (!refreshToken) return
