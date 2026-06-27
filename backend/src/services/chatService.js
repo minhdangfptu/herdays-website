@@ -9,6 +9,7 @@ import {
   getChatMemory,
   saveChatMemory
 } from './chatMemoryService.js';
+import { getLatestChatQuizContext } from './quizService.js';
 
 const GUEST_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const MEMBER_HISTORY_LIMIT = 50;
@@ -119,14 +120,33 @@ const buildAiPayload = ({ conversation, userMessage, history, memory }) => ({
   productCandidates: []
 });
 
+const buildConversationContext = async ({ userId, payload }) => {
+  const context = { ...payload.context };
+
+  if (userId && (!context.quizSummary || !context.targetStatus)) {
+    const latestQuizContext = await getLatestChatQuizContext(userId);
+
+    if (!context.quizSummary) {
+      context.quizSummary = latestQuizContext?.quizSummary || null;
+    }
+
+    if (!context.targetStatus) {
+      context.targetStatus = latestQuizContext?.targetStatus || null;
+    }
+  }
+
+  return context;
+};
+
 export const createConversation = async ({ userId, sessionId, payload }) => {
   const isMember = Boolean(userId);
+  const context = await buildConversationContext({ userId, payload });
   const conversation = await ChatConversation.create({
     user: userId || null,
     sessionId: isMember ? null : sessionId || createSessionId(),
     sessionType: isMember ? 'member' : 'guest',
     title: payload.title || 'Cuộc trò chuyện mới',
-    context: payload.context,
+    context,
     expiresAt: isMember ? null : buildGuestExpiresAt()
   });
 

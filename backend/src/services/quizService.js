@@ -12,11 +12,23 @@ const ROLE_BY_GENERAL_ANSWER = {
   'Đang điều trị IVF': 'ivf'
 };
 
-const TARGET_STATUS_BY_ROLE = {
+export const TARGET_STATUS_BY_ROLE = {
   period: 'periodTracking',
   fertility: 'tryingToConceive',
   'pregnancy-care': 'pregnant',
   ivf: 'ivf'
+};
+
+const buildChatQuizSummary = (quizAnswer) => {
+  if (!quizAnswer) return null;
+
+  return {
+    finalRole: quizAnswer.finalRole,
+    targetStatus: TARGET_STATUS_BY_ROLE[quizAnswer.finalRole] || null,
+    answers: (quizAnswer.questionAnswerContent || [])
+      .slice(1)
+      .map(({ question, answer }) => ({ question, answer }))
+  };
 };
 
 export const getQuestionsByTag = async (tag) => QuizQuestion.find({
@@ -108,5 +120,21 @@ export const submitQuizAnswers = async (userId, payload) => {
   return {
     ...quizAnswer.toJSON(),
     targetStatus: TARGET_STATUS_BY_ROLE[finalRole]
+  };
+};
+
+export const getLatestChatQuizContext = async (userId) => {
+  if (!userId) return null;
+
+  const quizAnswer = await QuizAnswer.findOne({ userId })
+    .sort({ createdAt: -1 })
+    .select('questionAnswerContent finalRole')
+    .lean();
+
+  if (!quizAnswer) return null;
+
+  return {
+    targetStatus: TARGET_STATUS_BY_ROLE[quizAnswer.finalRole] || null,
+    quizSummary: buildChatQuizSummary(quizAnswer)
   };
 };
