@@ -4,10 +4,13 @@ import { Link, NavLink, Outlet, useNavigate } from 'react-router-dom'
 import herdaysLogo from '../../assets/herdays-logo.png'
 import { authApi, clearAuthSession, hasAuthSession } from '../../services/apiService.js'
 
-const getNavClassName = ({ isActive }) => [
-  'rounded-full px-4 py-2 text-sm font-semibold transition',
-  isActive ? 'bg-pink-500 text-white' : 'text-slate-600 hover:bg-pink-50 hover:text-pink-600'
-].join(' ')
+const getNavClassName = ({ isActive }) =>
+  [
+    "rounded-full px-4 py-2 text-sm font-semibold transition",
+    isActive
+      ? "bg-pink-500 text-white"
+      : "text-slate-600 hover:bg-pink-50 hover:text-pink-600",
+  ].join(" ");
 
 const getAuthState = () => ({
   isLoggedIn: hasAuthSession(),
@@ -31,14 +34,14 @@ function BlogShell() {
 
   const handleLogout = async () => {
     try {
-      await authApi.logout()
+      await authApi.logout();
     } catch {
       // The server-side session may already be expired; local credentials still need clearing.
     } finally {
       clearAuthSession()
       navigate('/', { replace: true })
     }
-  }
+  };
 
   return (
     <div className="min-h-svh bg-[#fff8fb] text-slate-700">
@@ -66,7 +69,7 @@ function BlogShell() {
       </header>
       <Outlet />
     </div>
-  )
+  );
 }
 
-export default BlogShell
+export default BlogShell;

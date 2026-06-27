@@ -11,13 +11,25 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required() {
+        return this.authProvider !== 'google';
+      },
       select: false
     },
     phone: {
       type: String,
-      required: true,
-      trim: true
+      trim: true,
+      default: null
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google'],
+      default: 'local'
+    },
+    googleId: {
+      type: String,
+      trim: true,
+      default: null
     },
     fullName: {
       type: String,
@@ -65,6 +77,14 @@ userSchema.index(
   {
     unique: true,
     partialFilterExpression: { phone: { $exists: true, $type: 'string' } }
+  }
+);
+
+userSchema.index(
+  { googleId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { googleId: { $exists: true, $type: 'string' } }
   }
 );
 

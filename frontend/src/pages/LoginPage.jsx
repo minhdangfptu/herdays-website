@@ -1,10 +1,35 @@
-import { useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import facebookLogo from '../assets/facebook-logo.png'
-import googleLogo from '../assets/google-logo.png'
 import herdaysLogo from '../assets/herdays-logo.png'
 import { authApi, setAuthSession } from '../services/apiService.js'
 import '../App.scss'
+
+const GOOGLE_SCRIPT_ID = 'google-identity-services'
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
+
+const loadGoogleIdentityScript = () => new Promise((resolve, reject) => {
+  if (window.google?.accounts?.id) {
+    resolve()
+    return
+  }
+
+  const existingScript = document.getElementById(GOOGLE_SCRIPT_ID)
+  if (existingScript) {
+    existingScript.addEventListener('load', resolve, { once: true })
+    existingScript.addEventListener('error', reject, { once: true })
+    return
+  }
+
+  const script = document.createElement('script')
+  script.id = GOOGLE_SCRIPT_ID
+  script.src = 'https://accounts.google.com/gsi/client'
+  script.async = true
+  script.defer = true
+  script.onload = resolve
+  script.onerror = reject
+  document.head.appendChild(script)
+})
 
 function FieldIcon({ type }) {
   if (type === 'email') {
@@ -109,8 +134,79 @@ function CycleChart() {
 function LoginForm() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const isGoogleInitialized = useRef(false)
+  const isGoogleButtonRendered = useRef(false)
+  const googleButtonRef = useRef(null)
   const navigate = useNavigate()
+
+  const completeLogin = useCallback((result) => {
+    setAuthSession(result)
+    navigate(result.user.role === 'admin' ? '/admin/posts' : '/blog')
+  }, [navigate])
+
+  const handleGoogleCredential = useCallback(async (response) => {
+    if (!response.credential) {
+      setErrorMessage('Không nhận được thông tin đăng nhập từ Google.')
+      return
+    }
+
+    setIsGoogleSubmitting(true)
+    setErrorMessage('')
+
+    try {
+      const result = await authApi.socialLogin({
+        provider: 'google',
+        idToken: response.credential
+      })
+      completeLogin(result)
+    } catch (error) {
+      setErrorMessage(error.message)
+    } finally {
+      setIsGoogleSubmitting(false)
+    }
+  }, [completeLogin])
+
+  const initializeGoogleIdentity = useCallback(async () => {
+    await loadGoogleIdentityScript()
+
+    if (isGoogleInitialized.current) return
+
+    window.google.accounts.id.initialize({
+      client_id: googleClientId,
+      callback: handleGoogleCredential
+    })
+    isGoogleInitialized.current = true
+  }, [handleGoogleCredential])
+
+  const renderGoogleButton = useCallback(async () => {
+    if (!googleClientId || !googleButtonRef.current || isGoogleButtonRendered.current) return
+
+    await initializeGoogleIdentity()
+
+    const buttonWidth = Math.min(400, Math.max(200, googleButtonRef.current.offsetWidth || 240))
+    window.google.accounts.id.renderButton(googleButtonRef.current, {
+      type: 'standard',
+      theme: 'outline',
+      size: 'large',
+      text: 'signin_with',
+      shape: 'rectangular',
+      logo_alignment: 'left',
+      locale: 'vi',
+      width: buttonWidth
+    })
+    isGoogleButtonRendered.current = true
+  }, [initializeGoogleIdentity])
+
+  useEffect(() => {
+    if (!googleClientId) return
+
+    renderGoogleButton()
+      .catch(() => {
+        setErrorMessage('Không thể tải đăng nhập Google. Vui lòng thử lại sau.')
+      })
+  }, [renderGoogleButton])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -123,8 +219,7 @@ function LoginForm() {
         identifier: formData.get('identifier'),
         password: formData.get('password')
       })
-      setAuthSession(result)
-      navigate(result.user.role === 'admin' ? '/admin/posts' : '/blog')
+      completeLogin(result)
     } catch (error) {
       setErrorMessage(error.message)
     } finally {
@@ -196,11 +291,19 @@ function LoginForm() {
         <div className="divider"><span>Hoặc</span></div>
 
         <div className="social-login">
-          <button type="button">
-            <img src={googleLogo} alt="" />
-            <span>Đăng nhập với Google</span>
-          </button>
-          <button type="button">
+          <div
+            className="google-login-button"
+            ref={googleButtonRef}
+            aria-label="Đăng nhập với Google"
+            aria-busy={isGoogleSubmitting}
+          >
+            {!googleClientId && <span>Google login chưa được cấu hình</span>}
+          </div>
+          <button
+            type="button"
+            disabled
+            title="Đăng nhập với Facebook chưa được hỗ trợ"
+          >
             <img src={facebookLogo} alt="" />
             <span>Đăng nhập với Facebook</span>
           </button>

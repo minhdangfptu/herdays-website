@@ -103,6 +103,13 @@ export const authApi = {
     return response.data
   },
   refreshToken: async () => refreshAccessToken(),
+  socialLogin: async ({ provider, idToken }) => {
+    const response = await request('/auth/social-login', {
+      method: 'POST',
+      body: { provider, idToken }
+    })
+    return response.data
+  },
   logout: async () => {
     const refreshToken = localStorage.getItem('refreshToken')
     if (!refreshToken) return
@@ -161,6 +168,37 @@ export const blogApi = {
       isAuthenticated: true
     })
     return { message: response.message, topic: response.data }
+  }
+}
+
+export const contactApi = {
+  submitContact: async (data) => {
+    const response = await request('/contacts', {
+      method: 'POST',
+      body: {
+        senderName: data.name,
+        phone: data.phone,
+        email: data.email,
+        address: data.address || null,
+        province: data.city,
+        topic: data.subject,
+        message: data.message
+      }
+    });
+    return { message: response.message, data: response.data, errors: null };
+  },
+  getFieldErrors: (error) => {
+    const details = error.details;
+    if (!Array.isArray(details)) return {};
+    return {
+      name: details.find(e => e.field === 'senderName')?.message || '',
+      phone: details.find(e => e.field === 'phone')?.message || '',
+      email: details.find(e => e.field === 'email')?.message || '',
+      address: details.find(e => e.field === 'address')?.message || '',
+      city: details.find(e => e.field === 'province')?.message || '',
+      subject: details.find(e => e.field === 'topic')?.message || '',
+      message: details.find(e => e.field === 'message')?.message || '',
+    };
   }
 }
 
