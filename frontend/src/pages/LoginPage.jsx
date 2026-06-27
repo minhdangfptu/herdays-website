@@ -301,7 +301,11 @@ function LoginForm() {
           >
             {!googleClientId && <span>Google login chưa được cấu hình</span>}
           </div>
-          <button type="button">
+          <button
+            type="button"
+            disabled
+            title="Đăng nhập với Facebook chưa được hỗ trợ"
+          >
             <img src={facebookLogo} alt="" />
             <span>Đăng nhập với Facebook</span>
           </button>

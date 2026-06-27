@@ -157,6 +157,7 @@ export const register = async ({ email, phone, otpChannel, password, fullName, t
     password: hashedPassword,
     fullName,
     role: 'user_free',
+    authProvider: 'local',
     targetStatus,
     isVerified: false
   });
