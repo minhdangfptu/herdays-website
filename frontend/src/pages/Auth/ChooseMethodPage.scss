@@ -1,0 +1,153 @@
+$brand-pink: #ed77a5;
+$brand-pink-light: #f9eef2;
+$brand-pink-mid: #f5d0de;
+$brand-pink-dark: #c95c84;
+$text-primary: #4a5662;
+$text-secondary: #7a8a9a;
+$border-color: #e8dce2;
+
+.choose-method-page {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  background: $brand-pink-light;
+  padding: 20px;
+}
+
+.choose-method-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 480px;
+  padding: 48px 40px 40px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 40px rgba($brand-pink-dark, 0.12);
+  gap: 0;
+}
+
+.method-choose-brand-logo {
+  width: 140px;
+  height: auto;
+  object-fit: contain;
+  margin-bottom: 32px;
+}
+
+.choose-method-copy {
+  text-align: center;
+  margin-bottom: 36px;
+
+  h1 {
+    font-size: 22px;
+    font-weight: 700;
+    color: #2d3440;
+    margin: 0 0 8px;
+    letter-spacing: -0.3px;
+  }
+
+  p {
+    font-size: 14px;
+    color: $text-secondary;
+    margin: 0;
+    line-height: 1.5;
+  }
+}
+
+.method-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  width: 100%;
+  margin-bottom: 32px;
+}
+
+.method-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  padding: 18px 20px;
+  background: $brand-pink-light;
+  border: 1.5px solid $border-color;
+  border-radius: 14px;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+
+  &:hover {
+    border-color: $brand-pink;
+    box-shadow: 0 4px 16px rgba($brand-pink-dark, 0.1);
+  }
+  
+  &__icon {
+    flex-shrink: 0;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba($brand-pink-dark, 0.1);
+
+    svg {
+      width: 24px;
+      height: 24px;
+      color: $brand-pink;
+    }
+  }
+
+  &__text {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    strong {
+      font-size: 15px;
+      font-weight: 600;
+      color: #2d3440;
+    }
+
+    span {
+      font-size: 13px;
+      color: $text-secondary;
+      line-height: 1.4;
+    }
+  }
+
+  &__arrow {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    color: $brand-pink;
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+.back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: $brand-pink;
+  text-decoration: none;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $brand-pink-dark;
+  }
+
+  svg {
+    width: 18px;
+    height: 18px;
+  }
+}

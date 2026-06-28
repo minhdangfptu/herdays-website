@@ -1,24 +1,41 @@
 .contact-us {
+  .contact-control {
+    transition: border-color 200ms ease-in-out, box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+  }
 
-}
+  .contact-control:focus {
+    outline: none;
+    border-color: #ED77A5;
+    box-shadow: 0 0 0 4px rgba(237, 119, 165, 0.18);
+  }
 
-.contact-us .contact-control {
-  transition: border-color 200ms ease-in-out, box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
-}
+  .contact-control.is-error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
+  }
 
-.contact-us .contact-control:focus {
-  outline: none;
-  border-color: #ED77A5;
-  box-shadow: 0 0 0 4px rgba(237, 119, 165, 0.18);
-}
+  select.contact-control {
+    background-image: none;
+    -webkit-appearance: none;
+    appearance: none;
 
-.contact-us .contact-control.is-error {
-  border-color: #ef4444;
-  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
-}
+    option {
+      background: #fff;
+      color: #4b5563;
+      padding: 8px;
+    }
 
-.contact-us .status-message {
-  animation: slideDown 300ms ease-out;
+    option:checked,
+    option:selected {
+      background: #fff;
+      color: #4b5563;
+      font-weight: 400;
+    }
+  }
+
+  .status-message {
+    animation: slideDown 300ms ease-out;
+  }
 }
 
 @keyframes slideDown {

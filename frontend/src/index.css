@@ -1,7 +1,7 @@
-@import 'tailwindcss';
+@import "tailwindcss";
 
 :root {
-  font-family: Inter, 'Segoe UI', Arial, sans-serif;
+  font-family: Inter, "Segoe UI", Arial, sans-serif;
   color: #4a5662;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -21,7 +21,6 @@ body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
-  background: #ffffff;
 }
 
 button,

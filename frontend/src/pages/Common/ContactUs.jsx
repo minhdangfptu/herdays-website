@@ -275,7 +275,7 @@ export default function ContactUs() {
                         name="city"
                         value={formData.city}
                         onChange={handleChange}
-                        className={`contact-control w-full px-4 py-2 h-10 border border-gray-300 rounded-lg text-sm placeholder-gray-400 focus:outline-none appearance-none bg-white text-gray-600`}
+                        className={`contact-control w-full px-4 py-2 h-10 border border-gray-300 rounded-lg text-base focus:outline-none appearance-none bg-white text-gray-600${fieldErrors.city ? ' is-error' : ''}`}
                       >
                         <option value="">Chọn tỉnh/thành phố</option>
                         {/* 5 thành phố trực thuộc trung ương */}
@@ -350,7 +350,7 @@ export default function ContactUs() {
                       name="subject"
                       value={formData.subject}
                       onChange={handleChange}
-                      className={`contact-control w-full px-4 py-2 h-10 border border-gray-300 rounded-lg text-sm focus:outline-none appearance-none bg-white text-gray-600${fieldErrors.subject ? ' is-error' : ''}`}
+                      className={`contact-control w-full px-4 py-2 h-10 border border-gray-300 rounded-lg text-base focus:outline-none appearance-none bg-white text-gray-600${fieldErrors.subject ? ' is-error' : ''}`}
                     >
                       <option value="">Chọn chủ đề bạn quan tâm</option>
                       <option value="general">Sản phẩm</option>

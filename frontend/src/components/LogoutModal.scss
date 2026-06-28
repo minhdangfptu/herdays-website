@@ -1,0 +1,129 @@
+$brand-pink: #ed77a5;
+$brand-pink-light: #f9eef2;
+$brand-pink-dark: #ed77a5;
+$brand-pink-hover: #df6598;
+$text-primary: #4a5662;
+$text-secondary: #8b98aa;
+
+.logout-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+  padding: 20px;
+}
+
+.logout-modal-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 320px;
+  padding: 36px 28px 28px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+}
+
+.logout-modal-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: $text-secondary;
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    stroke-width: 2;
+  }
+
+  &:hover {
+    background: $brand-pink-light;
+    color: $brand-pink;
+  }
+}
+
+.logout-modal-logo {
+  display: block;
+  width: 80px;
+  height: auto;
+  margin: 0 auto 16px;
+  object-fit: contain;
+}
+
+.logout-modal-title {
+  margin: 0 0 8px;
+  font-size: 20px;
+  font-weight: 700;
+  color: $text-primary;
+  text-align: center;
+  letter-spacing: -0.2px;
+}
+
+.logout-modal-desc {
+  margin: 0 0 24px;
+  font-size: 14px;
+  color: $text-secondary;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.logout-modal-actions {
+  display: flex;
+  gap: 12px;
+  width: 100%;
+}
+
+.logout-modal-cancel,
+.logout-modal-confirm {
+  flex: 1;
+  height: 44px;
+  border: none;
+  border-radius: 10px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.15s ease;
+}
+
+.logout-modal-cancel {
+  background: #f0f2f5;
+  color: $text-primary;
+
+  &:hover {
+    background: #e4e6ea;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.logout-modal-confirm {
+  background: $brand-pink;
+  color: #fff;
+
+  &:hover {
+    background: $brand-pink-hover;
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
