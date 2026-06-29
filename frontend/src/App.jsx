@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+﻿import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import Header from "./components/Header.jsx";
@@ -10,7 +10,7 @@ import BlogPostDetailPage from "./pages/Blog/BlogPostDetailPage.jsx";
 import AdminPostsPage from "./pages/Blog/AdminPostsPage.jsx";
 import LoginPage from "./pages/Auth/LoginPage.jsx";
 import ContactUs from "./pages/Common/ContactUs.jsx";
-import HomePage from "./pages/Common/Homepage.jsx";
+import HomePage from "./pages/Common/HomePage.jsx";
 import TermOfUse from "./pages/Common/TermOfUse.jsx";
 import Policy from "./pages/Common/Policy.jsx";
 import SubscriptionStep1 from "./pages/Subcription/SubscriptionStep1.jsx";

@@ -58,18 +58,18 @@ $font-dancing: 'Dancing Script', cursive;
 .hero-section {
   /* 1. Ép background nằm sát đáy (bottom) để không bị cụt dàn 3D */
   background-image: url("../../assets/home/home_hero.png");
-  background-position: center 105%; 
+  background-position: center 105%;
   background-size: cover;
   background-repeat: no-repeat;
-  
+
   /* 2. Dọn sạch mọi tác nhân gây ám hồng */
-  background-color: transparent; 
+  background-color: transparent;
   background-blend-mode: normal;
 
   /* 3. Chốt chiều cao (có thể tinh chỉnh 700px - 900px tùy kích thước ảnh thật) */
-  min-height: 1000px; 
+  min-height: 1000px;
   width: 100%;
-  
+
   /* 4. Layout cho chữ */
   display: flex;
   flex-direction: column;
@@ -79,7 +79,7 @@ $font-dancing: 'Dancing Script', cursive;
   margin-bottom: $spacing-3xl;
   color: $white;
   position: relative;
-  
+
   /* 🚨 LỆNH BÀI TỬ THẦN: Ép ẩn mọi lớp overlay cũ nếu bạn lỡ quên xoá */
   &::before, &::after {
     display: none !important;
@@ -91,7 +91,7 @@ $font-dancing: 'Dancing Script', cursive;
   margin: 0 auto;
   position: relative;
   z-index: 1;
-  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); 
+  text-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 .hero-title {
@@ -151,7 +151,7 @@ $font-dancing: 'Dancing Script', cursive;
 .features-logo {
   height: 40px;
   width: auto;
-  
+
 
   img {
     width: 100%;

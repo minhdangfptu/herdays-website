@@ -1,12 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import {
   Phone,
   Mail,
   MapPin,
   AtSign,
   ChevronDown,
-  CheckCircle,
-  AlertCircle,
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { contactApi } from "../../services/apiService";

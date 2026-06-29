@@ -1,5 +1,3 @@
-import React from "react";
-import { Camera, Globe, MessageCircle, Video } from "lucide-react";
 import {
   FaFacebook,
   FaInstagram,

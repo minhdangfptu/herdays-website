@@ -1,6 +1,4 @@
-@use "sass:color";
-@tailwind utilities;
-
+﻿@use "sass:color";
 // Color variables
 $primary-color: #ED77A5;
 $secondary-color: #FFFFFF;
@@ -31,7 +29,7 @@ $text-dark: #333333;
 
   // Logo Section
   .header-logo {
-    @apply flex-shrink-0;
+    flex-shrink: 0;
 
     a {
       display: flex;
@@ -72,10 +70,11 @@ $text-dark: #333333;
         align-items: center;
 
         .nav-link {
-          @apply text-sm no-underline transition-all duration-300;
-          color: $secondary-color;
-          font-weight: 400;
+          font-size: 0.875rem;
+          font-weight: 500;
           text-decoration: none;
+          transition: all 0.3s ease;
+          color: $secondary-color;
           position: relative;
 
           &::after {
@@ -162,7 +161,7 @@ $text-dark: #333333;
   }
 
     .btn-login {
-      @apply text-sm font-medium rounded-md transition-all duration-300 border-none cursor-pointer;
+      border: none;
       padding: 6px 18px;
       border-radius: 8px;
       background-color: $secondary-color;
@@ -180,10 +179,15 @@ $text-dark: #333333;
     }
 
     .btn-signup {
-      @apply px-6 py-2 text-sm font-medium rounded-md transition-all duration-300 border-2 cursor-pointer bg-transparent;
+      padding: 0.5rem 1.5rem;
+      border: 2px solid $secondary-color;
+      border-radius: 8px;
+      background-color: transparent;
       color: $secondary-color;
-      border-color: $secondary-color;
       cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.3s ease;
 
       &:hover {
         color:#ebebeb;
@@ -210,10 +214,11 @@ $text-dark: #333333;
     height: 34px;
 
     span {
-      background-color: #ffffff !important;
+      display: block;
       width: 25px;
-      height: 3px;
+      height: 0.25rem;
       border-radius: 9999px;
+      background-color: $secondary-color;
       transition: all 0.3s ease;
     }
 
@@ -315,11 +320,11 @@ $text-dark: #333333;
     .header-logo {
       a {
         .logo-text {
-          @apply text-base;
+          font-size: 1rem;
         }
 
         .logo-icon {
-          @apply text-xl;
+          font-size: 1.25rem;
         }
       }
     }

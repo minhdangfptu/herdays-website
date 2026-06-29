@@ -47,6 +47,39 @@ CLOUDINARY_FOLDER=herdays/blog
 
 `CLOUDINARY_API_SECRET` must remain on the backend. Admin users request a short-lived signed upload payload from `POST /admin/uploads/signature`; the frontend then uploads the image directly to Cloudinary and stores the returned HTTPS URL in MongoDB.
 
+## AI Service Config
+
+The Express backend calls the local FastAPI AI service for chat and blog knowledge ingestion:
+
+```env
+AI_SERVICE_URL=http://localhost:8090/
+AI_SERVICE_TOKEN=change-me
+AI_SERVICE_TIMEOUT_MS=30000
+AI_SERVICE_KNOWLEDGE_TIMEOUT_MS=120000
+AI_SERVICE_KNOWLEDGE_BATCH_SIZE=5
+```
+
+`AI_SERVICE_KNOWLEDGE_TIMEOUT_MS` and `AI_SERVICE_KNOWLEDGE_BATCH_SIZE` are used by `POST /blog/ingest-posts`. Keep the batch size at or below `50`, which is the AI service request limit.
+
+## Redis Chat Memory Config
+
+Redis is optional and is used only as short-term chatbot memory. MongoDB remains the source of truth for conversations and messages. If Redis is not configured or unavailable, chat still works without memory cache.
+
+Run Redis locally with Docker:
+
+```bash
+docker run -d --name herdays-redis -p 6379:6379 redis:7
+```
+
+Add these values to `backend/.env`:
+
+```env
+REDIS_URL=redis://localhost:6379
+CHAT_MEMORY_TTL_SECONDS=86400
+```
+
+`CHAT_MEMORY_TTL_SECONDS` defaults to one day and is capped between one minute and thirty days.
+
 ## Auth API
 
 All JSON requests need:
