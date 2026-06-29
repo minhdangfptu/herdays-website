@@ -19,6 +19,8 @@ import RegisterPage from "./pages/Auth/RegisterPage.jsx";
 import ChooseMethodPage from "./pages/Auth/ChooseMethodPage.jsx";
 import EnterEmailPhoneNoPage from "./pages/Auth/EnterEmailPhoneNoPage.jsx";
 import EnterOTP from "./pages/Auth/EnterOTP.jsx";
+import ResetPassword from "./pages/Auth/ResetPassword.jsx";
+import ChangePassword from "./pages/Auth/ChangePassword.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -73,6 +75,8 @@ function App() {
         <Route path="/choose-method" element={<ChooseMethodPage />} />
         <Route path="/confirmation-data" element={<EnterEmailPhoneNoPage />} />
         <Route path="/confirmation-otp" element={<EnterOTP />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route path="/change-password" element={<ChangePassword />} />
         <Route path="/*" element={<HeaderFooterLayout />} />
       </Routes>
     </BrowserRouter>

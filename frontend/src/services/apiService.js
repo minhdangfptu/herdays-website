@@ -1,3 +1,5 @@
+import { translateError, translateFieldError } from '../utils/translateError.js'
+
 const configuredBackendUrl = import.meta.env.VITE_BACKEND_URL?.replace(/\/$/, '')
 const API_BASE_URL = configuredBackendUrl
   ? `${configuredBackendUrl}${configuredBackendUrl.endsWith('/herdays-api') ? '' : '/herdays-api'}`
@@ -20,7 +22,9 @@ const request = async (path, { method = 'GET', body, isAuthenticated = false } =
   })
   const payload = await response.json().catch(() => ({}))
   if (!response.ok || payload.success !== true) {
-    const error = new Error(payload.message || 'Không thể kết nối đến máy chủ.')
+    const rawMessage = payload.message || 'Unable to connect to server.'
+    const message = translateError(rawMessage)
+    const error = new Error(message)
     error.statusCode = payload.statusCode || response.status
     error.details = payload.errors || null
     throw error
@@ -40,6 +44,22 @@ export const authApi = {
       method: 'POST',
       body: { refreshToken }
     })
+  },
+  verifyCurrentPassword: async ({ currentPassword }) => {
+    const response = await request('/auth/verify-current-password', {
+      method: 'POST',
+      body: { currentPassword },
+      isAuthenticated: true
+    })
+    return response
+  },
+  changePassword: async ({ currentPassword, newPassword }) => {
+    const response = await request('/auth/change-password', {
+      method: 'POST',
+      body: { currentPassword, newPassword },
+      isAuthenticated: true
+    })
+    return response
   }
 }
 
@@ -114,13 +134,13 @@ export const contactApi = {
     const details = error.details;
     if (!Array.isArray(details)) return {};
     return {
-      name: details.find(e => e.field === 'senderName')?.message || '',
-      phone: details.find(e => e.field === 'phone')?.message || '',
-      email: details.find(e => e.field === 'email')?.message || '',
-      address: details.find(e => e.field === 'address')?.message || '',
-      city: details.find(e => e.field === 'province')?.message || '',
-      subject: details.find(e => e.field === 'topic')?.message || '',
-      message: details.find(e => e.field === 'message')?.message || '',
+      name:     translateFieldError('senderName', details.find(e => e.field === 'senderName')?.message || ''),
+      phone:    translateFieldError('phone',       details.find(e => e.field === 'phone')?.message || ''),
+      email:    translateFieldError('email',      details.find(e => e.field === 'email')?.message || ''),
+      address:  translateFieldError('address',    details.find(e => e.field === 'address')?.message || ''),
+      city:     translateFieldError('province',   details.find(e => e.field === 'province')?.message || ''),
+      subject:  translateFieldError('topic',      details.find(e => e.field === 'topic')?.message || ''),
+      message:  translateFieldError('message',    details.find(e => e.field === 'message')?.message || ''),
     };
   }
 }

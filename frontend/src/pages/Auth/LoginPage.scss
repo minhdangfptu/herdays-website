@@ -107,7 +107,7 @@ $desktop-content-scale: 0.88;
   font: inherit;
   font-size: 16px;
   font-weight: 400;
-  transition: border-color 160ms ease;
+  transition: border-color 200ms ease-in-out, box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
 }
 
 .input-shell input::placeholder {
@@ -116,7 +116,13 @@ $desktop-content-scale: 0.88;
 }
 
 .input-shell input:focus {
-  border-color: #f38bb5;
+  border-color: #ed77a5;
+  box-shadow: 0 0 0 4px rgba(237, 119, 165, 0.18);
+}
+
+.input-shell input.is-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
 }
 
 .field-icon,

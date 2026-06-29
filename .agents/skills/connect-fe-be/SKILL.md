@@ -744,6 +744,111 @@ try {
 
 ---
 
+## Skill 6: Translating Backend Error Responses to Vietnamese
+
+### Overview
+
+Backend services throw `HttpError` with English messages (e.g., `"Invalid credentials"`, `"User not found"`). The frontend is responsible for translating these to Vietnamese before displaying them to users. Translation happens **client-side in `apiService.js`** — the backend stays language-agnostic.
+
+### When to Use
+
+- Every new error message added to any backend service must have a Vietnamese translation entry added to `translateError.js`
+- When a component displays `toast.error(error.message)`, the message is already translated by `apiService.js`
+- Adding new `HttpError` throws to any backend service file
+
+### Implementation
+
+#### 1. Translation Map (`frontend/src/utils/translateError.js`)
+
+```javascript
+const TRANSLATIONS = {
+  // Auth — credentials
+  'Invalid credentials':                  'Tài khoản hoặc mật khẩu không đúng',
+  'User not found':                       'Không tìm thấy tài khoản',
+  'Email or phone already exists':        'Email hoặc số điện thoại đã được sử dụng',
+
+  // Auth — OTP
+  'Invalid or expired OTP':               'OTP không hợp lệ hoặc đã hết hạn',
+  'OTP attempt limit exceeded':           'Bạn đã nhập sai OTP quá nhiều lần',
+
+  // Auth — verification
+  'Please confirm OTP before login':    'Vui lòng xác thực OTP trước khi đăng nhập',
+
+  // Auth — tokens
+  'Invalid or expired refresh token':     'Token làm mới không hợp lệ hoặc đã hết hạn',
+
+  // Auth — password
+  'Current password is incorrect':         'Mật khẩu hiện tại không đúng',
+  'Invalid or expired reset token':       'Token đặt lại mật khẩu không hợp lệ hoặc đã hết hạn',
+
+  // Auth — identifier / Google
+  'Invalid identifier':                  'Định danh không hợp lệ',
+  'Google account does not include an email': 'Tài khoản Google không có email',
+
+  // Auth — social login
+  'Please register with email, phone and password before social login':
+    'Vui lòng đăng ký bằng email, số điện thoại và mật khẩu trước khi đăng nhập bằng mạng xã hội',
+
+  // Generic
+  'Unable to connect to server.':        'Không thể kết nối đến máy chủ.',
+}
+
+export function translateError(message) {
+  if (!message || typeof message !== 'string') return message
+  return TRANSLATIONS[message] ?? message
+}
+```
+
+#### 2. Integration in `apiService.js`
+
+```javascript
+import { translateError } from '../utils/translateError.js'
+
+const request = async (path, options) => {
+  const response = await fetch(`${API_BASE_URL}${path}`, ...)
+  const payload = await response.json().catch(() => ({}))
+
+  if (!response.ok || payload.success !== true) {
+    // Translate BEFORE throwing — all consumers get Vietnamese automatically
+    const message = translateError(payload.message || 'Unable to connect to server.')
+    const error = new Error(message)
+    error.statusCode = payload.statusCode || response.status
+    error.details = payload.errors || null
+    throw error
+  }
+  return payload
+}
+```
+
+#### 3. Adding a New Error
+
+When adding a new `HttpError` in any backend service:
+
+1. Keep the message **in English** in the backend service
+2. Add the English → Vietnamese mapping in `translateError.js`:
+
+```javascript
+'New English message': 'Bản dịch tiếng Việt',
+```
+
+#### Translation Checklist
+
+| Backend English message | Vietnamese display |
+|---|---|
+| `Invalid credentials` | `Tài khoản hoặc mật khẩu không đúng` |
+| `User not found` | `Không tìm thấy tài khoản` |
+| `Email or phone already exists` | `Email hoặc số điện thoại đã được sử dụng` |
+| `Invalid or expired OTP` | `OTP không hợp lệ hoặc đã hết hạn` |
+| `OTP attempt limit exceeded` | `Bạn đã nhập sai OTP quá nhiều lần` |
+| `Please confirm OTP before login` | `Vui lòng xác thực OTP trước khi đăng nhập` |
+| `Invalid or expired refresh token` | `Token làm mới không hợp lệ hoặc đã hết hạn` |
+| `Current password is incorrect` | `Mật khẩu hiện tại không đúng` |
+| `Invalid or expired reset token` | `Token đặt lại mật khẩu không hợp lệ hoặc đã hết hạn` |
+| `Invalid identifier` | `Định danh không hợp lệ` |
+| `Google account does not include an email` | `Tài khoản Google không có email` |
+
+---
+
 ## API Endpoint Reference
 
 Based on backend routes, common endpoints available:

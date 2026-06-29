@@ -104,7 +104,7 @@ $border-color: #8b98aa;
   font: inherit;
   font-size: 16px;
   font-weight: 400;
-  transition: border-color 160ms ease;
+  transition: border-color 200ms ease-in-out, box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
 
   &::placeholder {
     color: $placeholder-color;
@@ -112,8 +112,14 @@ $border-color: #8b98aa;
   }
 
   &:focus {
-    border-color: $brand-pink-focus;
+    border-color: #ed77a5;
+    box-shadow: 0 0 0 4px rgba(237, 119, 165, 0.18);
   }
+}
+
+.enter-contact-input.is-error {
+  border-color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
 }
 
 .enter-contact-icon {
