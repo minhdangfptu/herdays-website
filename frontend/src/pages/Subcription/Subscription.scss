@@ -1,0 +1,888 @@
+// Color Variables
+$primary-pink: #D05E8E;
+$light-pink-bg: #FCD6E3;
+$very-light-pink: #FFF5F8;
+
+$white: #FFFFFF;
+$dark-text: black;
+$gray-text: black;
+
+// Font Variables
+$font-primary: 'Roboto', sans-serif;
+
+// ============================================
+// SubscriptionStep1 Styles
+// ============================================
+
+.sub-container {
+  position: relative;
+  background-color: #ffffff !important;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    min-height: calc(100vh - 60px);
+    padding: 30px 15px;
+  }
+}
+
+.sub-bg {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  opacity: 1;
+  z-index: 0;
+  pointer-events: none;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.sub-content {
+  opacity: 1;
+  position: relative;
+  z-index: 1;
+  max-width: 800px;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sub-card {
+  position: relative;
+  text-align: center;
+  padding: 60px 40px;
+  z-index: 2;
+  background-color: transparent;
+  box-shadow: none;
+  border: none;
+
+  @media (max-width: 768px) {
+    padding: 40px 30px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 30px 20px;
+  }
+}
+
+.sub-card-deco {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 85%;
+  height: 70%;
+  border: 1px solid #ED77A5;
+  border-radius: 50%;
+  opacity: 0.3;
+  z-index: -1;
+  pointer-events: none;
+
+  @media (max-width: 768px) {
+    width: 90%;
+    height: 75%;
+  }
+}
+
+.sub-title {
+  font-family: $font-primary;
+  font-size: 48px;
+  font-weight: 700;
+  color: $dark-text;
+  line-height: 1.3;
+  margin-bottom: 24px;
+  letter-spacing: -0.5px;
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 28px;
+    margin-bottom: 16px;
+  }
+}
+
+.sub-subtitle {
+  font-family: $font-primary;
+  font-size: 16px;
+  font-weight: 400;
+  color: $gray-text;
+  line-height: 1.6;
+  margin-bottom: 16px;
+  letter-spacing: 0.3px;
+
+  @media (max-width: 768px) {
+    font-size: 15px;
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+    margin-bottom: 10px;
+  }
+}
+
+.sub-hint {
+  font-family: $font-primary;
+  font-size: 14px;
+  font-weight: 400;
+  color: $gray-text;
+  margin-bottom: 32px;
+  letter-spacing: 0.2px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 24px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+    margin-bottom: 20px;
+  }
+}
+
+.sub-btn-upgrade {
+  display: inline-block;
+  padding: 14px 48px;
+  background-color: $primary-pink;
+  color: $white;
+  border: none;
+  border-radius: 8px;
+  font-family: $font-primary;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba($primary-pink, 0.3);
+  letter-spacing: 0.5px;
+
+  &:hover {
+    background-color: darken($primary-pink, 8%);
+    box-shadow: 0 6px 20px rgba($primary-pink, 0.03);
+  }
+
+  &:active {
+    box-shadow: 0 2px 10px rgba($primary-pink, 0.03);
+  }
+
+  @media (max-width: 768px) {
+    padding: 12px 40px;
+    font-size: 15px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px 36px;
+    font-size: 14px;
+  }
+}
+
+// Decorative Stars
+.sub-star {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  z-index: 1;
+
+  &::before {
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle at 30% 30%, $primary-pink 0%, $primary-pink 50%, transparent 50%);
+    clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  }
+}
+
+.sub-star--top-left {
+  top: 120px;
+  left: 80px;
+
+  @media (max-width: 1024px) {
+    left: 40px;
+  }
+
+  @media (max-width: 768px) {
+    top: 80px;
+    left: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  @media (max-width: 480px) {
+    display: none;
+  }
+}
+
+.sub-star--bottom-right {
+  bottom: 160px;
+  right: 60px;
+  background: linear-gradient(135deg, $primary-pink 0%, #FF9BB5 100%);
+
+  @media (max-width: 1024px) {
+    right: 30px;
+  }
+
+  @media (max-width: 768px) {
+    bottom: 100px;
+    right: 20px;
+    width: 20px;
+    height: 20px;
+  }
+
+  @media (max-width: 480px) {
+    display: none;
+  }
+}
+
+// ============================================
+// SubscriptionStep2 Styles
+// ============================================
+
+.sub-step2 {
+  min-height: 100vh;
+  background-color: #FFFFFF;
+  padding: 40px 10px;
+  font-family: $font-primary;
+
+  @media (max-width: 768px) {
+    padding: 20px 10px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 20px 10px;
+  }
+}
+
+.sub-step2-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sub-step2-header {
+  text-align: center;
+  margin-bottom: 20px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 40px;
+  }
+}
+
+.sub-step2-title {
+  font-size: 36px;
+  font-weight: 600;
+  color: #F176A9;
+  margin: 0 0 20px 0;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 28px;
+  }
+}
+
+.sub-step2-subtitle {
+  font-size: 16px;
+  color: #4D4D4D;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
+}
+
+// Pricing Cards
+.sub-pricing-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  margin-bottom: 40px;
+  max-width: 90vw; /* Tùy chỉnh con số này nhỏ lại cho đến khi vừa ý */
+  margin: 0 auto 40px; /* margin: 0 auto giúp đẩy cả cụm ra giữa màn hình */
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+  }
+}
+
+// Plan Card
+.sub-plan-card {
+  border: 1px solid $dark-text;
+  border-radius: 24px;
+  background-color: $white;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  overflow: hidden;
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    border-radius: 16px;
+  }
+
+  @media (max-width: 480px) {
+    border-radius: 16px;
+  }
+}
+
+.sub-plan-card__info {
+  flex: 0 0 38%;
+  padding: 40px 20px 40px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  @media (max-width: 1024px) {
+    flex: 0 0 42%;
+    padding: 32px;
+  }
+
+  @media (max-width: 768px) {
+    flex: none;
+    padding: 30px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 20px;
+  }
+}
+
+.sub-plan-card--premium {
+  border-color: #DB589E;
+  border-width: 2px;
+}
+
+.sub-plan-badge {
+  display: inline-block;
+  border: 1px solid #FF9BB5;
+  color: #FF9BB5;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-left: 8px;
+  vertical-align: top;
+}
+
+.sub-plan-name {
+  font-size: 22px;
+  font-weight: 700;
+  color: #222227;
+  margin: 0 0 12px 0;
+
+  @media (max-width: 768px) {
+    font-size: 20px;
+  }
+}
+
+.sub-plan-subtitle {
+  font-size: 14px;
+  color: #222227;
+}
+
+.sub-plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+
+  @media (max-width: 480px) {
+    margin: 16px 0 12px 0;
+  }
+}
+
+.sub-plan-price__number {
+  font-size: 52px;
+  font-weight: 700;
+  color: #222227;
+  line-height: 1;
+
+  .sub-plan-card--premium & {
+    color: #F176A9;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 40px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 32px;
+  }
+}
+
+.sub-plan-price__unit {
+  font-size: 14px;
+  color: $gray-text;
+  font-weight: 500;
+}
+
+.sub-plan-desc {
+  font-size: 14px;
+  color: $gray-text;
+  margin: 12px 0 24px 0;
+  line-height: 1.5;
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+  }
+}
+
+// Plan Button
+.sub-plan-btn {
+  width: 100%;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 24px;
+  font-family: $font-primary;
+
+  @media (max-width: 480px) {
+    padding: 10px 20px;
+    margin-bottom: 20px;
+  }
+}
+
+.sub-plan-btn--current {
+  background-color: #B8B8B8;
+  color: $white;
+  cursor: not-allowed;
+
+  &:hover {
+    background-color: #A0A0A0;
+  }
+}
+
+.sub-plan-btn--premium {
+  background-color: #F176A9;
+  color: $white;
+
+  &:hover {
+    background-color: darken(#F176A9, 8%);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Features List
+.sub-features {
+  flex: 1;
+  list-style: none;
+  padding: 50px 40px 20px 20px;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  justify-content: flex-start;
+  align-items: flex-start;
+
+  @media (max-width: 1024px) {
+    padding: 50px 32px 20px 20px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 30px 16px;
+    justify-content: flex-start;
+  }
+
+  @media (max-width: 480px) {
+    padding: 0 20px 16px;
+    gap: 10px;
+  }
+}
+
+.sub-features__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-size: 14px;
+  color: $dark-text;
+  line-height: 1.5;
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+    gap: 10px;
+  }
+}
+
+.sub-features__icon {
+  color: #4D4D4D;
+  flex-shrink: 0;
+  margin-top: 2px;
+  width: 18px;
+  height: 18px;
+}
+
+.sub-features__icon--premium {
+  color: #F176A9;
+}
+
+// Plan Footer
+.sub-plan-footer {
+  flex: 0 0 100%;
+  font-size: 12px;
+  color: #222227;
+  padding: 0 40px 16px;
+  line-height: 1.4;
+
+  &__link {
+    color: #222227;
+    text-decoration: underline;
+    cursor: pointer;
+  }
+
+  @media (max-width: 1024px) {
+    padding: 0 32px 16px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 30px 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+    padding: 0 20px 16px;
+  }
+}
+
+// CTA Section
+.sub-cta {
+  text-align: center;
+  background-color: transparent;
+
+  @media (max-width: 768px) {
+    margin-bottom: 40px;
+    padding: 30px 15px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 20px 10px;
+  }
+
+  &__icon {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #4D4D4D;
+    margin: 0 0 16px 0;
+    line-height: 1.6;
+
+    @media (max-width: 480px) {
+      font-size: 14px;
+    }
+  }
+
+  &__link {
+    display: inline-block;
+    color: #4D4D4D;
+    text-decoration: underline;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
+}
+
+.sub-step3 {
+  min-height: 90vh;
+  background-color: #FFFFFF;
+  padding: 40px 20px;
+  font-family: $font-primary;
+
+  @media (max-width: 1200px) {
+    padding: 40px 15px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 30px 15px;
+    min-height: auto;
+  }
+
+  @media (max-width: 480px) {
+    padding: 30px 10px;
+  }
+}
+
+.sub-step3-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.sub-step3-header {
+  text-align: center;
+  margin-bottom: 30px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 480px) {
+    margin-bottom: 30px;
+  }
+}
+
+.sub-step3-title {
+  font-size: 48px;
+  font-weight: 600;
+  color: #F176A9;
+  margin: 0 0 20px 0;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+}
+
+.sub-step3-subtitle {
+  font-size: 16px;
+  color: #4D4D4D;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
+}
+
+// Step3 Cards Grid - 4 columns
+.sub-step3-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.sub-step3-card {
+  border: 2px solid #F176A9;
+  border-radius: 24px;
+  padding: 24px;
+  background-color: $white;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 20px 16px;
+  }
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.sub-step3-card-header {
+  margin-bottom: 16px;
+}
+
+.sub-step3-plan-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: $dark-text;
+  margin: 0;
+
+  @media (max-width: 480px) {
+    font-size: 18px;
+  }
+}
+
+.sub-step3-plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.sub-step3-price-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: #F176A9;
+  line-height: 1;
+
+  @media (max-width: 768px) {
+    font-size: 28px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 24px;
+  }
+}
+
+.sub-step3-price-unit {
+  font-size: 14px;
+  color: $gray-text;
+  font-weight: 500;
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
+}
+
+.sub-step3-plan-desc {
+  font-size: 14px;
+  color: $gray-text;
+  margin: 12px 0 20px 0;
+  line-height: 1.5;
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+    margin: 10px 0 16px 0;
+  }
+}
+
+.sub-step3-plan-btn {
+  width: 100%;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  font-family: $font-primary;
+  background-color: #F176A9;
+  color: $white;
+
+  @media (max-width: 480px) {
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  &:hover {
+    background-color: darken(#F176A9, 8%);
+    box-shadow: 0 4px 12px rgba(#F176A9, 0.03);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.sub-step3-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  @media (max-width: 480px) {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+}
+
+.sub-step3-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: $dark-text;
+  line-height: 1.4;
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    gap: 8px;
+  }
+}
+
+.sub-step3-feature-icon {
+  color: #F176A9;
+  flex-shrink: 0;
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+
+  @media (max-width: 480px) {
+    width: 14px;
+    height: 14px;
+    margin-top: 2px;
+  }
+}
+
+.sub-step3-plan-footer {
+  font-size: 9px;
+  color: #4D4D4D;
+  margin: auto 0 0 0;
+  line-height: 1.4;
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+  }
+}
+
+.sub-step3-footer-link {
+  color: #4D4D4D;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
+
+  &:hover {
+    opacity: 0.8;
+  }
+}
+

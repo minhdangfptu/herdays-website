@@ -12,7 +12,7 @@ const Header = () => {
   const menuItems = [
     { label: "Trang chủ", href: "#" },
     { label: "Tài ứng dụng", href: "#" },
-    { label: "Liên hệ", href: "#" },
+    { label: "Liên hệ", href: "/contact-us" },
     { label: "Về chúng tôi", href: "#" },
   ];
 

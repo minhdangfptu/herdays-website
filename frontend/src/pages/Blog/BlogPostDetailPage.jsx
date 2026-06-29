@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { ErrorState, LoadingState } from '../components/blog/AsyncState.jsx'
-import { blogApi } from '../services/apiService.js'
+import { ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx'
+import { blogApi } from '../../services/apiService.js'
+import './Blog.scss'
 
 function BlogPostDetailPage() {
   const { topicId, postId } = useParams()

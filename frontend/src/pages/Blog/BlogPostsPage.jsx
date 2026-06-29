@@ -1,9 +1,9 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 
-import { EmptyState, ErrorState, LoadingState } from '../components/blog/AsyncState.jsx'
-import PostCard from '../components/blog/PostCard.jsx'
-import { blogApi } from '../services/apiService.js'
+import { EmptyState, ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx'
+import PostCard from '../../components/blog/PostCard.jsx'
+import { blogApi } from '../../services/apiService.js'
 
 function BlogPostsPage() {
   const { topicId } = useParams()

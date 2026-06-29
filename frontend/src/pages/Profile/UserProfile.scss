@@ -1,0 +1,417 @@
+// ============================================
+// UserProfile Styles
+// ============================================
+
+// Color Variables (shared — avoid duplicating vars already in index.css)
+$primary-pink: #ED77A5;
+$light-pink: #F9E8F0;
+$white: #FFFFFF;
+$dark-text: #000000;
+$gray-text: #4D4D4D;
+$light-gray: #E8E8E8;
+$gray-border: #D1D5DB;
+$success-green: #4CAF50;
+$info-blue: #2196F3;
+
+// ============================================
+// Main Container
+// (padding/bg now handled by Tailwind on <main>)
+// ============================================
+
+// ============================================
+// Header Section
+// (now fully Tailwind — kept for reference)
+// ============================================
+
+.user-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  @media (max-width: 480px) {
+    padding: 8px 16px;
+    font-size: 13px;
+    flex: 1;
+    justify-content: center;
+  }
+}
+
+.user-profile-btn--edit {
+  background-color: #FDD5E4;
+  color: $primary-pink;
+
+  &:hover {
+    background-color: darken(#FDD5E4, 8%);
+  }
+
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.user-profile-btn--delete {
+  background-color: $primary-pink;
+  color: $white;
+
+  &:hover {
+    background-color: darken($primary-pink, 8%);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.user-profile-btn--save {
+  background-color: $primary-pink;
+  color: $white;
+
+  &:hover {
+    background-color: darken($primary-pink, 8%);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.user-profile-btn--cancel-edit {
+  background-color: $white;
+  color: $gray-text;
+  border: 1px solid $gray-border;
+
+  &:hover {
+    background-color: $light-gray;
+    color: $dark-text;
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+// ============================================
+// Main Content Grid
+// ============================================
+
+.user-profile-content {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 30px;
+
+  @media (max-width: 1024px) {
+    gap: 24px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+}
+
+// ============================================
+// Left Column - Profile Card
+// ============================================
+
+.user-profile-card {
+  background-color: $white;
+  border: 1px solid $light-gray;
+  border-radius: 16px;
+  padding: 32px 24px;
+  text-align: center;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  @media (max-width: 768px) {
+    padding: 24px 20px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 20px 16px;
+  }
+}
+
+.user-profile-avatar-section {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 16px;
+
+  @media (max-width: 480px) {
+    width: 100px;
+    height: 100px;
+    margin-bottom: 12px;
+  }
+}
+
+.user-profile-avatar {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid $light-pink;
+}
+
+.user-profile-avatar-edit {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  background-color: $primary-pink;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background-color: darken($primary-pink, 8%);
+  }
+
+  @media (max-width: 480px) {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+.user-profile-name {
+  font-size: 24px;
+  font-weight: 700;
+  color: $dark-text;
+  margin: 0 0 8px 0;
+
+  @media (max-width: 480px) {
+    font-size: 20px;
+    margin-bottom: 6px;
+  }
+}
+
+.user-profile-email {
+  font-size: 14px;
+  color: $gray-text;
+  margin: 0 0 16px 0;
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+}
+
+.user-profile-badges {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  margin-bottom: 24px;
+
+  @media (max-width: 480px) {
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+}
+
+.user-profile-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  width: 100%;
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    padding: 6px 10px;
+    gap: 6px;
+  }
+}
+
+.user-profile-badge--active {
+  background-color: rgba($success-green, 0.1);
+  color: $success-green;
+}
+
+.user-profile-badge-dot {
+  width: 8px;
+  height: 8px;
+  background-color: $success-green;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+
+.user-profile-badge--type {
+  background-color: rgba($info-blue, 0.1);
+  color: $info-blue;
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.user-profile-details-mini {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid $light-gray;
+
+  @media (max-width: 480px) {
+    gap: 10px;
+    padding-top: 12px;
+  }
+}
+
+.user-profile-detail-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 4px;
+  }
+}
+
+.user-profile-detail-label {
+  font-size: 13px;
+  color: $gray-text;
+  font-weight: 500;
+  text-align: left;
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
+}
+
+.user-profile-detail-value {
+  font-size: 13px;
+  color: $dark-text;
+  font-weight: 600;
+  text-align: right;
+
+  @media (max-width: 480px) {
+    text-align: left;
+    font-size: 12px;
+  }
+}
+
+// ============================================
+// Right Column - Detailed Information
+// ============================================
+
+.user-profile-details-card {
+  background-color: $white;
+  border: 1px solid $light-gray;
+  border-radius: 16px;
+  padding: 32px 28px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+
+  @media (max-width: 768px) {
+    padding: 24px 20px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 20px 16px;
+  }
+}
+
+.user-profile-details-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 28px;
+
+  @media (max-width: 480px) {
+    margin-bottom: 20px;
+    gap: 10px;
+  }
+}
+
+.user-profile-details-icon {
+  color: $info-blue;
+  flex-shrink: 0;
+}
+
+.user-profile-details-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: $dark-text;
+  margin: 0;
+
+  @media (max-width: 480px) {
+    font-size: 16px;
+  }
+}
+
+.user-profile-details-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 28px 32px;
+
+  @media (max-width: 768px) {
+    gap: 20px 24px;
+  }
+
+  @media (max-width: 480px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.user-profile-detail-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  @media (max-width: 480px) {
+    gap: 4px;
+  }
+}
+
+.user-profile-detail-row .user-profile-detail-label {
+  font-size: 13px;
+  color: $gray-text;
+  font-weight: 500;
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
+}
+
+.user-profile-detail-row .user-profile-detail-value {
+  font-size: 15px;
+  color: $dark-text;
+  font-weight: 600;
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
+}
+
+.user-profile-goal-link {
+  font-size: 12px;
+  color: $primary-pink;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
