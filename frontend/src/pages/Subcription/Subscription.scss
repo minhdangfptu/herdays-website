@@ -1,10 +1,10 @@
 // Color Variables
-$primary-pink: #D05E8E; // Đã sửa: Sâm hơn một chút so với #ED77A5
+$primary-pink: #D05E8E;
 $light-pink-bg: #FCD6E3;
 $very-light-pink: #FFF5F8;
 
 $white: #FFFFFF;
-$dark-text: black;    // Đã sửa: Tối hơn một chút so với #333333
+$dark-text: black;
 $gray-text: black;
 
 // Font Variables
@@ -14,8 +14,7 @@ $font-primary: 'Roboto', sans-serif;
 // SubscriptionStep1 Styles
 // ============================================
 
-// Subscription Container
-.subscription-container {
+.sub-container {
   position: relative;
   background-color: #ffffff !important;
   min-height: 100vh;
@@ -31,8 +30,7 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Background Image
-.subscription-background {
+.sub-bg {
   position: absolute;
   top: 0;
   left: 0;
@@ -49,8 +47,7 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Content Section
-.subscription-content {
+.sub-content {
   opacity: 1;
   position: relative;
   z-index: 1;
@@ -61,13 +58,12 @@ $font-primary: 'Roboto', sans-serif;
   justify-content: center;
 }
 
-// Subscription Card
-.subscription-card {
+.sub-card {
   position: relative;
   text-align: center;
   padding: 60px 40px;
   z-index: 2;
-  background-color: transparent; 
+  background-color: transparent;
   box-shadow: none;
   border: none;
 
@@ -80,15 +76,14 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Card Border - Decorative Oval
-.card-border {
+.sub-card-deco {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
   width: 85%;
   height: 70%;
-  border: 2px solid $primary-pink;
+  border: 1px solid #ED77A5;
   border-radius: 50%;
   opacity: 0.3;
   z-index: -1;
@@ -100,8 +95,7 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Main Title
-.subscription-title {
+.sub-title {
   font-family: $font-primary;
   font-size: 48px;
   font-weight: 700;
@@ -121,8 +115,7 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Subtitle
-.subscription-subtitle {
+.sub-subtitle {
   font-family: $font-primary;
   font-size: 16px;
   font-weight: 400;
@@ -142,8 +135,7 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Hint Text
-.subscription-hint {
+.sub-hint {
   font-family: $font-primary;
   font-size: 14px;
   font-weight: 400;
@@ -161,8 +153,7 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Upgrade Button
-.subscription-button {
+.sub-btn-upgrade {
   display: inline-block;
   padding: 14px 48px;
   background-color: $primary-pink;
@@ -179,11 +170,11 @@ $font-primary: 'Roboto', sans-serif;
 
   &:hover {
     background-color: darken($primary-pink, 8%);
-    box-shadow: 0 6px 20px rgba($primary-pink, 0.4);
+    box-shadow: 0 6px 20px rgba($primary-pink, 0.03);
   }
 
   &:active {
-    box-shadow: 0 2px 10px rgba($primary-pink, 0.2);
+    box-shadow: 0 2px 10px rgba($primary-pink, 0.03);
   }
 
   @media (max-width: 768px) {
@@ -198,7 +189,7 @@ $font-primary: 'Roboto', sans-serif;
 }
 
 // Decorative Stars
-.star {
+.sub-star {
   position: absolute;
   width: 24px;
   height: 24px;
@@ -214,8 +205,7 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Star Top Left
-.star-top-left {
+.sub-star--top-left {
   top: 120px;
   left: 80px;
 
@@ -235,8 +225,7 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Star Bottom Right
-.star-bottom-right {
+.sub-star--bottom-right {
   bottom: 160px;
   right: 60px;
   background: linear-gradient(135deg, $primary-pink 0%, #FF9BB5 100%);
@@ -261,40 +250,39 @@ $font-primary: 'Roboto', sans-serif;
 // SubscriptionStep2 Styles
 // ============================================
 
-.subscription-step2 {
+.sub-step2 {
   min-height: 100vh;
-  background-color: $very-light-pink;
-  padding: 60px 20px;
+  background-color: #FFFFFF;
+  padding: 40px 10px;
   font-family: $font-primary;
 
   @media (max-width: 768px) {
-    padding: 40px 15px;
+    padding: 20px 10px;
   }
 
   @media (max-width: 480px) {
-    padding: 30px 10px;
+    padding: 20px 10px;
   }
 }
 
-.subscription-step2-container {
+.sub-step2-container {
   max-width: 1200px;
   margin: 0 auto;
 }
 
-// Header Section
-.subscription-header {
+.sub-step2-header {
   text-align: center;
-  margin-bottom: 60px;
+  margin-bottom: 20px;
 
   @media (max-width: 768px) {
     margin-bottom: 40px;
   }
 }
 
-.subscription-step2-title {
-  font-size: 48px;
-  font-weight: 700;
-  color: $primary-pink; // Đã đổi sang màu hồng
+.sub-step2-title {
+  font-size: 36px;
+  font-weight: 600;
+  color: #F176A9;
   margin: 0 0 20px 0;
   line-height: 1.2;
 
@@ -307,12 +295,12 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-.subscription-step2-subtitle {
+.sub-step2-subtitle {
   font-size: 16px;
-  color: $gray-text;
+  color: #4D4D4D;
   margin: 0;
   line-height: 1.6;
-  max-width: 700px;
+  max-width: 900px;
   margin-left: auto;
   margin-right: auto;
 
@@ -321,32 +309,60 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Pricing Cards Container
-.pricing-cards {
+// Pricing Cards
+.sub-pricing-cards {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 40px;
-  margin-bottom: 80px;
+  margin-bottom: 40px;
+  max-width: 90vw; /* Tùy chỉnh con số này nhỏ lại cho đến khi vừa ý */
+  margin: 0 auto 40px; /* margin: 0 auto giúp đẩy cả cụm ra giữa màn hình */
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
     gap: 30px;
-    margin-bottom: 60px;
+    margin-bottom: 30px;
   }
 }
 
-// Pricing Card Base Styles
-.pricing-card {
-  border: 2px solid $dark-text;
+// Plan Card
+.sub-plan-card {
+  border: 1px solid $dark-text;
   border-radius: 24px;
-  padding: 40px;
   background-color: $white;
   position: relative;
   transition: all 0.3s ease;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: stretch;
+  overflow: hidden;
 
   @media (max-width: 768px) {
-    padding: 30px;
+    flex-direction: column;
     border-radius: 16px;
+  }
+
+  @media (max-width: 480px) {
+    border-radius: 16px;
+  }
+}
+
+.sub-plan-card__info {
+  flex: 0 0 38%;
+  padding: 40px 20px 40px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+
+  @media (max-width: 1024px) {
+    flex: 0 0 42%;
+    padding: 32px;
+  }
+
+  @media (max-width: 768px) {
+    flex: none;
+    padding: 30px;
   }
 
   @media (max-width: 480px) {
@@ -354,65 +370,57 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-// Premium Card Styles
-.premium-card {
-  border-color: $primary-pink;
-  border-width: 3px;
+.sub-plan-card--premium {
+  border-color: #DB589E;
+  border-width: 2px;
 }
 
-// Premium Badge
-.premium-badge-inline {
+.sub-plan-badge {
   display: inline-block;
-  border: 1px solid $primary-pink;
-  color: $primary-pink;
+  border: 1px solid #FF9BB5;
+  color: #FF9BB5;
   padding: 2px 8px;
   border-radius: 4px;
   font-size: 12px;
   font-weight: 500;
   margin-left: 8px;
-  vertical-align: middle;
+  vertical-align: top;
 }
 
-// Plan Name
-.plan-name {
-  font-size: 24px;
+.sub-plan-name {
+  font-size: 22px;
   font-weight: 700;
-  color: $dark-text;
+  color: #222227;
   margin: 0 0 12px 0;
-  padding-top: 20px;
 
-  @media (max-width: 480px) {
+  @media (max-width: 768px) {
     font-size: 20px;
   }
 }
 
-// Plan Subtitle
-.plan-subtitle {
+.sub-plan-subtitle {
   font-size: 14px;
-  color: $gray-text;
-  margin: 8px 0 0 0;
+  color: #222227;
 }
 
-// Plan Price
-.plan-price {
+.sub-plan-price {
   display: flex;
   align-items: baseline;
   gap: 8px;
-  margin: 20px 0 16px 0;
 
   @media (max-width: 480px) {
     margin: 16px 0 12px 0;
   }
 }
 
-.price-number {
+.sub-plan-price__number {
   font-size: 52px;
   font-weight: 700;
-  color: $dark-text;
+  color: #222227;
   line-height: 1;
 
-  .premium-card & {
-    color: $primary-pink;
+  .sub-plan-card--premium & {
+    color: #F176A9;
   }
 
   @media (max-width: 768px) {
@@ -424,14 +432,13 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-.price-unit {
+.sub-plan-price__unit {
   font-size: 14px;
   color: $gray-text;
   font-weight: 500;
 }
 
-// Plan Description
-.plan-description {
+.sub-plan-desc {
   font-size: 14px;
   color: $gray-text;
   margin: 12px 0 24px 0;
@@ -443,11 +450,11 @@ $font-primary: 'Roboto', sans-serif;
 }
 
 // Plan Button
-.plan-button {
+.sub-plan-btn {
   width: 100%;
   padding: 12px 24px;
   border: none;
-  border-radius: 12px;
+  border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
   cursor: pointer;
@@ -461,7 +468,7 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-.current-plan {
+.sub-plan-btn--current {
   background-color: #B8B8B8;
   color: $white;
   cursor: not-allowed;
@@ -471,13 +478,12 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-.premium-button {
-  background-color: $primary-pink;
+.sub-plan-btn--premium {
+  background-color: #F176A9;
   color: $white;
 
   &:hover {
-    background-color: darken($primary-pink, 8%);
-    transform: translateY(-2px);
+    background-color: darken(#F176A9, 8%);
   }
 
   &:active {
@@ -486,22 +492,33 @@ $font-primary: 'Roboto', sans-serif;
 }
 
 // Features List
-.features-list {
+.sub-features {
+  flex: 1;
   list-style: none;
-  padding: 0;
+  padding: 50px 40px 20px 20px;
   margin: 0;
   display: flex;
   flex-direction: column;
   gap: 12px;
-  margin-bottom: 24px;
+  justify-content: flex-start;
+  align-items: flex-start;
+
+  @media (max-width: 1024px) {
+    padding: 50px 32px 20px 20px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 30px 16px;
+    justify-content: flex-start;
+  }
 
   @media (max-width: 480px) {
+    padding: 0 20px 16px;
     gap: 10px;
-    margin-bottom: 20px;
   }
 }
 
-.feature-item {
+.sub-features__item {
   display: flex;
   align-items: flex-start;
   gap: 12px;
@@ -515,45 +532,50 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
-.feature-icon {
-  color: $dark-text;
+.sub-features__icon {
+  color: #4D4D4D;
   flex-shrink: 0;
   margin-top: 2px;
   width: 18px;
   height: 18px;
 }
 
-.premium-features {
-  .feature-icon.premium-icon {
-    color: $primary-pink;
-  }
+.sub-features__icon--premium {
+  color: #F176A9;
 }
 
 // Plan Footer
-.plan-footer {
+.sub-plan-footer {
+  flex: 0 0 100%;
   font-size: 12px;
-  color: $gray-text;
-  margin: 0;
-  padding-top: 16px;
+  color: #222227;
+  padding: 0 40px 16px;
   line-height: 1.4;
 
-  a.link {
-    color: $dark-text; // Đổi text sang màu đen
-    text-decoration: underline; // Có gạch chân như design
+  &__link {
+    color: #222227;
+    text-decoration: underline;
     cursor: pointer;
+  }
+
+  @media (max-width: 1024px) {
+    padding: 0 32px 16px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0 30px 16px;
   }
 
   @media (max-width: 480px) {
     font-size: 11px;
+    padding: 0 20px 16px;
   }
 }
 
 // CTA Section
-.cta-section {
+.sub-cta {
   text-align: center;
-  margin-bottom: 60px;
-  padding: 40px 20px;
-  background-color: transparent; // Đã bỏ background màu hồng
+  background-color: transparent;
 
   @media (max-width: 768px) {
     margin-bottom: 40px;
@@ -563,35 +585,304 @@ $font-primary: 'Roboto', sans-serif;
   @media (max-width: 480px) {
     padding: 20px 10px;
   }
+
+  &__icon {
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #4D4D4D;
+    margin: 0 0 16px 0;
+    line-height: 1.6;
+
+    @media (max-width: 480px) {
+      font-size: 14px;
+    }
+  }
+
+  &__link {
+    display: inline-block;
+    color: #4D4D4D;
+    text-decoration: underline;
+    font-weight: 500;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+
+    &:hover {
+      opacity: 0.8;
+    }
+  }
 }
 
-.cta-icon {
-  margin-bottom: 16px;
-  display: flex;
-  justify-content: center;
+.sub-step3 {
+  min-height: 90vh;
+  background-color: #FFFFFF;
+  padding: 40px 20px;
+  font-family: $font-primary;
+
+  @media (max-width: 1200px) {
+    padding: 40px 15px;
+  }
+
+  @media (max-width: 768px) {
+    padding: 30px 15px;
+    min-height: auto;
+  }
+
+  @media (max-width: 480px) {
+    padding: 30px 10px;
+  }
 }
 
-.cta-title {
-  font-size: 16px;
+.sub-step3-container {
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.sub-step3-header {
+  text-align: center;
+  margin-bottom: 30px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 40px;
+  }
+
+  @media (max-width: 480px) {
+    margin-bottom: 30px;
+  }
+}
+
+.sub-step3-title {
+  font-size: 48px;
   font-weight: 600;
-  color: $dark-text;
-  margin: 0 0 16px 0;
-  line-height: 1.6; // Nới lỏng line-height cho dễ nhìn
+  color: #F176A9;
+  margin: 0 0 20px 0;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+    margin-bottom: 16px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+}
+
+.sub-step3-subtitle {
+  font-size: 16px;
+  color: #4D4D4D;
+  margin: 0;
+  line-height: 1.6;
+  max-width: 900px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 768px) {
+    font-size: 15px;
+  }
 
   @media (max-width: 480px) {
     font-size: 14px;
   }
 }
 
-.cta-link {
-  display: inline-block;
-  color: $dark-text; // Đổi sang màu đen
-  text-decoration: underline; // Thêm gạch chân
+// Step3 Cards Grid - 4 columns
+.sub-step3-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+
+  @media (max-width: 1200px) {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+}
+
+.sub-step3-card {
+  border: 2px solid #F176A9;
+  border-radius: 24px;
+  padding: 24px;
+  background-color: $white;
+  position: relative;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+
+  @media (max-width: 768px) {
+    padding: 24px 20px;
+    border-radius: 16px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 20px 16px;
+  }
+
+  &:hover {
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+  }
+}
+
+.sub-step3-card-header {
+  margin-bottom: 16px;
+}
+
+.sub-step3-plan-name {
+  font-size: 20px;
+  font-weight: 700;
+  color: $dark-text;
+  margin: 0;
+
+  @media (max-width: 480px) {
+    font-size: 18px;
+  }
+}
+
+.sub-step3-plan-price {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.sub-step3-price-number {
+  font-size: 36px;
+  font-weight: 700;
+  color: #F176A9;
+  line-height: 1;
+
+  @media (max-width: 768px) {
+    font-size: 28px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 24px;
+  }
+}
+
+.sub-step3-price-unit {
+  font-size: 14px;
+  color: $gray-text;
+  font-weight: 500;
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+  }
+}
+
+.sub-step3-plan-desc {
+  font-size: 14px;
+  color: $gray-text;
+  margin: 12px 0 20px 0;
+  line-height: 1.5;
+
+  @media (max-width: 480px) {
+    font-size: 13px;
+    margin: 10px 0 16px 0;
+  }
+}
+
+.sub-step3-plan-btn {
+  width: 100%;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 24px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.3s ease;
+  transition: all 0.3s ease;
+  margin-bottom: 20px;
+  font-family: $font-primary;
+  background-color: #F176A9;
+  color: $white;
+
+  @media (max-width: 480px) {
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    font-size: 13px;
+  }
+
+  &:hover {
+    background-color: darken(#F176A9, 8%);
+    box-shadow: 0 4px 12px rgba(#F176A9, 0.03);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+.sub-step3-features {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  @media (max-width: 480px) {
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+}
+
+.sub-step3-feature-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  font-size: 13px;
+  color: $dark-text;
+  line-height: 1.4;
+
+  @media (max-width: 480px) {
+    font-size: 12px;
+    gap: 8px;
+  }
+}
+
+.sub-step3-feature-icon {
+  color: #F176A9;
+  flex-shrink: 0;
+  margin-top: 3px;
+  width: 16px;
+  height: 16px;
+
+  @media (max-width: 480px) {
+    width: 14px;
+    height: 14px;
+    margin-top: 2px;
+  }
+}
+
+.sub-step3-plan-footer {
+  font-size: 9px;
+  color: #4D4D4D;
+  margin: auto 0 0 0;
+  line-height: 1.4;
+
+  @media (max-width: 480px) {
+    font-size: 11px;
+  }
+}
+
+.sub-step3-footer-link {
+  color: #4D4D4D;
+  text-decoration: underline;
+  cursor: pointer;
+  font-weight: 500;
 
   &:hover {
     opacity: 0.8;
   }
 }
+

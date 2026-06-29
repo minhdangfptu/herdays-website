@@ -21,6 +21,8 @@ import EnterEmailPhoneNoPage from "./pages/Auth/EnterEmailPhoneNoPage.jsx";
 import EnterOTP from "./pages/Auth/EnterOTP.jsx";
 import ResetPassword from "./pages/Auth/ResetPassword.jsx";
 import ChangePassword from "./pages/Auth/ChangePassword.jsx";
+import SubscriptionStep3 from "./pages/Subcription/SubscriptionStep3.jsx";
+import UserProfile from "./pages/Profile/UserProfile.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -39,9 +41,11 @@ function HeaderFooterLayout() {
           path="/upgrade-account/continue"
           element={<SubscriptionStep2 />}
         />
+        <Route path="/upgrade-account/complete" element={<SubscriptionStep3 />} />
         <Route path="/term-of-use" element={<TermOfUse />} />
         <Route path="/policy" element={<Policy />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/profile" element={<UserProfile />} />
         <Route element={<BlogShell />}>
           <Route path="/blog" element={<BlogTopicsPage />} />
           <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
