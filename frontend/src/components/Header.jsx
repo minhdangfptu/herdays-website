@@ -1,29 +1,41 @@
-import React, { useState } from "react";
+import { useState } from "react";
+import { Link, NavLink } from "react-router-dom";
+import { ShoppingBag } from "lucide-react";
 import "./Header.scss";
 import logoTrang from "../assets/home/logo_trang.png";
 
-const Header = () => {
+const Header = ({ isLoggedIn = false }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
-  const menuItems = [
-    { label: "Trang chủ", href: "#" },
-    { label: "Tài ứng dụng", href: "#" },
-    { label: "Liên hệ", href: "/contact-us" },
-    { label: "Về chúng tôi", href: "#" },
+  const loggedOutMenuItems = [
+    { label: "Trang chủ", to: "/" },
+    { label: "Tải ứng dụng", to: "#" },
+    { label: "Liên hệ", to: "/contact-us" },
+    { label: "Về chúng tôi", to: "#" },
   ];
+
+  const loggedInMenuItems = [
+    { label: "Trang chủ", to: "/" },
+    { label: "Bài viết", to: "#" },
+    { label: "Cửa hàng", to: "#" },
+    { label: "HerbotAI", to: "#" },
+    { label: "Tải ứng dụng", to: "#" },
+  ];
+
+  const menuItems = isLoggedIn ? loggedInMenuItems : loggedOutMenuItems;
 
   return (
     <header className="header">
       <div className="header-container">
         {/* Logo */}
         <div className="header-logo">
-          <a href="/">
+          <Link to="/">
             <img src={logoTrang} alt="HERDAYS" className="logo-image" />
-          </a>
+          </Link>
         </div>
 
         {/* Navigation Menu */}
@@ -31,18 +43,43 @@ const Header = () => {
           <ul className="nav-list">
             {menuItems.map((item, index) => (
               <li key={index} className="nav-item">
-                <a href={item.href} className="nav-link">
+                <NavLink
+                  to={item.to}
+                  className={({ isActive }) =>
+                    isActive ? "nav-link active" : "nav-link"
+                  }
+                >
                   {item.label}
-                </a>
+                </NavLink>
               </li>
             ))}
           </ul>
         </nav>
 
-        {/* Auth Buttons */}
-        <div className="header-auth">
-          <button className="btn-signup">Đăng nhập</button>
-          <button className="btn-login">Đăng ký</button>
+        {/* Right Side — Auth or Logged-in Actions */}
+        <div className="header-right">
+          {isLoggedIn ? (
+            <div className="header-user-actions">
+              {/* Cart Icon */}
+              <button className="header-cart-btn" aria-label="Giỏ hàng">
+                <ShoppingBag size={20} strokeWidth={2} />
+              </button>
+
+              {/* Avatar */}
+              <button className="header-avatar-btn" aria-label="Tài khoản">
+                <img
+                  src="https://via.placeholder.com/36"
+                  alt="Avatar"
+                  className="header-avatar"
+                />
+              </button>
+            </div>
+          ) : (
+            <div className="header-auth">
+              <button className="btn-signup">Đăng nhập</button>
+              <button className="btn-login">Đăng ký</button>
+            </div>
+          )}
         </div>
 
         {/* Mobile Menu Toggle */}

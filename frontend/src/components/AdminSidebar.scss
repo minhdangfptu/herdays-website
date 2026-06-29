@@ -1,0 +1,171 @@
+$primary-pink: #ED77A5;
+$sidebar-bg: #F7C4D4;
+$sidebar-bg-dark: #ed77a5;
+$text-white: #ffffff;
+$text-dark: #333333;
+$active-bg: rgba(255, 255, 255, 0.3);
+
+.admin-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: 240px;
+  min-height: 100vh;
+  background-color: $sidebar-bg;
+  position: relative;
+  transition: width 0.3s ease;
+  flex-shrink: 0;
+
+  &.collapsed {
+    width: 72px;
+
+    .admin-sidebar-silk {
+      height: 60px;
+      .silk-image {
+        object-position: top;
+      }
+      .silk-overlay {
+        opacity: 0;
+        pointer-events: none;
+      }
+    }
+
+    .admin-nav-link {
+      justify-content: center;
+      padding: 10px;
+    }
+
+    .admin-sidebar-toggle {
+      justify-content: center;
+    }
+  }
+
+  // ── Silk Banner ──────────────────────────────────────────────
+  .admin-sidebar-silk {
+    width: 100%;
+    height: 140px;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+
+    .silk-image {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      object-position: center top;
+      display: block;
+    }
+
+    .silk-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(
+        to bottom,
+        rgba(237, 119, 165, 0.5) 0%,
+        rgba(237, 119, 165, 0.15) 100%
+      );
+      gap: 4px;
+      transition: opacity 0.3s ease;
+
+      .silk-brand {
+        font-family: "Poppins", sans-serif;
+        font-size: 18px;
+        font-weight: 800;
+        color: $text-white;
+        letter-spacing: 3px;
+        text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
+      }
+
+      .silk-role {
+        font-family: "Roboto", sans-serif;
+        font-size: 11px;
+        font-weight: 400;
+        color: rgba(255, 255, 255, 0.9);
+        letter-spacing: 0.5px;
+      }
+    }
+  }
+
+  // ── Navigation ───────────────────────────────────────────────
+  .admin-sidebar-nav {
+    flex: 1;
+    padding: 12px 8px;
+    overflow-y: auto;
+
+    &::-webkit-scrollbar {
+      width: 4px;
+    }
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.4);
+      border-radius: 4px;
+    }
+  }
+
+  .admin-nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .admin-nav-item {
+    .admin-nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: $text-dark;
+      font-family: "Roboto", sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      transition: background-color 0.2s ease, color 0.2s ease;
+      white-space: nowrap;
+
+      &:hover {
+        background-color: rgba(255, 255, 255, 0.45);
+      }
+
+      &.active {
+        background-color: $text-white;
+        color: $primary-pink;
+        font-weight: 600;
+        box-shadow: 0 2px 8px rgba(237, 119, 165, 0.25);
+      }
+
+      .admin-nav-icon {
+        flex-shrink: 0;
+      }
+
+      .admin-nav-label {
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+  }
+
+  // ── Collapse Toggle ───────────────────────────────────────────
+  .admin-sidebar-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 12px 14px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: $text-dark;
+    font-size: 12px;
+    font-family: "Roboto", sans-serif;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: darken($text-dark, 10%);
+    }
+  }
+}
