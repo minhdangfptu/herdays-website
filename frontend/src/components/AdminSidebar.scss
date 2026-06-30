@@ -1,5 +1,5 @@
 $primary-pink: #ED77A5;
-$sidebar-bg: #F7C4D4;
+$sidebar-bg: #f5e0e6;
 $sidebar-bg-dark: #ed77a5;
 $text-white: #ffffff;
 $text-dark: #333333;
@@ -10,10 +10,12 @@ $active-bg: rgba(255, 255, 255, 0.3);
   flex-direction: column;
   width: 240px;
   min-height: 100vh;
-  background-color: $sidebar-bg;
+  background-color: white;
+  z-index: 1000;
   position: relative;
   transition: width 0.3s ease;
   flex-shrink: 0;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
 
   &.collapsed {
     width: 72px;
@@ -21,7 +23,9 @@ $active-bg: rgba(255, 255, 255, 0.3);
     .admin-sidebar-silk {
       height: 60px;
       .silk-image {
-        object-position: top;
+        width: 100%;
+        height: 100%;
+        object-position: top center;
       }
       .silk-overlay {
         opacity: 0;
@@ -50,7 +54,7 @@ $active-bg: rgba(255, 255, 255, 0.3);
     .silk-image {
       width: 100%;
       height: 100%;
-      object-fit: cover;
+      object-fit: contain;
       object-position: center top;
       display: block;
     }
@@ -62,28 +66,21 @@ $active-bg: rgba(255, 255, 255, 0.3);
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      background: linear-gradient(
-        to bottom,
-        rgba(237, 119, 165, 0.5) 0%,
-        rgba(237, 119, 165, 0.15) 100%
-      );
       gap: 4px;
       transition: opacity 0.3s ease;
 
       .silk-brand {
-        font-family: "Poppins", sans-serif;
         font-size: 18px;
         font-weight: 800;
-        color: $text-white;
+        color: #222227;
         letter-spacing: 3px;
         text-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
       }
 
       .silk-role {
-        font-family: "Roboto", sans-serif;
         font-size: 11px;
         font-weight: 400;
-        color: rgba(255, 255, 255, 0.9);
+        color: #222227;
         letter-spacing: 0.5px;
       }
     }

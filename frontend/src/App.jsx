@@ -26,6 +26,7 @@ import UserProfile from "./pages/Profile/UserProfile.jsx";
 import AdminHome from "./pages/Admin/AdminHome.jsx";
 import QuizPage from "./pages/QuizPage.jsx";
 import HomePage from "./pages/Common/HomePage.jsx";
+import ChatWithAI from "./pages/AI/ChatWithAI.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -59,6 +60,7 @@ function HeaderFooterLayout() {
       
       <Routes>
         <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/chat-with-herbot" element={<ChatWithAI />} />
         <Route path="/upgrade-account" element={<SubscriptionStep1 />} />
         <Route
           path="/upgrade-account/continue"
