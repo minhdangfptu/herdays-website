@@ -1,4 +1,4 @@
-﻿import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import Header from "./components/Header.jsx";
@@ -26,6 +26,9 @@ import SubscriptionStep3 from "./pages/Subcription/SubscriptionStep3.jsx";
 import UserProfile from "./pages/Profile/UserProfile.jsx";
 import AdminHome from "./pages/Admin/AdminHome.jsx";
 import QuizPage from "./pages/QuizPage.jsx";
+import ChatWithAI from "./pages/AI/ChatWithAI.jsx";
+import AboutUs from "./pages/Common/AboutUs.jsx";
+import DownloadAppPage from "./pages/Common/DownloadAppPage.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -40,10 +43,12 @@ function AdminLayout() {
         <div className="admin-page-content">
           <Routes>
             <Route index element={<AdminHome />} />
-            <Route path="blog" element={<div>Blog Admin (coming soon)</div>} />
+            <Route path="blog" element={<AdminPostsPage />} />
+            <Route path="posts" element={<Navigate to="/admin/blog" replace />} />
             <Route path="shop" element={<div>Shop Admin (coming soon)</div>} />
             <Route path="herbotai" element={<div>HerbotAI Admin (coming soon)</div>} />
             <Route path="users" element={<div>Users Admin (coming soon)</div>} />
+            <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
         </div>
         <Footer />
@@ -56,9 +61,10 @@ function HeaderFooterLayout() {
   return (
     <>
       <Header />
-      
+
       <Routes>
         <Route path="/contact-us" element={<ContactUs />} />
+        <Route path="/chat-with-herbot" element={<ChatWithAI />} />
         <Route path="/upgrade-account" element={<SubscriptionStep1 />} />
         <Route
           path="/upgrade-account/continue"
@@ -69,20 +75,14 @@ function HeaderFooterLayout() {
         <Route path="/policy" element={<Policy />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/profile" element={<UserProfile />} />
+        <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/download-app" element={<DownloadAppPage />} />
         <Route element={<BlogShell />}>
           <Route path="/blog" element={<BlogTopicsPage />} />
           <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
           <Route
             path="/blog/:topicId/posts/:postId"
             element={<BlogPostDetailPage />}
-          />
-          <Route
-            path="/admin/posts"
-            element={
-              <RequireAdmin>
-                <AdminPostsPage />
-              </RequireAdmin>
-            }
           />
         </Route>
         <Route path="*" element={<Navigate to="/blog" replace />} />
@@ -95,9 +95,8 @@ function HeaderFooterLayout() {
 function App() {
   return (
     <BrowserRouter>
-    <Toaster position="top-center" reverseOrder={false} />
+      <Toaster position="top-center" reverseOrder={false} />
       <Routes>
-        
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/choose-method" element={<ChooseMethodPage />} />

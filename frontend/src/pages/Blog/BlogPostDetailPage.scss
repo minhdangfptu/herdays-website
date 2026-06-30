@@ -1,0 +1,437 @@
+// ============================================
+// BlogPostDetailPage – SCSS (blog-detail-* BEM)
+// ============================================
+
+$secondary-pink: #f472b6;
+$dark-text: #1e293b;
+$gray-text: #64748b;
+$light-gray: #f1f5f9;
+$light-gray-border: #e2e8f0;
+$white: #ffffff;
+$very-light-pink: #fdf2f8;
+$pink-border: #fce7f3;
+
+$container-max: 1200px;
+$page-padding: 40px;
+
+// ── Root page wrapper ─────────────────────────────
+.blog-detail-page {
+  min-height: 100vh;
+  background-color: $white;
+}
+
+// ── Banner ────────────────────────────────────────
+.blog-detail-banner {
+  width: 100%;
+  background-color: $very-light-pink;
+
+  &__inner {
+    max-width: $container-max;
+    margin: 0 auto;
+    padding: 20px $page-padding;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+
+    @media (max-width: 640px) {
+      padding: 16px 24px;
+      gap: 12px;
+    }
+  }
+
+  &__back {
+    display: inline-flex;
+    align-items: center;
+    font-size: 14px;
+    font-weight: 500;
+    color: $secondary-pink;
+    text-decoration: none;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity 0.2s ease;
+
+    &:hover {
+      opacity: 0.75;
+    }
+
+    @media (max-width: 640px) {
+      font-size: 13px;
+    }
+  }
+
+  &__title {
+    font-size: 16px;
+    font-weight: 600;
+    color: $dark-text;
+    margin: 0;
+    line-height: 1.3;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+
+    @media (max-width: 640px) {
+      font-size: 14px;
+    }
+  }
+}
+
+// ── Container ─────────────────────────────────────
+.blog-detail-container {
+  max-width: $container-max;
+  margin: 0 auto;
+  padding: 32px $page-padding 60px;
+
+  @media (max-width: 768px) {
+    padding: 24px 32px 48px;
+  }
+
+  @media (max-width: 640px) {
+    padding: 20px 24px 40px;
+  }
+}
+
+// ── Layout ────────────────────────────────────────
+.blog-detail-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+// ── Article card ──────────────────────────────────
+.blog-detail-article {
+  border: 1px solid $pink-border;
+  border-radius: 16px;
+  overflow: hidden;
+  background-color: $white;
+}
+
+// Meta row
+.blog-detail-article__meta {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 20px 28px 0;
+  font-size: 13px;
+  color: $gray-text;
+
+  @media (max-width: 640px) {
+    padding: 16px 20px 0;
+    font-size: 12px;
+  }
+}
+
+.blog-detail-article__category {
+  font-weight: 700;
+  color: $secondary-pink;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12px;
+}
+
+.blog-detail-article__dot {
+  color: $light-gray-border;
+  user-select: none;
+  font-size: 16px;
+  line-height: 1;
+}
+
+.blog-detail-article__author {
+  font-weight: 600;
+  color: $dark-text;
+}
+
+.blog-detail-article__date {
+  font-weight: 400;
+}
+
+// Title
+.blog-detail-article__title {
+  padding: 14px 28px 0;
+  font-size: 30px;
+  font-weight: 800;
+  line-height: 1.2;
+  color: $dark-text;
+  margin: 0;
+
+  @media (max-width: 768px) {
+    font-size: 26px;
+    padding: 12px 24px 0;
+  }
+
+  @media (max-width: 640px) {
+    font-size: 22px;
+    padding: 10px 20px 0;
+  }
+}
+
+// ── Content body ──────────────────────────────────
+// BE HTML structure: all inline content wrapped in <span>
+//   <h1/h2/h3><span>...</span></h>
+//   <p><span>...</span></p>  (img is inside span)
+//   <ol/ul><li><span>...</span></li></>
+//   <li><h2><span>...</span></h2></li>  (heading inside list item)
+.blog-detail-article__content {
+  padding: 28px 28px 36px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: $dark-text;
+
+  @media (max-width: 768px) {
+    padding: 20px 24px 28px;
+    font-size: 14px;
+  }
+
+  @media (max-width: 640px) {
+    padding: 16px 20px 24px;
+  }
+
+  // Reset list counters
+  ol, ul {
+    padding-left: 0;
+    margin: 0 0 14px;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  // Ordered list counter
+  ol {
+    counter-reset: ol-counter;
+
+    > li {
+      counter-increment: ol-counter;
+
+      &::before {
+        content: counter(ol-counter) '.';
+        font-weight: 700;
+        color: $secondary-pink;
+      }
+    }
+  }
+
+  // List items
+  > ol,
+  > ul,
+  > ol > li,
+  > ul > li,
+  li {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    line-height: 1.75;
+    padding-left: 0;
+
+    &::before {
+      flex-shrink: 0;
+      min-width: 20px;
+      margin-top: 2px;
+    }
+  }
+
+  // Unordered bullet
+  ul li::before {
+    content: '•';
+    font-weight: 700;
+    color: $secondary-pink;
+  }
+
+  // Section headings — rendered by BE inside <h1>/<h2>/<h3> with <span>
+  h1 {
+    font-size: 26px;
+    font-weight: 800;
+    line-height: 1.25;
+    color: $dark-text;
+    margin: 28px 0 10px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  h2 {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.3;
+    color: $dark-text;
+    margin: 24px 0 8px;
+    padding-top: 10px;
+    border-top: 1px solid $pink-border;
+
+    &:first-child {
+      margin-top: 0;
+      padding-top: 0;
+      border-top: none;
+    }
+  }
+
+  h3 {
+    font-size: 17px;
+    font-weight: 600;
+    line-height: 1.35;
+    color: $dark-text;
+    margin: 18px 0 6px;
+  }
+
+  // Body paragraphs — BE wraps text in <p><span>...</span></p>
+  p {
+    margin: 0 0 12px;
+    font-size: inherit;
+    line-height: inherit;
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+
+    // Display the span normally inside <p>
+    span {
+      display: inline;
+    }
+
+    // Images inside <p><span><img ... /></span></p>
+    img {
+      display: block;
+      width: 100%;
+      border-radius: 10px;
+      margin: 20px 0;
+      object-fit: cover;
+    }
+  }
+
+  // Images not inside a paragraph (fallback)
+  > img {
+    display: block;
+    width: 100%;
+    border-radius: 10px;
+    margin: 20px 0;
+    object-fit: cover;
+  }
+
+  // List item text — BE wraps list content in <span>
+  li span {
+    font-size: inherit;
+    line-height: inherit;
+    color: inherit;
+    display: inline;
+  }
+}
+
+// ── Related Posts section ─────────────────────────
+.blog-detail-related {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding-top: 16px;
+
+  &__heading {
+    font-size: 18px;
+    font-weight: 700;
+    color: $dark-text;
+    margin: 0;
+  }
+
+  &__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+
+    @media (max-width: 1024px) {
+      grid-template-columns: repeat(3, 1fr);
+    }
+
+    @media (max-width: 768px) {
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  &__card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid $pink-border;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: $white;
+    text-decoration: none;
+    transition: box-shadow 0.25s ease, transform 0.25s ease;
+
+    &:hover {
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.07);
+      transform: translateY(-2px);
+
+      .blog-detail-related__card-img img {
+        transform: scale(1.04);
+      }
+    }
+  }
+
+  &__card-img {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+    background-color: $light-gray;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: transform 0.35s ease;
+    }
+  }
+
+  &__card-placeholder {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: 28px;
+  }
+
+  &__card-body {
+    padding: 12px 14px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  &__card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: $dark-text;
+    line-height: 1.4;
+    display: -webkit-box;
+    line-clamp: 2;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    margin: 0;
+  }
+
+  &__card-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    font-size: 12px;
+    color: $gray-text;
+    margin-top: auto;
+  }
+
+  &__card-author {
+    font-weight: 600;
+    color: $dark-text;
+  }
+
+  &__card-dot {
+    user-select: none;
+  }
+
+  &__card-date {
+    font-weight: 400;
+  }
+}
