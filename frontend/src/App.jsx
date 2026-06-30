@@ -3,6 +3,7 @@ import { Toaster } from "react-hot-toast";
 
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import AdminSidebar from "./components/AdminSidebar.jsx";
 import BlogShell from "./components/blog/BlogShell.jsx";
 import BlogTopicsPage from "./pages/Blog/BlogTopicsPage.jsx";
 import BlogPostsPage from "./pages/Blog/BlogPostsPage.jsx";
@@ -23,10 +24,32 @@ import ResetPassword from "./pages/Auth/ResetPassword.jsx";
 import ChangePassword from "./pages/Auth/ChangePassword.jsx";
 import SubscriptionStep3 from "./pages/Subcription/SubscriptionStep3.jsx";
 import UserProfile from "./pages/Profile/UserProfile.jsx";
+import AdminHome from "./pages/Admin/AdminHome.jsx";
+import QuizPage from "./pages/QuizPage.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
   return isAdmin ? children : <Navigate to="/blog" replace />;
+}
+
+function AdminLayout() {
+  return (
+    <div className="admin-layout">
+      <AdminSidebar />
+      <div className="admin-main">
+        <div className="admin-page-content">
+          <Routes>
+            <Route index element={<AdminHome />} />
+            <Route path="blog" element={<div>Blog Admin (coming soon)</div>} />
+            <Route path="shop" element={<div>Shop Admin (coming soon)</div>} />
+            <Route path="herbotai" element={<div>HerbotAI Admin (coming soon)</div>} />
+            <Route path="users" element={<div>Users Admin (coming soon)</div>} />
+          </Routes>
+        </div>
+        <Footer />
+      </div>
+    </div>
+  );
 }
 
 function HeaderFooterLayout() {
@@ -74,6 +97,7 @@ function App() {
     <BrowserRouter>
     <Toaster position="top-center" reverseOrder={false} />
       <Routes>
+        
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/choose-method" element={<ChooseMethodPage />} />
@@ -81,6 +105,15 @@ function App() {
         <Route path="/confirmation-otp" element={<EnterOTP />} />
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/change-password" element={<ChangePassword />} />
+        <Route path="/welcome-quiz" element={<QuizPage />} />
+        <Route
+          path="/admin/*"
+          element={
+            <RequireAdmin>
+              <AdminLayout />
+            </RequireAdmin>
+          }
+        />
         <Route path="/*" element={<HeaderFooterLayout />} />
       </Routes>
     </BrowserRouter>

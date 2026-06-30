@@ -8,6 +8,7 @@ import {
 } from "react-icons/fa";
 import "./HomePage.scss";
 import logomau from "../../assets/home/logo_mau.png";
+import expertBg from "../../assets/home/expert_background_card.png";
 
 const HomePage = () => {
   const [subscriptionIndex, setSubscriptionIndex] = useState(0);
@@ -30,7 +31,8 @@ const HomePage = () => {
       id: 1,
       name: "ThS.BS Nguyễn Hộng Vũ",
       title: "Bác Sỹ",
-      experience: "Có hơn 20 năm kinh nghiệm...",
+      experience:
+        "Thạc sĩ Sản Phụ khoa ĐH Y Dược TP.HCM. Bác sĩ thực hành sản phụ khoa tại Bệnh viện Từ Dũ với chuyên môn sâu về phẫu thuật nội soi và siêu âm.",
     },
     {
       id: 2,
@@ -208,10 +210,7 @@ const HomePage = () => {
                 className={`expert-card ${index === expertsIndex ? "active" : ""}`}
               >
                 <div className="expert-card-background">
-                  <img
-                    src="https://placehold.co/300x200/FFF5F8/ED77A5?text=Expert"
-                    alt="Expert Background"
-                  />
+                  <img src={expertBg} alt="Expert Background" />
                 </div>
                 <div className="expert-card-avatar">
                   <img
@@ -254,11 +253,11 @@ const HomePage = () => {
               <span className="herbot-highlight">HERBOTAI</span>
             </h2>
             <p className="herbot-description">
-              AI Chatbot của HerDays được huấn luyện trên nền tảng tri thức y tế
-              toàn cầu để giúp bạn giải đáp những câu hỏi liên quan đến sức
-              khỏe, cung cấp lời khuyên phòng tránh bệnh tật, và hỗ trợ bạn quản
-              lý sức khỏe toàn diện. AI cô ấy thông minh, thân thiện và luôn sẵn
-              sàng giúp bạn.
+              AI Chatbot của HerDays được phát triển nhằm hỗ trợ giải đáp các
+              thắc mắc cơ bản về sức khỏe phụ nữ, chu kỳ kinh nguyệt, mang thai
+              và chăm sóc bản thân. Không chỉ vậy, AI còn tự động phân tích dữ
+              liệu cá nhân để đưa ra các gợi ý chăm sóc phù hợp và nhắc nhở
+              những mốc thời gian quan trọng
             </p>
             <a href="#" className="herbot-link">
               Khám phá ngay
