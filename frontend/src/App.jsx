@@ -11,7 +11,6 @@ import BlogPostDetailPage from "./pages/Blog/BlogPostDetailPage.jsx";
 import AdminPostsPage from "./pages/Blog/AdminPostsPage.jsx";
 import LoginPage from "./pages/Auth/LoginPage.jsx";
 import ContactUs from "./pages/Common/ContactUs.jsx";
-import HomePage from "./pages/Common/Homepage.jsx";
 import TermOfUse from "./pages/Common/TermOfUse.jsx";
 import Policy from "./pages/Common/Policy.jsx";
 import SubscriptionStep1 from "./pages/Subcription/SubscriptionStep1.jsx";
@@ -26,6 +25,7 @@ import SubscriptionStep3 from "./pages/Subcription/SubscriptionStep3.jsx";
 import UserProfile from "./pages/Profile/UserProfile.jsx";
 import AdminHome from "./pages/Admin/AdminHome.jsx";
 import QuizPage from "./pages/QuizPage.jsx";
+import HomePage from "./pages/Common/HomePage.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
