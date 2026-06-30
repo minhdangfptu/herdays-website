@@ -1,9 +1,12 @@
-import { useState } from "react";
-import facebookLogo from "../../assets/facebook-logo.png";
-import googleLogo from "../../assets/google-logo.png";
-import herdaysLogo from "../../assets/herdays-logo.png";
-import "./RegisterPage.scss";
-import { Lock, Mail, Phone, User } from "lucide-react";
+import { useCallback, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import herdaysLogo from '../../assets/herdays-logo.png'
+import './RegisterPage.scss'
+import { authApi, setAuthSession } from '../../services/apiService.js'
+import FacebookAuthButton from './FacebookAuthButton.jsx'
+import GoogleAuthButton from './GoogleAuthButton.jsx'
+import { Lock, Mail, Phone, User } from 'lucide-react'
 
 function PasswordToggleIcon({ isVisible }) {
   return (
@@ -12,7 +15,7 @@ function PasswordToggleIcon({ isVisible }) {
       <circle cx="12" cy="12" r="2.5" />
       {!isVisible && <path d="m4 4 16 16" />}
     </svg>
-  );
+  )
 }
 
 function MoodCard() {
@@ -47,14 +50,14 @@ function MoodCard() {
         </g>
       </svg>
     </div>
-  );
+  )
 }
 
 function CycleChart() {
-  const bars = [54, 76, 36, 54, 78];
+  const bars = [54, 76, 36, 54, 78]
 
   return (
-    <div style={{marginBottom: "40px"}} className="cycle-visual" aria-hidden="true">
+    <div style={{ marginBottom: '40px' }} className="cycle-visual" aria-hidden="true">
       <div className="cycle-card">
         <div className="cycle-card__header">
           <strong>Xu hướng độ dài kì kinh</strong>
@@ -72,11 +75,11 @@ function CycleChart() {
         <div className="cycle-card__plot">
           <div className="cycle-card__bars">
             {bars.map((height, index) => (
-              <span key={index} style={{ "--bar-height": `${height}%` }} />
+              <span key={index} style={{ '--bar-height': `${height}%` }} />
             ))}
           </div>
           <div className="cycle-card__x-labels">
-            {["T1", "T2", "T3", "T4", "T5", "T6"].map((label) => (
+            {['T1', 'T2', 'T3', 'T4', 'T5', 'T6'].map((label) => (
               <span key={label}>{label}</span>
             ))}
           </div>
@@ -89,37 +92,84 @@ function CycleChart() {
         <span />
       </div>
     </div>
-  );
+  )
 }
 
 function RegisterForm() {
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [isConfirmVisible, setIsConfirmVisible] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate()
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
+  const [isConfirmVisible, setIsConfirmVisible] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const completeGoogleAuth = useCallback((result) => {
+    setAuthSession(result)
+    toast.success('Đăng nhập Google thành công.')
+    navigate(result.user.role === 'admin' ? '/admin/posts' : '/home')
+  }, [navigate])
+
+  const completeFacebookAuth = useCallback((result) => {
+    setAuthSession(result)
+    toast.success('Đăng nhập Facebook thành công.')
+    navigate(result.user.role === 'admin' ? '/admin/posts' : '/home')
+  }, [navigate])
+
+  const handleGoogleError = useCallback((message) => {
+    toast.error(message || 'Không thể đăng nhập bằng Google. Vui lòng thử lại.')
+  }, [])
+
+  const handleFacebookError = useCallback((message) => {
+    toast.error(message || 'Không thể đăng nhập bằng Facebook. Vui lòng thử lại.')
+  }, [])
 
   async function handleSubmit(event) {
-    event.preventDefault();
-    setIsSubmitting(true);
-    setTimeout(() => setIsSubmitting(false), 1500);
+    event.preventDefault()
+    const formData = new FormData(event.currentTarget)
+    const password = formData.get('password')
+    const confirmPassword = formData.get('confirmPassword')
+
+    if (password !== confirmPassword) {
+      toast.error('Mật khẩu xác nhận không khớp.')
+      return
+    }
+
+    setIsSubmitting(true)
+    const loadingToast = toast.loading('Đang đăng ký...')
+
+    try {
+      const result = await authApi.register({
+        fullName: formData.get('fullname'),
+        email: formData.get('email'),
+        phone: formData.get('phone'),
+        password,
+        otpChannel: 'email'
+      })
+      const identifier = result.otpIdentifier || formData.get('email')
+      toast.success('Đăng ký thành công. Vui lòng nhập OTP.', { id: loadingToast })
+      navigate(`/confirmation-otp?contact=${encodeURIComponent(identifier)}&purpose=register`)
+    } catch (error) {
+      toast.error(error.message || 'Đăng ký thất bại. Vui lòng thử lại.', { id: loadingToast })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <section className="login-form-panel" aria-labelledby="register-title">
-      <div  className="login-form-panel__content">
+      <div className="login-form-panel__content">
         <img className="brand-logo" src={herdaysLogo} alt="Herdays" />
 
         <div className="login-copy">
           <h1 id="register-title">Đăng ký</h1>
-          <p style={{fontWeight: "400"}}>Bắt đầu hành trình HERDAYS ngay hôm nay</p>
+          <p style={{ fontWeight: '400' }}>Bắt đầu hành trình HERDAYS ngay hôm nay</p>
         </div>
 
         <form
-          style={{ marginTop: "20px" }}
+          style={{ marginTop: '20px' }}
           className="login-form"
           onSubmit={handleSubmit}
         >
           <label className="form-field">
-            <span style={{ fontWeight: "400" }}>Họ và tên</span>
+            <span style={{ fontWeight: '400' }}>Họ và tên</span>
             <span className="input-shell">
               <span className="field-icon">
                 <User size={16} />
@@ -135,7 +185,7 @@ function RegisterForm() {
           </label>
 
           <label className="form-field">
-            <span style={{ fontWeight: "400" }}>Email</span>
+            <span style={{ fontWeight: '400' }}>Email</span>
             <span className="input-shell">
               <span className="field-icon">
                 <Mail size={16} />
@@ -151,7 +201,7 @@ function RegisterForm() {
           </label>
 
           <label className="form-field">
-            <span style={{ fontWeight: "400" }}>Số điện thoại</span>
+            <span style={{ fontWeight: '400' }}>Số điện thoại</span>
             <span className="input-shell">
               <span className="field-icon">
                 <Phone size={16} />
@@ -167,13 +217,13 @@ function RegisterForm() {
           </label>
 
           <label className="form-field">
-            <span style={{ fontWeight: "400" }}>Mật khẩu</span>
+            <span style={{ fontWeight: '400' }}>Mật khẩu</span>
             <span className="input-shell">
               <span className="field-icon">
                 <Lock size={16} />
               </span>
               <input
-                type={isPasswordVisible ? "text" : "password"}
+                type={isPasswordVisible ? 'text' : 'password'}
                 name="password"
                 autoComplete="new-password"
                 placeholder="Nhập mật khẩu của bạn"
@@ -182,9 +232,9 @@ function RegisterForm() {
               <button
                 className="password-toggle"
                 type="button"
-                aria-label={isPasswordVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                aria-label={isPasswordVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 aria-pressed={isPasswordVisible}
-                onClick={() => setIsPasswordVisible((v) => !v)}
+                onClick={() => setIsPasswordVisible((value) => !value)}
               >
                 <PasswordToggleIcon isVisible={isPasswordVisible} />
               </button>
@@ -192,13 +242,13 @@ function RegisterForm() {
           </label>
 
           <label className="form-field">
-            <span style={{ fontWeight: "400" }}>Xác nhận mật khẩu</span>
+            <span style={{ fontWeight: '400' }}>Xác nhận mật khẩu</span>
             <span className="input-shell">
               <span className="field-icon">
                 <Lock size={16} />
               </span>
               <input
-                type={isConfirmVisible ? "text" : "password"}
+                type={isConfirmVisible ? 'text' : 'password'}
                 name="confirmPassword"
                 autoComplete="new-password"
                 placeholder="Nhập lại mật khẩu của bạn"
@@ -207,9 +257,9 @@ function RegisterForm() {
               <button
                 className="password-toggle"
                 type="button"
-                aria-label={isConfirmVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                aria-label={isConfirmVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
                 aria-pressed={isConfirmVisible}
-                onClick={() => setIsConfirmVisible((v) => !v)}
+                onClick={() => setIsConfirmVisible((value) => !value)}
               >
                 <PasswordToggleIcon isVisible={isConfirmVisible} />
               </button>
@@ -225,12 +275,12 @@ function RegisterForm() {
                 required
               />
               <span>
-                Tôi đồng ý với{" "}
-                <a href="/terms" style={{ color: "#ed77a5" }}>
+                Tôi đồng ý với{' '}
+                <a href="/term-of-use" style={{ color: '#ed77a5' }}>
                   Điều khoản sử dụng
-                </a>{" "}
-                &amp;{" "}
-                <a href="/policy" style={{ color: "#ed77a5" }}>
+                </a>{' '}
+                &amp;{' '}
+                <a href="/policy" style={{ color: '#ed77a5' }}>
                   Chính sách bảo mật
                 </a>
               </span>
@@ -242,7 +292,7 @@ function RegisterForm() {
             type="submit"
             disabled={isSubmitting}
           >
-            {isSubmitting ? "Đang đăng ký..." : "Đăng ký"}
+            {isSubmitting ? 'Đang đăng ký...' : 'Đăng ký'}
           </button>
 
           <div className="divider">
@@ -250,14 +300,17 @@ function RegisterForm() {
           </div>
 
           <div className="social-login">
-            <button type="button">
-              <img src={googleLogo} alt="" />
-              <span>Đăng ký với Google</span>
-            </button>
-            <button type="button">
-              <img src={facebookLogo} alt="" />
-              <span>Đăng ký với Facebook</span>
-            </button>
+            <GoogleAuthButton
+              label="Đăng ký với Google"
+              buttonText="signup_with"
+              onAuthenticated={completeGoogleAuth}
+              onError={handleGoogleError}
+            />
+            <FacebookAuthButton
+              label="Đăng ký với Facebook"
+              onAuthenticated={completeFacebookAuth}
+              onError={handleFacebookError}
+            />
           </div>
 
           <p className="register-prompt">
@@ -266,14 +319,14 @@ function RegisterForm() {
         </form>
       </div>
     </section>
-  );
+  )
 }
 
 function WelcomePanel() {
   return (
     <aside className="welcome-panel">
       <div className="welcome-panel__content">
-        <div style={{ marginTop: "20px" }} className="welcome-copy">
+        <div style={{ marginTop: '20px' }} className="welcome-copy">
           <h2>CHÀO MỪNG BẠN!</h2>
           <p className="welcome-lead">
             Hãy đăng ký để sử dụng
@@ -289,19 +342,18 @@ function WelcomePanel() {
         <CycleChart />
       </div>
     </aside>
-  );
+  )
 }
 
 function RegisterPage() {
   return (
     <main className="login-page relative isolate grid min-h-svh place-items-center overflow-x-hidden overflow-y-auto bg-[#f9eef2] p-4">
       <div className="login-card grid w-full max-w-[1100px] overflow-hidden rounded-xl bg-white min-[961px]:min-h-[90vh]" style={{ zoom: 0.85 }}>
-        
         <WelcomePanel />
         <RegisterForm />
       </div>
     </main>
-  );
+  )
 }
 
-export default RegisterPage;
+export default RegisterPage

@@ -1,27 +1,30 @@
 import { useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import herdaysLogo from '../../assets/herdays-logo.png';
 import { Mail, Phone } from 'lucide-react';
 import './EnterEmailPhoneNoPage.scss';
+import { authApi } from '../../services/apiService.js';
 
 const contentByMethod = {
   email: {
-    heading: 'Xác nhận qua Email',
-    subtext: 'Vui lòng nhập địa chỉ email của bạn để nhận mã xác nhận',
-    placeholder: 'Nhập địa chỉ Email',
-    buttonText: 'Gửi mã xác nhận',
+    heading: 'XÃ¡c nháº­n qua Email',
+    subtext: 'Vui lÃ²ng nháº­p Ä‘á»‹a chá»‰ email cá»§a báº¡n Ä‘á»ƒ nháº­n mÃ£ xÃ¡c nháº­n',
+    placeholder: 'Nháº­p Ä‘á»‹a chá»‰ Email',
+    buttonText: 'Gá»­i mÃ£ xÃ¡c nháº­n',
     Icon: Mail,
   },
   phone: {
-    heading: 'Xác nhận qua SMS',
-    subtext: 'Vui lòng nhập số điện thoại của bạn để nhận mã xác nhận',
-    placeholder: 'Nhập số điện thoại',
-    buttonText: 'Gửi mã xác nhận',
+    heading: 'XÃ¡c nháº­n qua SMS',
+    subtext: 'Vui lÃ²ng nháº­p sá»‘ Ä‘iá»‡n thoáº¡i cá»§a báº¡n Ä‘á»ƒ nháº­n mÃ£ xÃ¡c nháº­n',
+    placeholder: 'Nháº­p sá»‘ Ä‘iá»‡n thoáº¡i',
+    buttonText: 'Gá»­i mÃ£ xÃ¡c nháº­n',
     Icon: Phone,
   },
 };
 
 const EnterEmailPhoneNoPage = () => {
+  const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const method = searchParams.get('method') || 'email';
   const [value, setValue] = useState('');
@@ -30,11 +33,27 @@ const EnterEmailPhoneNoPage = () => {
   const { heading, subtext, placeholder, buttonText, Icon } =
     contentByMethod[method] || contentByMethod.email;
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    if (!value.trim()) return;
+    const contact = value.trim();
+    if (!contact) return;
+
     setIsSubmitting(true);
-    setTimeout(() => setIsSubmitting(false), 1500);
+    const loadingToast = toast.loading('Đang gửi mã xác nhận...');
+
+    try {
+      if (method === 'phone') {
+        await authApi.forgotPasswordByPhoneNumber({ phone: contact });
+      } else {
+        await authApi.forgotPasswordByEmail({ email: contact });
+      }
+      toast.success('Đã gửi mã xác nhận.', { id: loadingToast });
+      navigate(`/confirmation-otp?contact=${encodeURIComponent(contact)}&purpose=reset-password`);
+    } catch (error) {
+      toast.error(error.message || 'Không thể gửi mã xác nhận.', { id: loadingToast });
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -50,7 +69,7 @@ const EnterEmailPhoneNoPage = () => {
         <form className="enter-contact-form" onSubmit={handleSubmit}>
           <div className="enter-contact-field">
             <label className="enter-contact-label">
-              <span>{method === 'phone' ? 'Số điện thoại' : 'Email'}</span>
+              <span>{method === 'phone' ? 'Sá»‘ Ä‘iá»‡n thoáº¡i' : 'Email'}</span>
             </label>
             <div className="enter-contact-input-shell">
               <span className="enter-contact-icon">
@@ -74,7 +93,7 @@ const EnterEmailPhoneNoPage = () => {
             type="submit"
             disabled={isSubmitting || !value.trim()}
           >
-            {isSubmitting ? 'Đang gửi...' : buttonText}
+            {isSubmitting ? 'Äang gá»­i...' : buttonText}
           </button>
         </form>
 
@@ -82,12 +101,12 @@ const EnterEmailPhoneNoPage = () => {
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <path d="m15 18-6-6 6-6" />
           </svg>
-          Quay lại
+          Quay láº¡i
         </a>
 
         <p className="enter-contact-footer">
-          Bạn đã có tài khoản?{' '}
-          <a href="/login">Đăng nhập</a>
+          Báº¡n Ä‘Ã£ cÃ³ tÃ i khoáº£n?{' '}
+          <a href="/login">ÄÄƒng nháº­p</a>
         </p>
       </div>
     </main>
@@ -95,3 +114,4 @@ const EnterEmailPhoneNoPage = () => {
 };
 
 export default EnterEmailPhoneNoPage;
+

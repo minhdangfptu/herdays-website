@@ -15,6 +15,7 @@ const TRANSLATIONS = {
   // Auth — verification
   'Please confirm OTP before login':               'Vui lòng xác thực OTP trước khi đăng nhập',
   'Please register with email, phone and password before social login': 'Vui lòng đăng ký bằng email, số điện thoại và mật khẩu trước khi đăng nhập bằng mạng xã hội',
+  'Social account is linked to another user':      'Tài khoản mạng xã hội này đã được liên kết với người dùng khác',
 
   // Auth — tokens
   'Invalid or expired refresh token':              'Token làm mới không hợp lệ hoặc đã hết hạn',
@@ -28,6 +29,14 @@ const TRANSLATIONS = {
 
   // Auth — Google
   'Google account does not include an email':      'Tài khoản Google không có email',
+  'Google account email is not verified':          'Email Google chưa được xác minh',
+
+  // Auth — Facebook
+  'Facebook login is not configured':              'Đăng nhập Facebook chưa được cấu hình.',
+  'Invalid Facebook access token':                 'Phiên đăng nhập Facebook không hợp lệ.',
+  'Facebook account does not include an email':    'Tài khoản Facebook không có email',
+  'Only google and facebook social login are supported': 'Chỉ hỗ trợ đăng nhập bằng Google hoặc Facebook',
+  'accessToken is required':                       'Thiếu mã xác thực Facebook',
 
   // Auth — generic
   'Unauthorized — no token provided':             'Vui lòng đăng nhập để tiếp tục.',

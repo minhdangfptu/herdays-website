@@ -1,35 +1,10 @@
-﻿import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import facebookLogo from '../../assets/facebook-logo.png'
 import herdaysLogo from '../../assets/herdays-logo.png'
 import { authApi, setAuthSession } from '../../services/apiService.js'
+import FacebookAuthButton from './FacebookAuthButton.jsx'
+import GoogleAuthButton from './GoogleAuthButton.jsx'
 import './LoginPage.scss'
-
-const GOOGLE_SCRIPT_ID = 'google-identity-services'
-const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
-
-const loadGoogleIdentityScript = () => new Promise((resolve, reject) => {
-  if (window.google?.accounts?.id) {
-    resolve()
-    return
-  }
-
-  const existingScript = document.getElementById(GOOGLE_SCRIPT_ID)
-  if (existingScript) {
-    existingScript.addEventListener('load', resolve, { once: true })
-    existingScript.addEventListener('error', reject, { once: true })
-    return
-  }
-
-  const script = document.createElement('script')
-  script.id = GOOGLE_SCRIPT_ID
-  script.src = 'https://accounts.google.com/gsi/client'
-  script.async = true
-  script.defer = true
-  script.onload = resolve
-  script.onerror = reject
-  document.head.appendChild(script)
-})
 
 function FieldIcon({ type }) {
   if (type === 'email') {
@@ -134,79 +109,21 @@ function CycleChart() {
 function LoginForm() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
-  const isGoogleInitialized = useRef(false)
-  const isGoogleButtonRendered = useRef(false)
-  const googleButtonRef = useRef(null)
   const navigate = useNavigate()
 
   const completeLogin = useCallback((result) => {
     setAuthSession(result)
-    navigate(result.user.role === 'admin' ? '/admin/posts' : '/blog')
+    navigate(result.user.role === 'admin' ? '/admin/posts' : '/home')
   }, [navigate])
 
-  const handleGoogleCredential = useCallback(async (response) => {
-    if (!response.credential) {
-      setErrorMessage('Không nhận được thông tin đăng nhập từ Google.')
-      return
-    }
+  const handleGoogleError = useCallback((message) => {
+    setErrorMessage(message || 'Không thể đăng nhập bằng Google. Vui lòng thử lại.')
+  }, [])
 
-    setIsGoogleSubmitting(true)
-    setErrorMessage('')
-
-    try {
-      const result = await authApi.socialLogin({
-        provider: 'google',
-        idToken: response.credential
-      })
-      completeLogin(result)
-    } catch (error) {
-      setErrorMessage(error.message)
-    } finally {
-      setIsGoogleSubmitting(false)
-    }
-  }, [completeLogin])
-
-  const initializeGoogleIdentity = useCallback(async () => {
-    await loadGoogleIdentityScript()
-
-    if (isGoogleInitialized.current) return
-
-    window.google.accounts.id.initialize({
-      client_id: googleClientId,
-      callback: handleGoogleCredential
-    })
-    isGoogleInitialized.current = true
-  }, [handleGoogleCredential])
-
-  const renderGoogleButton = useCallback(async () => {
-    if (!googleClientId || !googleButtonRef.current || isGoogleButtonRendered.current) return
-
-    await initializeGoogleIdentity()
-
-    const buttonWidth = Math.min(400, Math.max(200, googleButtonRef.current.offsetWidth || 240))
-    window.google.accounts.id.renderButton(googleButtonRef.current, {
-      type: 'standard',
-      theme: 'outline',
-      size: 'large',
-      text: 'signin_with',
-      shape: 'rectangular',
-      logo_alignment: 'left',
-      locale: 'vi',
-      width: buttonWidth
-    })
-    isGoogleButtonRendered.current = true
-  }, [initializeGoogleIdentity])
-
-  useEffect(() => {
-    if (!googleClientId) return
-
-    renderGoogleButton()
-      .catch(() => {
-        setErrorMessage('Không thể tải đăng nhập Google. Vui lòng thử lại sau.')
-      })
-  }, [renderGoogleButton])
+  const handleFacebookError = useCallback((message) => {
+    setErrorMessage(message || 'Không thể đăng nhập bằng Facebook. Vui lòng thử lại.')
+  }, [])
 
   async function handleSubmit(event) {
     event.preventDefault()
@@ -230,89 +147,84 @@ function LoginForm() {
   return (
     <section className="login-form-panel" aria-labelledby="login-title">
       <div className="login-form-panel__content">
-      <img className="brand-logo" src={herdaysLogo} alt="Herdays" />
+        <img className="brand-logo" src={herdaysLogo} alt="Herdays" />
 
-      <div className="login-copy">
-        <h1 id="login-title">Đăng nhập</h1>
-        <p>Chào mừng bạn quay trở lại. Hãy nhập thông tin của bạn</p>
-      </div>
+        <div className="login-copy">
+          <h1 id="login-title">Đăng nhập</h1>
+          <p>Chào mừng bạn quay trở lại. Hãy nhập thông tin của bạn</p>
+        </div>
 
-      <form className="login-form" onSubmit={handleSubmit}>
-        <label className="form-field">
-          <span>Email/Số điện thoại</span>
-          <span className="input-shell">
-            <span className="field-icon"><FieldIcon type="email" /></span>
-            <input
-              type="text"
-              name="identifier"
-              autoComplete="username"
-              placeholder="Nhập địa chỉ Email hoặc số điện thoại của bạn"
-              required
-            />
-          </span>
-        </label>
-
-        <label className="form-field">
-          <span>Mật khẩu</span>
-          <span className="input-shell">
-            <span className="field-icon"><FieldIcon type="password" /></span>
-            <input
-              type={isPasswordVisible ? 'text' : 'password'}
-              name="password"
-              autoComplete="current-password"
-              placeholder="Nhập mật khẩu của bạn"
-              required
-            />
-            <button
-              className="password-toggle"
-              type="button"
-              aria-label={isPasswordVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
-              aria-pressed={isPasswordVisible}
-              onClick={() => setIsPasswordVisible((value) => !value)}
-            >
-              <PasswordToggleIcon isVisible={isPasswordVisible} />
-            </button>
-          </span>
-        </label>
-
-        <div className="form-options">
-          <label className="remember-me">
-            <input type="checkbox" name="remember" />
-            <span>Ghi nhớ tôi</span>
+        <form className="login-form" onSubmit={handleSubmit}>
+          <label className="form-field">
+            <span>Email/Số điện thoại</span>
+            <span className="input-shell">
+              <span className="field-icon"><FieldIcon type="email" /></span>
+              <input
+                type="text"
+                name="identifier"
+                autoComplete="username"
+                placeholder="Nhập địa chỉ Email hoặc số điện thoại của bạn"
+                required
+              />
+            </span>
           </label>
-          <a href="#forgot-password">Quên mật khẩu?</a>
-        </div>
 
-        {errorMessage && <p className="login-error" role="alert">{errorMessage}</p>}
-        <button className="submit-button" type="submit" disabled={isSubmitting}>
-          {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
-        </button>
+          <label className="form-field">
+            <span>Mật khẩu</span>
+            <span className="input-shell">
+              <span className="field-icon"><FieldIcon type="password" /></span>
+              <input
+                type={isPasswordVisible ? 'text' : 'password'}
+                name="password"
+                autoComplete="current-password"
+                placeholder="Nhập mật khẩu của bạn"
+                required
+              />
+              <button
+                className="password-toggle"
+                type="button"
+                aria-label={isPasswordVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                aria-pressed={isPasswordVisible}
+                onClick={() => setIsPasswordVisible((value) => !value)}
+              >
+                <PasswordToggleIcon isVisible={isPasswordVisible} />
+              </button>
+            </span>
+          </label>
 
-        <div className="divider"><span>Hoặc</span></div>
-
-        <div className="social-login">
-          <div
-            className="google-login-button"
-            ref={googleButtonRef}
-            aria-label="Đăng nhập với Google"
-            aria-busy={isGoogleSubmitting}
-          >
-            {!googleClientId && <span>Google login chưa được cấu hình</span>}
+          <div className="form-options">
+            <label className="remember-me">
+              <input type="checkbox" name="remember" />
+              <span>Ghi nhớ tôi</span>
+            </label>
+            <a href="#forgot-password">Quên mật khẩu?</a>
           </div>
-          <button
-            type="button"
-            disabled
-            title="Đăng nhập với Facebook chưa được hỗ trợ"
-          >
-            <img src={facebookLogo} alt="" />
-            <span>Đăng nhập với Facebook</span>
-          </button>
-        </div>
 
-        <p className="register-prompt">
-          Chưa có tài khoản? <a href="/register">Đăng ký</a>
-        </p>
-      </form>
+          {errorMessage && <p className="login-error" role="alert">{errorMessage}</p>}
+          <button className="submit-button" type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
+          </button>
+
+          <div className="divider"><span>Hoặc</span></div>
+
+          <div className="social-login">
+            <GoogleAuthButton
+              label="Đăng nhập bằng Google"
+              buttonText="signin_with"
+              onAuthenticated={completeLogin}
+              onError={handleGoogleError}
+            />
+            <FacebookAuthButton
+              label="Đăng nhập với Facebook"
+              onAuthenticated={completeLogin}
+              onError={handleFacebookError}
+            />
+          </div>
+
+          <p className="register-prompt">
+            Chưa có tài khoản? <a href="/register">Đăng ký</a>
+          </p>
+        </form>
       </div>
     </section>
   )
@@ -322,16 +234,16 @@ function WelcomePanel() {
   return (
     <aside className="welcome-panel">
       <div className="welcome-panel__content">
-      <div className="welcome-copy">
-        <h2>CHÀO MỪNG BẠN!</h2>
-        <p className="welcome-lead">
-          Hãy đăng nhập để sử dụng<br />toàn bộ tính năng của <u>Herdays</u>
-        </p>
-        <p className="welcome-description">
-          HERDAYS - Nền tảng chăm sóc sức khoẻ nữ giới và<br />dịch vụ Subcription Box
-        </p>
-      </div>
-      <CycleChart />
+        <div className="welcome-copy">
+          <h2>CHÀO MỪNG BẠN!</h2>
+          <p className="welcome-lead">
+            Hãy đăng nhập để sử dụng<br />toàn bộ tính năng của <u>Herdays</u>
+          </p>
+          <p className="welcome-description">
+            HERDAYS - Nền tảng chăm sóc sức khoẻ nữ giới và<br />dịch vụ Subcription Box
+          </p>
+        </div>
+        <CycleChart />
       </div>
     </aside>
   )

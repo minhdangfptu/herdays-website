@@ -8,6 +8,13 @@ export const QUIZ_TAGS = [
   'ivf'
 ];
 
+export const QUESTION_TYPES = [
+  'single_choice',
+  'multiple_choice',
+  'date',
+  'short_answer'
+];
+
 const quizQuestionSchema = new mongoose.Schema(
   {
     content: {
@@ -16,6 +23,12 @@ const quizQuestionSchema = new mongoose.Schema(
       trim: true,
       maxlength: 1000
     },
+    question_type: {
+      type: String,
+      required: true,
+      enum: QUESTION_TYPES,
+      default: 'single_choice'
+    },
     tag: {
       type: String,
       required: true,
@@ -23,10 +36,13 @@ const quizQuestionSchema = new mongoose.Schema(
     },
     options: {
       type: [String],
-      required: true,
+      default: [],
       validate: {
-        validator: (options) => options.length > 0,
-        message: 'options must contain at least one item'
+        validator(options) {
+          if (!['single_choice', 'multiple_choice'].includes(this.question_type)) return true;
+          return Array.isArray(options) && options.length > 0;
+        },
+        message: 'options must contain at least one item for choice questions'
       }
     },
     index: {

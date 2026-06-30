@@ -313,9 +313,25 @@ Body:
 }
 ```
 
-### Google Social Login
+### Social Login
 
-Google social login only works for an existing verified user whose email already exists in `users`.
+Google requires `GOOGLE_CLIENT_ID` in `backend/.env` and `VITE_GOOGLE_CLIENT_ID` in `frontend/.env`.
+
+Facebook requires these backend values:
+
+```env
+FACEBOOK_APP_ID=your_facebook_app_id
+FACEBOOK_APP_SECRET=your_facebook_app_secret
+```
+
+And these frontend values:
+
+```env
+VITE_FACEBOOK_APP_ID=your_facebook_app_id
+VITE_FACEBOOK_GRAPH_VERSION=v23.0
+```
+
+Social login creates a verified user when the email is new. If a user with the same email exists and is verified, the provider ID is linked to that account.
 
 ```http
 POST /auth/social-login
@@ -325,6 +341,13 @@ POST /auth/social-login
 {
   "provider": "google",
   "idToken": "{{googleIdToken}}"
+}
+```
+
+```json
+{
+  "provider": "facebook",
+  "accessToken": "{{facebookAccessToken}}"
 }
 ```
 

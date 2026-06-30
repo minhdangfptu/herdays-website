@@ -28,12 +28,10 @@ export default function DeleteAccountModal({ isOpen, onClose, onConfirm }) {
         aria-modal="true"
         aria-labelledby="delete-modal-title"
       >
-        {/* Icon */}
         <div className="delete-account-modal__icon">
           <AlertTriangle size={28} color="#ED77A5" strokeWidth={2} />
         </div>
 
-        {/* Body */}
         <div className="delete-account-modal__body">
           <h2 id="delete-modal-title" className="delete-account-modal__title">
             Xóa tài khoản
@@ -43,7 +41,6 @@ export default function DeleteAccountModal({ isOpen, onClose, onConfirm }) {
           </p>
         </div>
 
-        {/* Footer */}
         <div className="delete-account-modal__footer">
           <button
             className="delete-account-modal__btn delete-account-modal__btn--cancel"
