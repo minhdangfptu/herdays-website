@@ -64,18 +64,18 @@ const Header = () => {
   };
 
   const loggedOutMenuItems = [
-    { label: "Trang chá»§", to: "/home" },
-    { label: "Táº£i á»©ng dá»¥ng", to: "/download-app" },
-    { label: "LiÃªn há»‡", to: "/contact-us" },
-    { label: "Vá» chÃºng tÃ´i", to: "/about-us" },
+    { label: "Trang chủ", to: "/home" },
+    { label: "Tải ứng dụng", to: "/download-app" },
+    { label: "Liên hệ", to: "/contact-us" },
+    { label: "Về chúng tôi", to: "/about-us" },
   ];
 
   const loggedInMenuItems = [
-    { label: "Trang chá»§", to: "/home" },
-    { label: "BÃ i viáº¿t", to: "/blog" },
-    { label: "Cá»­a hÃ ng", to: "/upgrade-account" },
+    { label: "Trang chủ", to: "/home" },
+    { label: "Bài viết", to: "/blog" },
+    { label: "Cửa hàng", to: "/upgrade-account" },
     { label: "HerbotAI", to: "/chat-with-herbot" },
-    { label: "Táº£i á»©ng dá»¥ng", to: "/download-app" },
+    { label: "Tải ứng dụng", to: "/download-app" },
   ];
 
   const menuItems = isLoggedIn ? loggedInMenuItems : loggedOutMenuItems;
@@ -93,15 +93,19 @@ const Header = () => {
           <ul className="nav-list">
             {menuItems.map((item) => (
               <li key={item.label} className="nav-item">
-                <NavLink
-                  to={item.to}
-                  end={item.to === "/home"}
-                  className={({ isActive }) =>
-                    item.to !== "#" && isActive ? "nav-link active" : "nav-link"
-                  }
-                >
-                  {item.label}
-                </NavLink>
+                {item.isDisabled ? (
+                  <span className="nav-link" aria-disabled="true">{item.label}</span>
+                ) : (
+                  <NavLink
+                    to={item.to}
+                    end={item.to === "/home"}
+                    className={({ isActive }) =>
+                      item.to !== "#" && isActive ? "nav-link active" : "nav-link"
+                    }
+                  >
+                    {item.label}
+                  </NavLink>
+                )}
               </li>
             ))}
           </ul>
@@ -110,7 +114,7 @@ const Header = () => {
         <div className="header-right">
           {isLoggedIn ? (
             <div className="header-user-actions">
-              <Link className="header-cart-btn" aria-label="Giá» hÃ ng" to="/upgrade-account">
+              <Link className="header-cart-btn" aria-label="Giỏ hàng" to="/upgrade-account">
                 <ShoppingBag size={20} strokeWidth={2} />
               </Link>
 
@@ -118,7 +122,7 @@ const Header = () => {
                 <button
                   className="header-avatar-btn"
                   type="button"
-                  aria-label="Má»Ÿ menu tÃ i khoáº£n"
+                  aria-label="Mở menu tài khoản"
                   aria-haspopup="menu"
                   aria-expanded={isProfileMenuOpen}
                   onClick={() => setIsProfileMenuOpen((value) => !value)}
@@ -152,8 +156,8 @@ const Header = () => {
             </div>
           ) : (
             <div className="header-auth">
-              <Link className="btn-signup" to="/login">ÄÄƒng nháº­p</Link>
-              <Link className="btn-login" to="/register">ÄÄƒng kÃ½</Link>
+              <Link className="btn-signup" to="/login">Đăng nhập</Link>
+              <Link className="btn-login" to="/register">Đăng ký</Link>
             </div>
           )}
         </div>
@@ -161,7 +165,7 @@ const Header = () => {
         <button
           className={`menu-toggle ${isMenuOpen ? "active" : ""}`}
           onClick={toggleMenu}
-          aria-label="Má»Ÿ menu"
+          aria-label="Mở menu"
         >
           <span></span>
           <span></span>

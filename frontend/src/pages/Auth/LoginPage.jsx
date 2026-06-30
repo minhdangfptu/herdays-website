@@ -114,7 +114,17 @@ function LoginForm() {
 
   const completeLogin = useCallback((result) => {
     setAuthSession(result)
-    navigate(result.user.role === 'admin' ? '/admin/posts' : '/home')
+    navigate(result.user.role === 'admin' ? '/admin/blog' : '/home')
+  }, [navigate])
+
+  const completeSocialLogin = useCallback((result) => {
+    setAuthSession(result)
+    const shouldCompleteQuiz = result.isNewUser || !result.user.targetStatus
+    if (result.user.role === 'admin') {
+      navigate('/admin/blog')
+      return
+    }
+    navigate(shouldCompleteQuiz ? '/welcome-quiz' : '/home')
   }, [navigate])
 
   const handleGoogleError = useCallback((message) => {
@@ -211,12 +221,12 @@ function LoginForm() {
             <GoogleAuthButton
               label="Đăng nhập bằng Google"
               buttonText="signin_with"
-              onAuthenticated={completeLogin}
+              onAuthenticated={completeSocialLogin}
               onError={handleGoogleError}
             />
             <FacebookAuthButton
               label="Đăng nhập với Facebook"
-              onAuthenticated={completeLogin}
+              onAuthenticated={completeSocialLogin}
               onError={handleFacebookError}
             />
           </div>

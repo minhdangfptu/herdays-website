@@ -17,7 +17,7 @@ const Footer = () => {
       title: "Tính năng",
       links: [
         { name: "Mua sắm", href: "#" },
-        { name: "Blog - Bài viết", href: "#" },
+        { name: "Blog - Bài viết", href: "/blog" },
         { name: "Herbot", href: "#" },
       ],
     },

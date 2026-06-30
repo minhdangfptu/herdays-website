@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiEdit2, FiTrash2, FiInfo, FiX } from "react-icons/fi";
 import { AiOutlineUser, AiOutlineCheck } from "react-icons/ai";
 import { Phone, Mail, Calendar, Briefcase, MapPin, Heart } from "lucide-react";
@@ -23,10 +24,34 @@ const accountTypeLabels = {
   others: "Khác",
 };
 
+const formatVietnamPhoneForDisplay = (phone) => {
+  if (!phone) return "";
+  if (/^\+84\d{9}$/.test(phone)) return `0${phone.slice(3)}`;
+  if (/^84\d{9}$/.test(phone)) return `0${phone.slice(2)}`;
+  return phone;
+};
+
+const normalizeProfilePhoneInput = (value) => value.replace(/\D/g, "").slice(0, 10);
+
+const isValidVietnamPhoneInput = (phone) => !phone || /^0\d{9}$/.test(phone);
+
+const buildProfileUpdates = (formData, savedProfile) => {
+  const updates = {};
+  const editableFields = ["fullName", "phone", "address"];
+
+  editableFields.forEach((field) => {
+    if ((formData[field] || "") !== (savedProfile?.[field] || "")) {
+      updates[field] = formData[field];
+    }
+  });
+
+  return updates;
+};
+
 const mapProfileToForm = (profile) => ({
   displayName: profile.fullName || profile.email || "HERDAYS user",
   email: profile.email || "",
-  phone: profile.phone || "",
+  phone: formatVietnamPhoneForDisplay(profile.phone),
   fullName: profile.fullName || "",
   dateOfBirth: profile.dateOfBirth
     ? new Date(profile.dateOfBirth).toLocaleDateString("vi-VN")
@@ -49,6 +74,7 @@ const getInitials = (name, email) => {
 };
 
 export default function UserProfile() {
+  const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -99,18 +125,35 @@ export default function UserProfile() {
   };
 
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: field === "phone" ? normalizeProfilePhoneInput(value) : value,
+    }));
   };
 
   const handleSave = async () => {
+    const updates = buildProfileUpdates(formData, savedProfile);
+
+    if (Object.keys(updates).length === 0) {
+      toast("Không có thông tin nào cần cập nhật.");
+      setIsEditing(false);
+      return;
+    }
+
+    if (updates.fullName !== undefined && !updates.fullName.trim()) {
+      toast.error("Họ và tên không được để trống.");
+      return;
+    }
+
+    if (updates.phone !== undefined && !isValidVietnamPhoneInput(updates.phone)) {
+      toast.error("Số điện thoại Việt Nam phải có 10 chữ số và bắt đầu bằng 0.");
+      return;
+    }
+
     const loadingToast = toast.loading("Đang cập nhật hồ sơ...");
 
     try {
-      const result = await profileApi.updateProfile({
-        fullName: formData.fullName,
-        phone: formData.phone,
-        address: formData.address,
-      });
+      const result = await profileApi.updateProfile(updates);
       const nextProfile = mapProfileToForm(result.profile);
       setSavedProfile(nextProfile);
       setFormData(nextProfile);
@@ -124,6 +167,10 @@ export default function UserProfile() {
   const handleCancel = () => {
     setIsEditing(false);
     if (savedProfile) setFormData(savedProfile);
+  };
+
+  const handleRetakeQuiz = () => {
+    navigate("/welcome-quiz", { state: { returnTo: "/profile" } });
   };
 
   const fieldConfigs = [
@@ -145,6 +192,8 @@ export default function UserProfile() {
       field: "phone",
       icon: Phone,
       readValue: formData.phone,
+      inputMode: "tel",
+      placeholder: "Ví dụ: 0912345678",
     },
     {
       label: "Ngày sinh",
@@ -240,6 +289,13 @@ export default function UserProfile() {
                   Chỉnh sửa
                 </button>
                 <button
+                  className="user-profile-btn user-profile-btn--quiz"
+                  onClick={handleRetakeQuiz}
+                >
+                  <Heart size={16} />
+                  Trả lời quiz lại
+                </button>
+                <button
                   className="user-profile-btn user-profile-btn--delete"
                   onClick={() => setShowDeleteModal(true)}
                 >
@@ -295,7 +351,7 @@ export default function UserProfile() {
             </div>
 
             <div className="user-profile-details-grid">
-              {fieldConfigs.map(({ label, field, icon: Icon, readValue, readOnly, changeGoalText }) => (
+              {fieldConfigs.map(({ label, field, icon: Icon, readValue, readOnly, changeGoalText, inputMode, placeholder }) => (
                 <div key={field} className="user-profile-detail-row">
                   <span className="user-profile-detail-label">{label}</span>
                   {isEditing && !readOnly ? (
@@ -306,7 +362,9 @@ export default function UserProfile() {
                         strokeWidth={2}
                       />
                       <input
-                        type="text"
+                        type={field === "phone" ? "tel" : "text"}
+                        inputMode={inputMode}
+                        placeholder={placeholder}
                         value={formData[field]}
                         onChange={(e) => handleChange(field, e.target.value)}
                         className="user-profile-input w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-[#ED77A5]"
@@ -316,7 +374,7 @@ export default function UserProfile() {
                     <div className="flex items-center gap-2">
                       <span className="user-profile-detail-value">{readValue}</span>
                       {changeGoalText && (
-                        <span className="user-profile-goal-link">{changeGoalText}</span>
+                        <button className="user-profile-goal-link" type="button" onClick={handleRetakeQuiz}>{changeGoalText}</button>
                       )}
                     </div>
                   )}

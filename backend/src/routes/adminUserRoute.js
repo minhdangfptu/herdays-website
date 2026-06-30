@@ -8,6 +8,7 @@ const router = express.Router();
 router.use(authMiddleware, adminMiddleware);
 
 router.get('/', adminUserController.listUsers);
+router.patch('/:id/disable', adminUserController.disableUser);
 router.get('/:id', adminUserController.getUser);
 
 export default router;

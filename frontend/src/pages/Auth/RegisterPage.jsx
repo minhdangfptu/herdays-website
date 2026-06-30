@@ -101,17 +101,24 @@ function RegisterForm() {
   const [isConfirmVisible, setIsConfirmVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
+  const navigateAfterSocialAuth = useCallback((result) => {
+    const shouldCompleteQuiz = result.isNewUser || !result.user.targetStatus
+    navigate(result.user.role === 'admin'
+      ? '/admin/blog'
+      : shouldCompleteQuiz ? '/welcome-quiz' : '/home')
+  }, [navigate])
+
   const completeGoogleAuth = useCallback((result) => {
     setAuthSession(result)
     toast.success('Đăng nhập Google thành công.')
-    navigate(result.user.role === 'admin' ? '/admin/posts' : '/home')
-  }, [navigate])
+    navigateAfterSocialAuth(result)
+  }, [navigateAfterSocialAuth])
 
   const completeFacebookAuth = useCallback((result) => {
     setAuthSession(result)
     toast.success('Đăng nhập Facebook thành công.')
-    navigate(result.user.role === 'admin' ? '/admin/posts' : '/home')
-  }, [navigate])
+    navigateAfterSocialAuth(result)
+  }, [navigateAfterSocialAuth])
 
   const handleGoogleError = useCallback((message) => {
     toast.error(message || 'Không thể đăng nhập bằng Google. Vui lòng thử lại.')

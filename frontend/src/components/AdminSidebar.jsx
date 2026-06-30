@@ -6,6 +6,7 @@ import {
   Store,
   BotMessageSquare,
   Users,
+  Mail,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -18,6 +19,7 @@ const navItems = [
   { icon: Store, label: "Cửa hàng", to: "/admin/shop" },
   { icon: BotMessageSquare, label: "HerbotAI", to: "/admin/herbotai" },
   { icon: Users, label: "Người dùng", to: "/admin/users" },
+  { icon: Mail, label: "Quản lý Liên hệ", to: "/admin/contacts" },
 ];
 
 const AdminSidebar = () => {

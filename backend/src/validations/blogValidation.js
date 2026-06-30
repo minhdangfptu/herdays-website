@@ -5,13 +5,21 @@ import HttpError from '../utils/httpError.js';
 
 const POST_STATUSES = ['Draft', 'Published'];
 const MAX_PAGE_SIZE = 50;
+const EDITOR_STYLE_TAGS = ['p', 'div', 'h1', 'h2', 'h3', 'li', 'blockquote'];
 
 const sanitizeContent = (content) => sanitizeHtml(content, {
-  allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'figure', 'figcaption']),
+  allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'figure', 'figcaption', 'h1', 'h2', 'h3']),
   allowedAttributes: {
     ...sanitizeHtml.defaults.allowedAttributes,
+    ...Object.fromEntries(EDITOR_STYLE_TAGS.map((tag) => [tag, ['style']])),
     a: ['href', 'name', 'target', 'rel'],
     img: ['src', 'alt', 'width', 'height', 'loading']
+  },
+  allowedStyles: {
+    '*': {
+      'font-size': [/^0\.875rem$/],
+      'text-align': [/^(left|center|right|justify)$/]
+    }
   },
   allowedSchemes: ['http', 'https', 'mailto'],
   transformTags: {

@@ -25,6 +25,9 @@ import ChangePassword from "./pages/Auth/ChangePassword.jsx";
 import SubscriptionStep3 from "./pages/Subcription/SubscriptionStep3.jsx";
 import UserProfile from "./pages/Profile/UserProfile.jsx";
 import AdminHome from "./pages/Admin/AdminHome.jsx";
+import AdminUsersPage from "./pages/Admin/AdminUsersPage.jsx";
+import AdminUserDetailPage from "./pages/Admin/AdminUserDetailPage.jsx";
+import AdminContactsPage from "./pages/Admin/AdminContactsPage.jsx";
 import QuizPage from "./pages/QuizPage.jsx";
 import ChatWithAI from "./pages/AI/ChatWithAI.jsx";
 import AboutUs from "./pages/Common/AboutUs.jsx";
@@ -47,7 +50,11 @@ function AdminLayout() {
             <Route path="posts" element={<Navigate to="/admin/blog" replace />} />
             <Route path="shop" element={<div>Shop Admin (coming soon)</div>} />
             <Route path="herbotai" element={<div>HerbotAI Admin (coming soon)</div>} />
-            <Route path="users" element={<div>Users Admin (coming soon)</div>} />
+            <Route path="users" element={<AdminUsersPage />} />
+            <Route path="users/:userId" element={<AdminUserDetailPage />} />
+            <Route path="contacts" element={<AdminContactsPage />} />
+            <Route path="contact" element={<Navigate to="/admin/contacts" replace />} />
+            <Route path="lien-he" element={<Navigate to="/admin/contacts" replace />} />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
         </div>

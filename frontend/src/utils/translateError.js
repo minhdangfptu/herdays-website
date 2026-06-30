@@ -16,6 +16,8 @@ const TRANSLATIONS = {
   'Please confirm OTP before login':               'Vui lòng xác thực OTP trước khi đăng nhập',
   'Please register with email, phone and password before social login': 'Vui lòng đăng ký bằng email, số điện thoại và mật khẩu trước khi đăng nhập bằng mạng xã hội',
   'Social account is linked to another user':      'Tài khoản mạng xã hội này đã được liên kết với người dùng khác',
+  'User account is disabled':                      'Tài khoản đã bị vô hiệu hóa.',
+  'Cannot disable own account':                    'Không thể vô hiệu hóa chính tài khoản của bạn.',
 
   // Auth — tokens
   'Invalid or expired refresh token':              'Token làm mới không hợp lệ hoặc đã hết hạn',
@@ -46,6 +48,7 @@ const TRANSLATIONS = {
   // Validation — common
   'E12000': 'Email đã được sử dụng cho tài khoản khác.',
   'P12000': 'Số điện thoại đã được sử dụng cho tài khoản khác.',
+  'Invalid Vietnamese phone format': 'Số điện thoại Việt Nam phải có 10 chữ số và bắt đầu bằng 0.',
 }
 
 /**

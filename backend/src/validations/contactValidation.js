@@ -1,5 +1,6 @@
 import HttpError from '../utils/httpError.js';
 import { CONTACT_TOPICS } from '../models/contactRequestModel.js';
+import mongoose from 'mongoose';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const phoneRegex = /^[\d\s.\-+()]{7,16}$/;
@@ -82,5 +83,35 @@ export const validateCreateContact = (body) => {
 export const validateContactPagination = (query = {}) => {
   const page = Math.max(1, Number.parseInt(query.page, 10) || 1);
   const limit = Math.min(MAX_PAGE_SIZE, Math.max(1, Number.parseInt(query.limit, 10) || 10));
-  return { page, limit };
+  const result = { page, limit };
+
+  if (query.search) {
+    const search = String(query.search).trim();
+    if (search) result.search = search;
+  }
+
+  if (query.isRessponsed !== undefined && query.isRessponsed !== '') {
+    if (!['true', 'false'].includes(String(query.isRessponsed))) {
+      throw new HttpError(400, 'isRessponsed must be true or false');
+    }
+
+    result.isRessponsed = String(query.isRessponsed) === 'true';
+  }
+
+  return result;
+};
+
+export const validateContactId = (id) => {
+  if (!mongoose.isValidObjectId(id)) throw new HttpError(400, 'contactId is invalid');
+  return id;
+};
+
+export const validateContactResponseStatus = (body) => {
+  const payload = body && typeof body === 'object' && !Array.isArray(body) ? body : {};
+
+  if (typeof payload.isRessponsed !== 'boolean') {
+    throw new HttpError(400, 'isRessponsed must be a boolean');
+  }
+
+  return payload.isRessponsed;
 };

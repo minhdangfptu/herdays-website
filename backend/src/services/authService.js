@@ -205,10 +205,12 @@ export const confirmOtp = async ({ identifier, otp, purpose }) => {
   if (purpose === 'register') {
     user.isVerified = true;
     await user.save();
+    const tokens = await issueTokens(user);
 
     return {
       message: 'OTP confirmed successfully',
-      user: sanitizeUser(user)
+      user: sanitizeUser(user),
+      ...tokens
     };
   }
 
@@ -225,6 +227,7 @@ export const login = async ({ identifier, password }) => {
   const isMatched = await bcrypt.compare(password, user.password);
   if (!isMatched) throw new HttpError(401, 'Invalid credentials');
 
+  if (user.isDisabled) throw new HttpError(403, 'User account is disabled');
   if (!user.isVerified) throw new HttpError(403, 'Please confirm OTP before login');
 
   const tokens = await issueTokens(user);
@@ -310,7 +313,7 @@ export const refreshToken = async ({ refreshToken: token }) => {
   if (!tokenRecord) throw new HttpError(401, 'Invalid or expired refresh token');
 
   const user = await User.findById(payload.id);
-  if (!user || !user.isVerified) throw new HttpError(401, 'Invalid or expired refresh token');
+  if (!user || !user.isVerified || user.isDisabled) throw new HttpError(401, 'Invalid or expired refresh token');
 
   tokenRecord.revokedAt = new Date();
   await tokenRecord.save();
@@ -357,6 +360,7 @@ export const socialLogin = async ({ provider, idToken, accessToken }) => {
     ? { $or: [{ email }, providerIdQuery] }
     : { email };
   let user = await User.findOne(userQuery);
+  let isNewUser = false;
 
   if (!user) {
     user = await User.create({
@@ -367,7 +371,9 @@ export const socialLogin = async ({ provider, idToken, accessToken }) => {
       [socialProfile.providerIdField]: socialProfile.id,
       isVerified: true
     });
+    isNewUser = true;
   } else {
+    if (user.isDisabled) throw new HttpError(403, 'User account is disabled');
     if (!user.isVerified) throw new HttpError(403, 'Please confirm OTP before login');
     if (
       user[socialProfile.providerIdField] &&
@@ -393,6 +399,7 @@ export const socialLogin = async ({ provider, idToken, accessToken }) => {
 
   return {
     user: sanitizeUser(user),
+    isNewUser,
     ...tokens
   };
 };

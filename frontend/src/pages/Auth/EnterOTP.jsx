@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import herdaysLogo from '../../assets/herdays-logo.png';
 import './EnterOTP.scss';
-import { authApi } from '../../services/apiService.js';
+import { authApi, setAuthSession } from '../../services/apiService.js';
 
 const EnterOTP = () => {
   const navigate = useNavigate();
@@ -40,6 +40,13 @@ const EnterOTP = () => {
       if (purpose === 'reset-password') {
         toast.success('OTP hợp lệ. Vui lòng đặt mật khẩu mới.', { id: loadingToast });
         navigate(`/reset-password?resetToken=${encodeURIComponent(result.resetToken)}`);
+        return;
+      }
+
+      if (result.accessToken && result.refreshToken) {
+        setAuthSession(result);
+        toast.success('Xác thực tài khoản thành công. Vui lòng trả lời quiz.', { id: loadingToast });
+        navigate('/welcome-quiz');
         return;
       }
 

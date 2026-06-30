@@ -55,6 +55,11 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false
     },
+    isDisabled: {
+      type: Boolean,
+      default: false,
+      index: true
+    },
     dateOfBirth: {
       type: Date,
       default: null

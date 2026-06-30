@@ -253,6 +253,21 @@ export const blogApi = {
   }
 }
 
+export const quizApi = {
+  getQuestions: async (tag) => {
+    const response = await request(`/quiz/${tag}`)
+    return { questions: response.data }
+  },
+  submitAnswers: async (questionAnswerContent) => {
+    const response = await request('/quiz/answers', {
+      method: 'POST',
+      body: { questionAnswerContent },
+      isAuthenticated: true
+    })
+    return { message: response.message, result: response.data }
+  }
+}
+
 export const contactApi = {
   submitContact: async (data) => {
     const response = await request('/contacts', {
@@ -337,6 +352,17 @@ export const adminApi = {
     const response = await request(`/admin/users${buildQuery(params)}`, { isAuthenticated: true })
     return { users: response.data, pagination: response.meta }
   },
+  getUser: async (id) => {
+    const response = await request(`/admin/users/${id}`, { isAuthenticated: true })
+    return { user: response.data }
+  },
+  disableUser: async (id) => {
+    const response = await request(`/admin/users/${id}/disable`, {
+      method: 'PATCH',
+      isAuthenticated: true
+    })
+    return { message: response.message, user: response.data }
+  },
   getOrders: async (params = {}) => {
     const response = await request(`/admin/orders${buildQuery(params)}`, { isAuthenticated: true })
     return { orders: response.data, pagination: response.meta }
@@ -353,9 +379,17 @@ export const adminApi = {
     })
     return response.data
   },
-  getContacts: async () => {
-    const response = await request('/admin/contacts', { isAuthenticated: true })
-    return response.data
+  getContacts: async (params = {}) => {
+    const response = await request(`/admin/contacts${buildQuery(params)}`, { isAuthenticated: true })
+    return { contacts: response.data, pagination: response.meta }
+  },
+  updateContactResponseStatus: async (id, isRessponsed) => {
+    const response = await request(`/admin/contacts/${id}/response-status`, {
+      method: 'PATCH',
+      body: { isRessponsed },
+      isAuthenticated: true
+    })
+    return { message: response.message, contact: response.data }
   }
 }
 
