@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, NavLink } from "react-router-dom";
+import { Link, NavLink, useNavigate } from "react-router-dom";
 import { ShoppingBag } from "lucide-react";
 import "./Header.scss";
 import logoTrang from "../assets/home/logo_trang.png";
@@ -12,28 +12,30 @@ const Header = ({ isLoggedIn = false }) => {
   };
 
   const loggedOutMenuItems = [
-    { label: "Trang chủ", to: "/" },
-    { label: "Tải ứng dụng", to: "#" },
+    { label: "Trang chủ", to: "/home" },
+    { label: "Tải ứng dụng", to: "/download-app" },
     { label: "Liên hệ", to: "/contact-us" },
-    { label: "Về chúng tôi", to: "#" },
+    { label: "Về chúng tôi", to: "/about-us" },
   ];
 
   const loggedInMenuItems = [
-    { label: "Trang chủ", to: "/" },
+    { label: "Trang chủ", to: "/home" },
     { label: "Bài viết", to: "#" },
     { label: "Cửa hàng", to: "#" },
     { label: "HerbotAI", to: "#" },
-    { label: "Tải ứng dụng", to: "#" },
+    { label: "Tải ứng dụng", to: "/download-app" },
   ];
 
   const menuItems = isLoggedIn ? loggedInMenuItems : loggedOutMenuItems;
+
+  const navigate = useNavigate();
 
   return (
     <header className="header">
       <div className="header-container">
         {/* Logo */}
         <div className="header-logo">
-          <Link to="/">
+          <Link to="/home">
             <img src={logoTrang} alt="HERDAYS" className="logo-image" />
           </Link>
         </div>
@@ -76,8 +78,8 @@ const Header = ({ isLoggedIn = false }) => {
             </div>
           ) : (
             <div className="header-auth">
-              <button className="btn-signup">Đăng nhập</button>
-              <button className="btn-login">Đăng ký</button>
+              <button onClick={() => navigate("/login")} className="btn-signup">Đăng nhập</button>
+              <button onClick={() => navigate("/register")} className="btn-login">Đăng ký</button>
             </div>
           )}
         </div>

@@ -1,18 +1,14 @@
-import React, { useState } from "react";
-import {
-  FaStar,
-  FaChevronRight,
-  FaChevronLeft,
-  FaPlus,
-  FaEnvelope,
-} from "react-icons/fa";
+import { useRef } from "react";
+import { FaStar, FaChevronRight, FaChevronLeft, FaPlus, FaEnvelope } from "react-icons/fa";
 import "./HomePage.scss";
 import logomau from "../../assets/home/logo_mau.png";
 import expertBg from "../../assets/home/expert_background_card.png";
+import herbotAi from "../../assets/home/herbot_ai.png";
+import contactImg from "../../assets/home/contact.png";
 
 const HomePage = () => {
-  const [subscriptionIndex, setSubscriptionIndex] = useState(0);
-  const [expertsIndex, setExpertsIndex] = useState(0);
+  const subscriptionRef = useRef(null);
+  const expertsRef = useRef(null);
 
   const subscriptionBoxes = [
     { id: 1, name: "Box Đầu", category: "Theo dõi chu kỳ", price: "363.638 đ" },
@@ -47,26 +43,6 @@ const HomePage = () => {
       experience: "Có hơn 20 năm kinh nghiệm...",
     },
   ];
-
-  const handleSubscriptionPrev = () => {
-    setSubscriptionIndex((prev) =>
-      prev === 0 ? subscriptionBoxes.length - 1 : prev - 1,
-    );
-  };
-
-  const handleSubscriptionNext = () => {
-    setSubscriptionIndex((prev) =>
-      prev === subscriptionBoxes.length - 1 ? 0 : prev + 1,
-    );
-  };
-
-  const handleExpertsPrev = () => {
-    setExpertsIndex((prev) => (prev === 0 ? experts.length - 1 : prev - 1));
-  };
-
-  const handleExpertsNext = () => {
-    setExpertsIndex((prev) => (prev === experts.length - 1 ? 0 : prev + 1));
-  };
 
   return (
     <main className="home-page">
@@ -136,7 +112,7 @@ const HomePage = () => {
       {/* Subscription Box Section */}
       <section className="subscription-section">
         <div className="subscription-header">
-          <h2 className="subscription-title">Herdays Subscription Box</h2>
+          <h2 className="subscription-title"><span className="brand-name">Herdays</span> Subscription Box</h2>
           <p className="subscription-description">
             Các Subscription Box được cá nhân hóa dựa trên tính trạng sức khỏe
             của người dùng
@@ -145,16 +121,20 @@ const HomePage = () => {
         <div className="subscription-carousel">
           <button
             className="carousel-button prev"
-            onClick={handleSubscriptionPrev}
+            onClick={() => {
+              const el = subscriptionRef.current;
+              if (el.scrollLeft === 0) {
+                const totalWidth = el.scrollWidth / 2;
+                el.scrollLeft = totalWidth;
+              }
+              el.scrollBy({ left: -300, behavior: "smooth" });
+            }}
           >
             <FaChevronLeft />
           </button>
-          <div className="subscription-cards">
-            {subscriptionBoxes.map((box, index) => (
-              <div
-                key={box.id}
-                className={`subscription-card ${index === subscriptionIndex ? "active" : ""}`}
-              >
+          <div className="subscription-cards" ref={subscriptionRef}>
+            {[...subscriptionBoxes, ...subscriptionBoxes].map((box, i) => (
+              <div key={`sub-${i}`} className="subscription-card">
                 <div className="subscription-card-image">
                   <img
                     src={`https://placehold.co/200x200/ED77A5/FFFFFF?text=${box.name}`}
@@ -179,7 +159,14 @@ const HomePage = () => {
           </div>
           <button
             className="carousel-button next"
-            onClick={handleSubscriptionNext}
+            onClick={() => {
+              const el = subscriptionRef.current;
+              const halfWidth = el.scrollWidth / 2;
+              if (el.scrollLeft >= halfWidth - 10) {
+                el.scrollLeft = 0;
+              }
+              el.scrollBy({ left: 300, behavior: "smooth" });
+            }}
           >
             <FaChevronRight />
           </button>
@@ -196,19 +183,26 @@ const HomePage = () => {
         <div className="experts-header">
           <p className="experts-label">KẾT NỐI VỚI CHUYÊN GIA</p>
           <h2 className="experts-title">
-            Chuyên Gia Y Tế Hàng Đầu Tại HerDays
+            Chuyên Gia Y Tế Hàng Đầu Tại <span className="brand-name">Herdays</span>
           </h2>
         </div>
         <div className="experts-carousel">
-          <button className="carousel-button prev" onClick={handleExpertsPrev}>
+          <button
+            className="carousel-button prev"
+            onClick={() => {
+              const el = expertsRef.current;
+              if (el.scrollLeft === 0) {
+                const totalWidth = el.scrollWidth / 2;
+                el.scrollLeft = totalWidth;
+              }
+              el.scrollBy({ left: -400, behavior: "smooth" });
+            }}
+          >
             <FaChevronLeft />
           </button>
-          <div className="experts-cards">
-            {experts.map((expert, index) => (
-              <div
-                key={expert.id}
-                className={`expert-card ${index === expertsIndex ? "active" : ""}`}
-              >
+          <div className="experts-cards" ref={expertsRef}>
+            {[...experts, ...experts].map((expert, i) => (
+              <div key={`exp-${i}`} className="expert-card">
                 <div className="expert-card-background">
                   <img src={expertBg} alt="Expert Background" />
                 </div>
@@ -231,9 +225,25 @@ const HomePage = () => {
               </div>
             ))}
           </div>
-          <button className="carousel-button next" onClick={handleExpertsNext}>
+          <button
+            className="carousel-button next"
+            onClick={() => {
+              const el = expertsRef.current;
+              const halfWidth = el.scrollWidth / 2;
+              if (el.scrollLeft >= halfWidth - 10) {
+                el.scrollLeft = 0;
+              }
+              el.scrollBy({ left: 400, behavior: "smooth" });
+            }}
+          >
             <FaChevronRight />
           </button>
+          
+        </div>
+        <div style={{marginTop: '20px'}} className="subscription-footer">
+          <a href="#" className="subscription-link">
+            Tìm hiểu thêm →
+          </a>
         </div>
       </section>
 
@@ -242,8 +252,8 @@ const HomePage = () => {
         <div className="herbot-container">
           <div className="herbot-image">
             <img
-              src="https://placehold.co/400x400/FFF5F8/ED77A5?text=HerbotAI+Robot"
-              alt="HerbotAI Robot"
+              src={herbotAi}
+              alt="HerbotAI"
             />
           </div>
           <div className="herbot-content">
@@ -270,49 +280,29 @@ const HomePage = () => {
       <section className="newsletter-section">
         <div className="newsletter-container">
           <div className="newsletter-box">
+          <p className="herbot-label">LIÊN HỆ</p>
             <h3 className="newsletter-title">Luôn Cập Nhật</h3>
             <p className="newsletter-description">
-              Nhận những tin tức mới nhất về sức khỏe, khuyến cáo từ chuyên gia,
-              và các chương trình khuyến mãi từ HerDays
+            Đăng ký để không bỏ lỡ các bài viết chia sẻ từ chuyên gia dành riêng cho giai đoạn của bạn
             </p>
             <div className="newsletter-input-wrapper">
-              <FaEnvelope className="newsletter-icon" />
+              <FaEnvelope
+                size={16}
+                className="newsletter-icon"
+              />
               <input
                 type="email"
                 placeholder="Nhập địa chỉ email của bạn"
-                className="newsletter-input"
+                className="contact-control newsletter-input"
               />
               <button className="newsletter-button">Gửi</button>
             </div>
           </div>
-          <div className="app-promo-box">
-            <div className="app-promo-content">
-              <h3 className="app-promo-title">
-                Sức khỏe của bạn, ưu tiên của chúng tôi
-              </h3>
-              <p className="app-promo-description">
-                Tải ứng dụng HerDays để trải nghiệm những tính năng tuyệt vời
-              </p>
-              <div className="app-store-buttons">
-                <img
-                  src="https://placehold.co/150x50/000000/FFFFFF?text=Google+Play"
-                  alt="Google Play"
-                  className="app-store-button"
-                />
-                <img
-                  src="https://placehold.co/150x50/000000/FFFFFF?text=App+Store"
-                  alt="App Store"
-                  className="app-store-button"
-                />
-              </div>
-            </div>
-            <div className="app-promo-image">
-              <img
-                src="https://placehold.co/200x300/FFF5F8/ED77A5?text=Mobile+App"
-                alt="Mobile App"
-              />
-            </div>
-          </div>
+          <img
+            src={contactImg}
+            alt="HerDays App"
+            className="app-promo-img"
+          />
         </div>
       </section>
     </main>

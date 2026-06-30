@@ -27,6 +27,8 @@ import AdminHome from "./pages/Admin/AdminHome.jsx";
 import QuizPage from "./pages/QuizPage.jsx";
 import HomePage from "./pages/Common/HomePage.jsx";
 import ChatWithAI from "./pages/AI/ChatWithAI.jsx";
+import AboutUs from "./pages/Common/AboutUs.jsx";
+import DownloadAppPage from "./pages/Common/DownloadAppPage.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -71,6 +73,8 @@ function HeaderFooterLayout() {
         <Route path="/policy" element={<Policy />} />
         <Route path="/home" element={<HomePage />} />
         <Route path="/profile" element={<UserProfile />} />
+        <Route path="/about-us" element={<AboutUs />} />
+        <Route path="/download-app" element={<DownloadAppPage />} />
         <Route element={<BlogShell />}>
           <Route path="/blog" element={<BlogTopicsPage />} />
           <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
