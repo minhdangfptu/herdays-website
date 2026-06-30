@@ -479,7 +479,10 @@ $font-dancing: 'Dancing Script', cursive;
 }
 
 .expert-card {
-  background-color: $white;
+  background-image: url("../../assets/home/expert_background_card.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
   border-radius: 12px;
   overflow: hidden;
   @include card-shadow;
@@ -494,13 +497,6 @@ $font-dancing: 'Dancing Script', cursive;
 .expert-card-background {
   width: 100%;
   height: 180px;
-  position: relative;
-
-  img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
 }
 
 .expert-card-avatar {
@@ -523,7 +519,10 @@ $font-dancing: 'Dancing Script', cursive;
 
 .expert-card-content {
   padding: $spacing-lg $spacing-md $spacing-md;
+  background-color: $white;
+  border-radius: 12px;
   text-align: center;
+  margin: 10px;
 }
 
 .expert-card-name {
