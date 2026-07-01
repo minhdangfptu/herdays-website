@@ -70,8 +70,9 @@ $text-dark: #333333;
         align-items: center;
 
         .nav-link {
-          font-size: 0.875rem;
-          font-weight: 500;
+          
+          font-size: 1rem;
+          font-weight: 400;
           text-decoration: none;
           transition: all 0.3s ease;
           color: $secondary-color;
@@ -180,13 +181,12 @@ $text-dark: #333333;
 
     .btn-signup {
       padding: 0.5rem 1.5rem;
-      border: 2px solid $secondary-color;
       border-radius: 8px;
       background-color: transparent;
       color: $secondary-color;
       cursor: pointer;
-      font-size: 0.875rem;
-      font-weight: 500;
+      font-size: 1;
+      font-weight: 400;
       transition: all 0.3s ease;
 
       &:hover {
