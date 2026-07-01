@@ -10,15 +10,12 @@ $green: #4CAF50;
 $red: #F44336;
 
 // Font Variables
-$font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-  'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
 
 // Admin Home Container
 .admin-home {
   width: 100%;
   height: 100%;
   background-color: #FFFFFF;
-  font-family: $font-primary;
 }
 
 .admin-home-inner {
@@ -114,7 +111,6 @@ $font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen'
   font-size: 14px;
   background-color: $light-gray;
   color: $dark-text;
-  font-family: $font-primary;
   transition: border-color 0.3s ease, background-color 0.3s ease;
 
   &::placeholder {
@@ -386,7 +382,6 @@ $font-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen'
   color: $gray-text;
   cursor: pointer;
   transition: color 0.3s ease;
-  font-family: $font-primary;
   border-bottom: 2px solid transparent;
   padding-bottom: 4px;
 

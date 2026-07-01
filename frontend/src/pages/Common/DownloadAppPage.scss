@@ -1,8 +1,7 @@
 // ============================================
-// DownLoadAppPage Styles
+// Variables
 // ============================================
 
-// Color Variables
 $primary-pink: #F176A9;
 $dark-pink: #D05E8E;
 $light-pink: #FFE8F3;
@@ -12,13 +11,15 @@ $gray-text: #4D4D4D;
 $light-gray: #F0F0F0;
 $white: #FFFFFF;
 $border-color: #E8E8E8;
-
-// Font Variables
 $font-primary: 'Roboto', sans-serif;
 
-// Container
+// ============================================
+// Page Container
+// ============================================
+
 .download-app-page {
-  background-color: $white;
+  overflow-x: hidden;
+  background-color: rgb(255, 255, 255);
   font-family: $font-primary;
 }
 
@@ -41,23 +42,24 @@ $font-primary: 'Roboto', sans-serif;
 // ============================================
 
 .download-app-hero {
-  background: linear-gradient(135deg, $very-light-pink 0%, $light-pink 100%);
-  padding: 80px 20px;
+  background-color: #F9FAFB;
+  padding: 60px 20px;
+  margin-bottom: 180px;
   text-align: center;
 
   @media (max-width: 768px) {
-    padding: 60px 15px;
+    padding: 40px 15px;
   }
 
   @media (max-width: 480px) {
-    padding: 40px 10px;
+    padding: 20px 10px;
   }
 }
 
 .download-app-hero-title {
   font-size: 48px;
   font-weight: 700;
-  color: $dark-text;
+  color: $primary-pink;
   margin: 0 0 20px 0;
   line-height: 1.3;
 
@@ -74,7 +76,7 @@ $font-primary: 'Roboto', sans-serif;
 .download-app-hero-subtitle {
   font-size: 16px;
   color: $gray-text;
-  margin: 0 0 40px 0;
+  margin: 0 0 20px 0;
   line-height: 1.6;
   max-width: 700px;
   margin-left: auto;
@@ -93,335 +95,919 @@ $font-primary: 'Roboto', sans-serif;
 
 .download-app-buttons {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   justify-content: center;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
 
   @media (max-width: 480px) {
     flex-direction: column;
     margin-bottom: 40px;
+
+    img {
+      height: 35px;
+    }
   }
 }
 
 .download-app-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 28px;
-  border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  display: inline-block;
   text-decoration: none;
   transition: all 0.3s ease;
-  border: none;
-  cursor: pointer;
-  font-family: $font-primary;
 
-  @media (max-width: 480px) {
-    width: 100%;
-    justify-content: center;
-    padding: 14px 20px;
-  }
-}
-
-.download-app-btn-google {
-  background-color: $dark-text;
-  color: $white;
-
-  &:hover {
-    background-color: darken($dark-text, 10%);
-    transform: translateY(-2px);
-  }
-}
-
-.download-app-btn-apple {
-  background-color: $primary-pink;
-  color: $white;
-
-  &:hover {
-    background-color: $dark-pink;
-    transform: translateY(-2px);
-  }
-}
-
-.download-app-mockups-preview {
-  display: flex;
-  justify-content: center;
-  align-items: flex-end;
-  gap: 20px;
-  min-height: 400px;
-
-  @media (max-width: 768px) {
-    gap: 15px;
-    min-height: 300px;
-  }
-
-  @media (max-width: 480px) {
-    min-height: 250px;
-    gap: 10px;
-  }
-}
-
-.download-app-phone {
-  width: 160px;
-  height: 320px;
-  background-color: $white;
-  border: 8px solid $dark-text;
-  border-radius: 40px;
-  position: relative;
-
-  @media (max-width: 768px) {
-    width: 120px;
-    height: 240px;
-    border-width: 6px;
-    border-radius: 30px;
-  }
-
-  @media (max-width: 480px) {
-    width: 100px;
-    height: 200px;
-    border-width: 4px;
-    border-radius: 24px;
-  }
-
-  &.download-app-phone-1 {
-    transform: translateY(40px);
-
-    @media (max-width: 768px) {
-      transform: translateY(30px);
-    }
-  }
-
-  &.download-app-phone-3 {
-    transform: translateY(40px);
-
-    @media (max-width: 768px) {
-      transform: translateY(30px);
-    }
-  }
-}
-
-// ============================================
-// Feature Sections
-// ============================================
-
-.download-app-feature-section {
-  padding: 80px 20px;
-  background-color: $white;
-  border-bottom: 1px solid $border-color;
-
-  @media (max-width: 768px) {
-    padding: 60px 15px;
-  }
-
-  @media (max-width: 480px) {
-    padding: 40px 10px;
-  }
-
-  .download-app-container {
-    display: flex;
-    align-items: center;
-    gap: 80px;
-
-    @media (max-width: 1024px) {
-      gap: 60px;
-    }
-
-    @media (max-width: 768px) {
-      flex-direction: column;
-      gap: 40px;
-    }
-  }
-}
-
-.download-app-feature-left {
-  .download-app-container {
-    flex-direction: row;
-  }
-
-  @media (max-width: 768px) {
-    .download-app-container {
-      flex-direction: column;
-    }
-  }
-}
-
-.download-app-feature-right {
-  .download-app-container {
-    flex-direction: row-reverse;
-  }
-
-  @media (max-width: 768px) {
-    .download-app-container {
-      flex-direction: column;
-    }
-  }
-}
-
-.download-app-feature-content {
-  flex: 1;
-
-  @media (max-width: 768px) {
-    text-align: center;
-  }
-}
-
-.download-app-feature-title {
-  font-size: 36px;
-  font-weight: 700;
-  color: $primary-pink;
-  margin: 0 0 12px 0;
-  line-height: 1.3;
-
-  @media (max-width: 768px) {
-    font-size: 28px;
-  }
-
-  @media (max-width: 480px) {
-    font-size: 24px;
-  }
-}
-
-.download-app-feature-subtitle {
-  font-size: 16px;
-  color: $gray-text;
-  margin: 0 0 24px 0;
-  line-height: 1.6;
-
-  @media (max-width: 480px) {
-    font-size: 14px;
-    margin-bottom: 16px;
-  }
-}
-
-.download-app-feature-description {
-  font-size: 15px;
-  color: $gray-text;
-  margin: 0 0 24px 0;
-  line-height: 1.6;
-
-  @media (max-width: 480px) {
-    font-size: 14px;
-  }
-}
-
-.download-app-features-grid {
-  display: grid;
-  gap: 24px;
-
-  @media (max-width: 480px) {
-    gap: 16px;
-  }
-}
-
-.download-app-features-grid-2 {
-  grid-template-columns: repeat(2, 1fr);
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.download-app-features-grid-4 {
-  grid-template-columns: repeat(2, 1fr);
-
-  @media (max-width: 768px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  @media (max-width: 480px) {
-    grid-template-columns: 1fr;
-  }
-}
-
-.download-app-feature-card {
-  padding: 20px;
-  background-color: $light-gray;
-  border-radius: 12px;
-  text-align: center;
-  transition: all 0.3s ease;
-
-  @media (max-width: 480px) {
-    padding: 16px;
+  img {
+    height: 48px;
     border-radius: 8px;
   }
 
   &:hover {
-    background-color: $light-pink;
-    transform: translateY(-4px);
+    transform: translateY(-2px);
+    opacity: 0.9;
   }
-}
-
-.download-app-feature-icon {
-  font-size: 36px;
-  margin-bottom: 12px;
 
   @media (max-width: 480px) {
-    font-size: 28px;
-    margin-bottom: 8px;
+    width: 100%;
+    text-align: center;
+
+    img {
+      width: 100%;
+      max-width: 200px;
+      height: auto;
+    }
   }
 }
 
-.download-app-feature-name {
+// ============================================
+// Hero — Mockups
+// ============================================
+
+.download-app-mockups-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 60px;
+  // overflow-y: hidden;
+}
+
+.download-app-mockups-img {
+  max-width: 100%;
+  height: auto;
+  max-height: 480px;
+  object-fit: contain;
+}
+
+.download-app-mockups-overlay {
+  position: absolute;
+  bottom: -110px;
+  left: 0;
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  height: 375px;
+  background-color: $primary-pink;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  z-index: 1;
+}
+
+.overlay-text-container {
+  text-align: center;
+  color: $white;
+  transform: translateY(180%);
+  margin-top: 50px;
+  margin-bottom: auto;
+  padding: 0 20px;
+}
+
+.overlay-heading {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 0 0 12px 0;
+
+  @media (max-width: 768px) {
+    font-size: 24px;
+  }
+}
+
+.overlay-subheading {
   font-size: 16px;
-  font-weight: 600;
-  color: $dark-text;
-  margin: 0 0 8px 0;
+  margin: 0;
+  opacity: 0.9;
 
-  @media (max-width: 480px) {
+  @media (max-width: 768px) {
     font-size: 14px;
   }
 }
 
-.download-app-feature-desc {
-  font-size: 14px;
-  color: $gray-text;
-  margin: 0;
-  line-height: 1.5;
-
-  @media (max-width: 480px) {
-    font-size: 13px;
-  }
+.download-app-mockups-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  width: 100%;
+  max-width: 1100px;
+  padding: 0 60px;
+  align-content: center;
+  margin-bottom: 40px;
+  transform: translateY(50%);
 }
 
-.download-app-mockup-container {
-  flex: 1;
+.download-app-mockups-card {
+  height: 370px;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  overflow: hidden;
   display: flex;
-  justify-content: center;
-  align-items: center;
-  min-height: 500px;
+  flex-direction: column;
+  position: relative;
+}
 
-  @media (max-width: 768px) {
-    min-height: 400px;
+.download-app-mockups-card-img {
+  width: 100%;
+  height: 100%;
+  object-fit: none;
+}
+
+.download-app-mockups-card-text {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px;
+  text-align: left;
+}
+
+.download-app-mockups-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: $white;
+  margin: 0 0 4px 0;
+  line-height: 1.3;
+}
+
+.download-app-mockups-card-subtitle {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.85);
+  margin: 0;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .download-app-mockups-overlay {
+    height: 320px;
   }
 
-  @media (max-width: 480px) {
-    min-height: 300px;
+  .download-app-mockups-card {
+    height: 280px;
+  }
+
+  .download-app-mockups-cards {
+    padding: 0 30px;
+    margin-bottom: 24px;
   }
 }
 
-.download-app-phone-mockup {
-  width: 200px;
-  height: 400px;
-  background-color: $white;
-  border: 10px solid $dark-text;
-  border-radius: 48px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-
-  @media (max-width: 768px) {
-    width: 160px;
-    height: 320px;
-    border-width: 8px;
-    border-radius: 40px;
-    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.1);
+@media (max-width: 480px) {
+  .download-app-mockups-overlay {
+    height: 240px;
   }
 
-  @media (max-width: 480px) {
-    width: 130px;
-    height: 260px;
-    border-width: 6px;
-    border-radius: 32px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  .download-app-mockups-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    padding: 0 20px;
+    margin-bottom: 16px;
+  }
+
+  .download-app-mockups-card {
+    height: 220px;
+  }
+}
+
+// ============================================
+// Feature Section 1 — Herbot AI
+// ============================================
+
+.feature-section-1 {
+  margin-top: 180px;
+  padding: 80px 20px;
+  background-color: $white;
+  border-bottom: 1px solid $border-color;
+
+  .download-app-container {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+
+  &__content {
+    flex: 1;
+
+    @media (max-width: 768px) {
+      text-align: center;
+    }
+  }
+
+  &__title {
+    font-size: 36px;
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 12px 0;
+    line-height: 1.3;
+
+    @media (max-width: 768px) {
+      font-size: 28px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 24px;
+    }
+  }
+
+  &__subtitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: $gray-text;
+    margin: 0 0 24px 0;
+    line-height: 1.6;
+
+    @media (max-width: 480px) {
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+  }
+
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+
+  &__card {
+    padding: 20px;
+    background-color: $white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: left;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__card-icon {
+    color: $primary-pink;
+    margin-bottom: 12px;
+  }
+
+  &__card-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 8px 0;
+
+    @media (max-width: 480px) {
+      font-size: 14px;
+    }
+  }
+
+  &__card-desc {
+    font-size: 14px;
+    color: $gray-text;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__mockup {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 500px;
+
+    @media (max-width: 768px) {
+      min-height: 400px;
+    }
+
+    @media (max-width: 480px) {
+      min-height: 300px;
+    }
+  }
+
+  &__phone {
+    width: 370px;
+    height: 600px;
+    object-fit: contain;
+    display: block;
+
+    @media (max-width: 768px) {
+      width: 200px;
+      height: 400px;
+    }
+
+    @media (max-width: 480px) {
+      width: 150px;
+      height: 300px;
+    }
+  }
+}
+
+// ============================================
+// Feature Section 2 — HerbotAI Assistant
+// ============================================
+
+.feature-section-2 {
+  padding: 80px 20px;
+  background-color: $white;
+  border-bottom: 1px solid $border-color;
+
+  .download-app-container {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+
+  &__mockup {
+    flex: 0.5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 500px;
+
+    @media (max-width: 768px) {
+      min-height: 400px;
+    }
+
+    @media (max-width: 480px) {
+      min-height: 300px;
+    }
+  }
+
+  &__phone {
+    width: 370px;
+    height: 600px;
+    object-fit: contain;
+    display: block;
+
+    @media (max-width: 768px) {
+      width: 200px;
+      height: 400px;
+    }
+
+    @media (max-width: 480px) {
+      width: 150px;
+      height: 300px;
+    }
+  }
+
+  &__content {
+    flex: 1;
+
+    @media (max-width: 768px) {
+      text-align: center;
+    }
+  }
+
+  &__title {
+    font-size: 36px;
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 12px 0;
+    line-height: 1.3;
+
+    @media (max-width: 768px) {
+      font-size: 28px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 24px;
+    }
+  }
+
+  &__subtitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: $gray-text;
+    margin: 0 0 12px 0;
+    line-height: 1.6;
+
+    @media (max-width: 480px) {
+      font-size: 14px;
+    }
+  }
+
+  &__description {
+    font-size: 15px;
+    color: $gray-text;
+    margin: 0 0 24px 0;
+    line-height: 1.6;
+
+    @media (max-width: 480px) {
+      font-size: 14px;
+    }
+  }
+
+  &__cards {
+    display: flex;
+    flex-direction: column;
+    /* Đổi từ flex-end thành stretch để thẻ tự động căn trái và kéo giãn full chiều ngang */
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  &__card {
+    /* Đã xóa dòng width: 210px; đi để thẻ linh hoạt bung độ rộng */
+    padding: 20px; /* Tăng padding xíu cho thoáng giống ảnh */
+    background-color: $white;
+    border-radius: 12px;
+    border: 1px solid $border-color; /* Thêm viền nhẹ để sát thiết kế hơn */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    text-align: left;
+    transition: all 0.3s ease;
+
+    /* 🌟 BÍ QUYẾT Ở ĐÂY: Dùng Grid chia 2 cột ngang */
+    display: grid;
+    grid-template-columns: auto 1fr; /* Cột 1 bao trọn icon, cột 2 chiếm hết phần thừa còn lại */
+    column-gap: 20px; /* Khoảng cách giữa icon và chữ */
+    align-items: center; /* Căn giữa phần icon và cụm chữ theo chiều dọc */
+
+    &:hover {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__card-icon {
+    /* Ép icon gánh 2 dòng của Grid (name và desc) để text tự động xếp gọn bên phải */
+    grid-row: 1 / 3;
+    width: 60px; /* Tăng size icon cho cân đối */
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $primary-pink;
+    border-radius: 12px; /* Bo góc to hơn xíu */
+    color: $white;
+    /* Đã xóa margin-bottom: 12px; cũ vì layout giờ là hàng ngang */
+  }
+
+  &__card-name {
+    font-size: 18px; /* Tăng size chữ */
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 6px 0;
+    align-self: flex-end; /* Đẩy chữ name sát xuống dưới gần desc */
+  }
+
+  &__card-desc {
+    font-size: 15px;
+    color: $dark-text; /* Đổi biến chữ sang màu tối hơn ($dark-text) cho rõ nét */
+    margin: 0;
+    line-height: 1.5;
+    align-self: flex-start; /* Đẩy chữ desc sát lên trên gần name */
+  }
+}
+
+// ============================================
+// Feature Section 3 — Statistics
+// ============================================
+
+.feature-section-3 {
+  margin-top: 0px;
+  padding: 80px 20px;
+  background-color: $white;
+  border-bottom: 1px solid $border-color;
+
+  .download-app-container {
+    display: flex;
+    align-items: center;
+    gap: 130px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+
+  &__content {
+    flex: 1;
+
+    @media (max-width: 768px) {
+      text-align: center;
+    }
+  }
+
+  &__title {
+    font-size: 36px;
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 12px 0;
+    line-height: 1.3;
+
+    @media (max-width: 768px) {
+      font-size: 28px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 24px;
+    }
+  }
+
+  &__subtitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: $gray-text;
+    margin: 0 0 24px 0;
+    line-height: 1.6;
+
+    @media (max-width: 480px) {
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+  }
+
+  &__cards {
+    display: flex;
+    flex-direction: column;
+    /* Đổi từ flex-end thành stretch để thẻ tự động căn trái và kéo giãn full chiều ngang */
+    align-items: stretch;
+    gap: 16px;
+  }
+
+  &__card {
+    /* Đã xóa dòng width: 210px; đi để thẻ linh hoạt bung độ rộng */
+    padding: 20px; /* Tăng padding xíu cho thoáng giống ảnh */
+    background-color: white;
+    border-radius: 12px;
+    border: 1px solid $border-color; /* Thêm viền nhẹ để sát thiết kế hơn */
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    text-align: left;
+    transition: all 0.3s ease;
+
+    /* 🌟 BÍ QUYẾT Ở ĐÂY: Dùng Grid chia 2 cột ngang */
+    display: grid;
+    grid-template-columns: auto 1fr; /* Cột 1 bao trọn icon, cột 2 chiếm hết phần thừa còn lại */
+    column-gap: 20px; /* Khoảng cách giữa icon và chữ */
+    align-items: center; /* Căn giữa phần icon và cụm chữ theo chiều dọc */
+
+    &:hover {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__card-icon {
+    /* Ép icon gánh 2 dòng của Grid (name và desc) để text tự động xếp gọn bên phải */
+    grid-row: 1 / 3;
+    width: 60px; /* Tăng size icon cho cân đối */
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: $primary-pink;
+    border-radius: 12px; /* Bo góc to hơn xíu */
+    color: $white;
+    /* Đã xóa margin-bottom: 12px; cũ vì layout giờ là hàng ngang */
+  }
+
+  &__card-name {
+    font-size: 18px; /* Tăng size chữ */
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 6px 0;
+    align-self: flex-end; /* Đẩy chữ name sát xuống dưới gần desc */
+  }
+
+  &__card-desc {
+    font-size: 15px;
+    color: $dark-text; /* Đổi biến chữ sang màu tối hơn ($dark-text) cho rõ nét */
+    margin: 0;
+    line-height: 1.5;
+    align-self: flex-start; /* Đẩy chữ desc sát lên trên gần name */
+  }
+}
+
+// ============================================
+// Feature Section 4 — Online Consultation
+// ============================================
+
+.feature-section-4 {
+  margin-top: 0px;
+  padding: 80px 20px;
+  background-color: $white;
+  border-bottom: 1px solid $border-color;
+  flex-direction: row-reverse;
+
+  .download-app-container {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 10px;
+    }
+  }
+
+  &__mockup {
+    flex: 0.7;
+    display: flex;
+    justify-content: left;
+    align-items: center;
+    min-height: 500px;
+
+    @media (max-width: 768px) {
+      min-height: 400px;
+    }
+
+    @media (max-width: 480px) {
+      min-height: 300px;
+    }
+  }
+
+  &__phone {
+    width: 370px;
+    height: 600px;
+    object-fit: contain;
+    display: block;
+
+    @media (max-width: 768px) {
+      width: 200px;
+      height: 400px;
+    }
+
+    @media (max-width: 480px) {
+      width: 150px;
+      height: 300px;
+    }
+  }
+
+  &__content {
+    flex: 1;
+
+    @media (max-width: 768px) {
+      text-align: center;
+    }
+  }
+
+  &__title {
+    font-size: 36px;
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 12px 0;
+    line-height: 1.3;
+
+    @media (max-width: 768px) {
+      font-size: 28px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 24px;
+    }
+  }
+
+  &__subtitle {
+    font-size: 16px;
+    font-weight: 500;
+    color: $gray-text;
+    margin: 0 0 24px 0;
+    line-height: 1.6;
+
+    @media (max-width: 480px) {
+      font-size: 14px;
+      margin-bottom: 16px;
+    }
+  }
+
+  &__cards {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 24px;
+
+    @media (max-width: 480px) {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+
+  &__card {
+    padding: 20px;
+    background-color: $white;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    text-align: left;
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+
+    &:hover {
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+      transform: translateY(-1px);
+    }
+  }
+
+  &__card-icon {
+    color: $primary-pink;
+    margin-bottom: 12px;
+  }
+
+  &__card-name {
+    font-size: 18px;
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 8px 0;
+
+    @media (max-width: 480px) {
+      font-size: 14px;
+    }
+  }
+
+  &__card-desc {
+    font-size: 14px;
+    color: $gray-text;
+    margin: 0;
+    line-height: 1.5;
+  }
+
+  &__mockup {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 500px;
+
+    @media (max-width: 768px) {
+      min-height: 400px;
+    }
+
+    @media (max-width: 480px) {
+      min-height: 300px;
+    }
+  }
+
+  &__phone {
+    width: 370px;
+    height: 600px;
+    object-fit: contain;
+    display: block;
+
+    @media (max-width: 768px) {
+      width: 200px;
+      height: 400px;
+    }
+
+    @media (max-width: 480px) {
+      width: 150px;
+      height: 300px;
+    }
+  }
+}
+
+
+// ============================================
+// Feature Section 6 — Shopping & Care
+// ============================================
+
+.feature-section-6 {
+  margin-top: 0px;
+  padding: 80px 20px;
+  
+  /* Trong thiết kế nền có vẻ hơi off-white nhẹ, tôi set tạm màu này. 
+     Nếu ông thích trắng tinh thì đổi lại $white nhé */
+  background-color: #FAFAFA; 
+  border-bottom: 1px solid $border-color;
+
+  .download-app-container {
+    display: flex;
+    flex-direction: column; /* Cho Text lên trên, Ảnh xuống dưới */
+    gap: 40px;
+  }
+
+  &__header {
+    max-width: 850px; /* Giới hạn độ rộng để chữ tự xuống dòng giống ảnh */
+    text-align: left;
+  }
+
+  &__title {
+    font-size: 36px;
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 16px 0;
+    line-height: 1.3;
+
+    @media (max-width: 768px) {
+      font-size: 28px;
+    }
+
+    @media (max-width: 480px) {
+      font-size: 24px;
+    }
+  }
+
+  &__subtitle {
+    font-size: 18px;
+    font-weight: 600; /* Font dày dặn hơn xíu */
+    color: $dark-text;
+    margin: 0;
+    line-height: 1.5;
+
+    @media (max-width: 480px) {
+      font-size: 15px;
+    }
+  }
+
+  &__visuals {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    @media (max-width: 768px) {
+      flex-direction: column; /* Mobile thì cho xếp dọc hết */
+      gap: 40px;
+    }
+  }
+
+  &__single-phone {
+    flex: 1;
+    display: flex;
+    justify-content: flex-start;
+    z-index: 0;
+
+    img {
+      width: 100%;
+      max-width: 350px; /* Chỉnh lại size tùy kích thước ảnh thật của ông */
+      height: auto;
+      object-fit: contain;
+    }
+  }
+
+  &__group-phones {
+    flex: 1.5; /* Cho cụm 4 điện thoại chiếm nhiều diện tích hơn tí */
+    position: relative; /* Setup để thả neo cho cái khối Bật mí nhỏ */
+    display: flex;
+    justify-content: flex-end;
+
+    img {
+      width: 100%;
+      max-width: 550px; /* Chỉnh lại size tùy kích thước ảnh thật của ông */
+      height: auto;
+      object-fit: contain;
+    }
+  }
+
+  /* Khối Bật mí nhỏ nổi bật */
+  &__tip-box {
+    position: absolute;
+    bottom: -10px; /* Kéo xệ xuống một xíu cho nghệ */
+    right: 0;
+    background-color: $white;
+    padding: 32px;
+    border-radius: 40px; /* Bo góc cực tròn để ra form như hình */
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.08); /* Đổ bóng nhẹ cho khối nổi lên */
+    max-width: 320px;
+    text-align: left;
+    z-index: 2; /* Đảm bảo nổi đè lên trên ảnh */
+
+    h4 {
+      font-size: 20px;
+      color: $primary-pink;
+      margin: 0 0 12px 0;
+      font-weight: 700;
+    }
+
+    p {
+      font-size: 15px;
+      color: $dark-text;
+      margin: 0;
+      line-height: 1.6;
+    }
+
+    @media (max-width: 768px) {
+      position: relative; /* Trên mobile thì bỏ absolute, cho nó rớt xuống dưới ảnh */
+      bottom: 0;
+      margin-top: 20px;
+      max-width: 100%;
+    }
   }
 }
 
@@ -430,9 +1016,13 @@ $font-primary: 'Roboto', sans-serif;
 // ============================================
 
 .download-app-cta-section {
-  background: linear-gradient(135deg, $very-light-pink 0%, $light-pink 100%);
-  padding: 100px 20px;
-  text-align: center;
+  /* Tạm để nền xám cho dễ nhìn chữ trắng. 
+     Sau này ông bỏ màu đi và thêm background-image vào đây nhé */
+  background-image: url('../../assets/download-app/download-9.png'); 
+  background-size: cover;
+  background-position: center;
+  padding: 120px 20px;
+  text-align: left; /* Chuyển toàn bộ sang căn trái */
 
   @media (max-width: 768px) {
     padding: 80px 15px;
@@ -443,15 +1033,19 @@ $font-primary: 'Roboto', sans-serif;
   }
 }
 
+.download-app-cta-content {
+  max-width: 550px; /* Ép chiều rộng để chữ tự rớt dòng giống hệt thiết kế */
+}
+
 .download-app-cta-title {
-  font-size: 44px;
+  font-size: 40px;
   font-weight: 700;
-  color: $dark-text;
+  color: $white; /* Đổi màu chữ thành trắng */
   margin: 0 0 16px 0;
   line-height: 1.3;
 
   @media (max-width: 768px) {
-    font-size: 36px;
+    font-size: 32px;
   }
 
   @media (max-width: 480px) {
@@ -460,59 +1054,43 @@ $font-primary: 'Roboto', sans-serif;
 }
 
 .download-app-cta-subtitle {
-  font-size: 16px;
-  color: $gray-text;
-  margin: 0 0 40px 0;
-  line-height: 1.6;
-  max-width: 700px;
-  margin-left: auto;
-  margin-right: auto;
+  font-size: 18px;
+  color: rgba(255, 255, 255, 0.9); /* Chữ trắng hơi trong suốt một chút cho êm mắt */
+  margin: 0 0 32px 0; /* Xóa bỏ margin: auto ở bản cũ */
+  line-height: 1.5;
 
   @media (max-width: 768px) {
-    font-size: 15px;
-    margin-bottom: 30px;
+    font-size: 16px;
   }
 
   @media (max-width: 480px) {
-    font-size: 14px;
-    margin-bottom: 24px;
+    font-size: 15px;
   }
 }
 
 .download-app-cta-buttons {
   display: flex;
   gap: 16px;
-  justify-content: center;
-  margin-bottom: 60px;
+  justify-content: flex-start; /* Ép các nút bấm dạt sang trái */
 
   @media (max-width: 480px) {
-    flex-direction: column;
-    margin-bottom: 40px;
+    /* Mobile thì vẫn nên để 2 logo nằm ngang cho gọn */
+    flex-direction: row; 
+    gap: 12px;
   }
 }
 
-.download-app-phone-large {
-  width: 240px;
-  height: 480px;
-  background-color: $white;
-  border: 12px solid $dark-text;
-  border-radius: 56px;
-  margin: 40px auto 0;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.2);
-
-  @media (max-width: 768px) {
-    width: 180px;
-    height: 360px;
-    border-width: 9px;
-    border-radius: 48px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-  }
-
-  @media (max-width: 480px) {
-    width: 140px;
-    height: 280px;
-    border-width: 7px;
-    border-radius: 40px;
-    margin: 30px auto 0;
-  }
+/* Class dùng tạm để tạo khối đen thay cho ảnh thật */
+.placeholder-logo {
+  width: 150px;
+  height: 45px;
+  background-color: #000;
+  color: #fff;
+  border: 1px solid #555;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  font-size: 14px;
 }

@@ -134,6 +134,7 @@ function LoginForm() {
       localStorage.setItem("accessToken", result.accessToken);
       localStorage.setItem("refreshToken", result.refreshToken);
       localStorage.setItem("userRole", result.user.role);
+      
       toast.success("Đăng nhập thành công!");
       navigate(result.user.role === "admin" ? "/admin/posts" : "/blog");
     } catch (error) {
