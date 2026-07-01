@@ -13,7 +13,7 @@ import featureImg1 from '../../assets/download-app/features/1.png';
 import featureImg2 from '../../assets/download-app/features/2.png';
 import featureImg3 from '../../assets/download-app/features/3.png';
 import featureImg4 from '../../assets/download-app/features/4.png';
-import { CalendarDays, Brain, Baby, MessageCircle, Activity, Bell, Stethoscope, Users, Video, BookOpen, Search, Star, Lightbulb } from 'lucide-react';
+import { CalendarDays, Brain, MessageSquare, Stethoscope, Activity, Bell, Users, BookOpen, HeartPulse, TrendingUp, ClipboardList, RefreshCw, FileText, Sparkles, ClipboardCheck, Video } from 'lucide-react';
 import './DownloadAppPage.scss';
 
 export default function DownLoadAppPage() {
@@ -104,12 +104,12 @@ export default function DownLoadAppPage() {
                 <p className="feature-section-1__card-desc">Tự động gợi ý chế độ dinh dưỡng, vận động dựa trên thể trạng thực tế.</p>
               </div>
               <div className="feature-section-1__card">
-                <div className="feature-section-1__card-icon"><Baby size={32} /></div>
+                <div className="feature-section-1__card-icon"><MessageSquare size={32} /></div>
                 <h4 className="feature-section-1__card-name">Phân tích triệu chứng</h4>
                 <p className="feature-section-1__card-desc">Đánh giá các dấu hiệu bất thường và đưa ra cảnh báo sức khỏe kịp thời.</p>
               </div>
               <div className="feature-section-1__card">
-                <div className="feature-section-1__card-icon"><MessageCircle size={32} /></div>
+                <div className="feature-section-1__card-icon"><Sparkles size={32} /></div>
                 <h4 className="feature-section-1__card-name">Tự động học hỏi</h4>
                 <p className="feature-section-1__card-desc">Thuật toán AI liên tục tối ưu hóa độ chính xác dựa trên thói quen.</p>
               </div>
@@ -136,17 +136,17 @@ export default function DownLoadAppPage() {
               dễ dàng theo dõi tiến trình sức khỏe.</p>
             <div className="feature-section-2__cards">
               <div className="feature-section-2__card">
-                <div className="feature-section-2__card-icon"><CalendarDays size={24} /></div>
+                <div className="feature-section-2__card-icon"><TrendingUp size={24} /></div>
                 <h4 className="feature-section-2__card-name">Biểu đồ trực quan</h4>
                 <p className="feature-section-2__card-desc">Theo dõi sự biến động của cân nặng, nhiệt độ cơ thể và các triệu chứng hàng ngày..</p>
               </div>
               <div className="feature-section-2__card">
-                <div className="feature-section-2__card-icon"><Brain size={24} /></div>
+                <div className="feature-section-2__card-icon"><ClipboardList size={24} /></div>
                 <h4 className="feature-section-2__card-name">Quản lý chỉ số y khoa</h4>
                 <p className="feature-section-2__card-desc">Lưu trữ an toàn các kết quả xét nghiệm quan trọng như nồng độ AMH và Beta HCG..</p>
               </div>
               <div className="feature-section-2__card">
-                <div className="feature-section-2__card-icon"><Brain size={24} /></div>
+                <div className="feature-section-2__card-icon"><RefreshCw size={24} /></div>
                 <h4 className="feature-section-2__card-name">Tổng hợp chu kỳ</h4>
                 <p className="feature-section-2__card-desc">Xuất báo cáo tổng quan về chu kỳ kinh nguyệt để phục vụ cho các buổi thăm khám y tế.</p>
               </div>
@@ -170,12 +170,12 @@ export default function DownLoadAppPage() {
                 <p className="feature-section-3__card-desc">Trao đổi trực tiếp qua video hoặc hệ thống tin nhắn riêng tư với bác sĩ để giải đáp kịp thời các vấn đề sức khỏe..</p>
               </div>
               <div className="feature-section-3__card">
-                <div className="feature-section-3__card-icon"><Bell size={32} /></div>
+                <div className="feature-section-3__card-icon"><ClipboardCheck size={32} /></div>
                 <h4 className="feature-section-3__card-name">Quản lý chỉ số y khoa</h4>
                 <p className="feature-section-3__card-desc">Dễ dàng tra cứu thông tin chuyên gia và lựa chọn khung giờ tư vấn phù hợp với lịch trình cá nhân mà không cần chờ đợi.</p>
               </div>
               <div className="feature-section-3__card">
-                <div className="feature-section-3__card-icon"><Bell size={32} /></div>
+                <div className="feature-section-3__card-icon"><Users size={32} /></div>
                 <h4 className="feature-section-3__card-name">Đồng bộ hồ sơ y khoa</h4>
                 <p className="feature-section-3__card-desc">Các bác sĩ có thể trực tiếp tham khảo dữ liệu và các chỉ số xét nghiệm trên ứng dụng để đưa ra phác đồ chính xác nhất..</p>
               </div>
@@ -200,22 +200,22 @@ export default function DownLoadAppPage() {
             <p className="feature-section-4__subtitle">Cung cấp hệ thống bài viết chuyên sâu, được xây dựng và kiểm chứng bởi các chuyên gia, giúp bạn trang bị đầy đủ kiến thức khoa học để tự tin chăm sóc bản thân.</p>
             <div className="feature-section-4__cards">
               <div className="feature-section-4__card">
-                <div className="feature-section-4__card-icon"><Stethoscope size={32} /></div>
+                <div className="feature-section-4__card-icon"><FileText size={32} /></div>
                 <h4 className="feature-section-4__card-name">Nội dung theo sát lộ trình</h4>
                 <p className="feature-section-4__card-desc">Bài viết hiển thị tương ứng với đúng giai đoạn sức khỏe hiện tại của bạn..</p>
               </div>
               <div className="feature-section-4__card">
-                <div className="feature-section-4__card-icon"><Users size={32} /></div>
+                <div className="feature-section-4__card-icon"><BookOpen size={32} /></div>
                 <h4 className="feature-section-4__card-name">Đa dạng chủ đề</h4>
                 <p className="feature-section-4__card-desc">Kiến thức bao quát từ tâm lý, sinh hoạt đến thai giáo và hỗ trợ IVF..</p>
               </div>
               <div className="feature-section-4__card">
-                <div className="feature-section-4__card-icon"><Video size={32} /></div>
+                <div className="feature-section-4__card-icon"><HeartPulse size={32} /></div>
                 <h4 className="feature-section-4__card-name">Phân tích triệu chứng</h4>
                 <p className="feature-section-4__card-desc">Đánh giá các dấu hiệu bất thường & đưa ra cảnh báo sức khỏe kịp thời..</p>
               </div>
               <div className="feature-section-4__card">
-                <div className="feature-section-4__card-icon"><Video size={32} /></div>
+                <div className="feature-section-4__card-icon"><Sparkles size={32} /></div>
                 <h4 className="feature-section-4__card-name">Tự động học hỏi</h4>
                 <p className="feature-section-4__card-desc">AI liên tục tối ưu hóa độ chính xác dựa trên thói quen ghi chép.</p>
               </div>

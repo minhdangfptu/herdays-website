@@ -84,6 +84,20 @@ $font-dancing: 'Dancing Script', cursive;
   &::before, &::after {
     display: none !important;
   }
+  @media (max-width: 1900px) {
+    background-position: center 75%;
+  }
+
+  @media (max-width: 768px) {
+    min-height: 600px;
+    background-position: center bottom;
+    padding-top: 24px;
+  }
+
+  @media (max-width: 480px) {
+    min-height: 480px;
+    background-position: center bottom;
+  }
 }
 
 .hero-content {
