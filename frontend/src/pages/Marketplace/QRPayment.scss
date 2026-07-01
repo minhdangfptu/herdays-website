@@ -1,0 +1,306 @@
+// ==========================================
+// QR PAYMENT PAGE STYLES (Unique Prefix: herdays-qrpayment-)
+// ==========================================
+
+$primary-pink: #F176A9;
+$dark-pink: #D05E8E;
+$bg-pink-light: #FFF5F8;
+$white: #FFFFFF;
+$text-main: #333333;
+$text-light: #666666;
+$border-color: #EEEEEE;
+
+.herdays-qrpayment-wrapper {
+  /* Chỗ này ông nhét cái ảnh nền có mấy cái logo vào nhé */
+  background-image: url('../../assets//qr-payment.png');
+  background-size: cover;
+  background-position: right;
+  background-repeat: no-repeat;
+  min-height: 100vh;
+  padding: 60px 20px;
+  font-family: 'Roboto', sans-serif;
+  color: $text-main;
+  display: flex;
+  justify-content: center;
+}
+
+.herdays-qrpayment-container {
+  max-width: 1100px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+/* ==========================================
+   TOP SECTION (2 COLUMNS)
+   ========================================== */
+.herdays-qrpayment-main {
+  display: flex;
+  gap: 40px;
+  align-items: flex-start;
+
+  @media (max-width: 850px) {
+    flex-direction: column;
+  }
+}
+
+/* --- CỘT TRÁI --- */
+.herdays-qrpayment-left {
+  flex: 1;
+  max-width: 500px;
+
+  @media (max-width: 850px) {
+    max-width: 100%;
+  }
+}
+
+.herdays-qrpayment-header {
+  margin-bottom: 24px;
+
+  .herdays-qrpayment-wallet-icon {
+    font-size: 40px;
+    margin-bottom: 12px;
+  }
+
+  .herdays-qrpayment-title {
+    font-size: 32px;
+    color: $primary-pink;
+    font-weight: 700;
+    margin: 0 0 8px 0;
+  }
+
+  .herdays-qrpayment-subtitle {
+    font-size: 16px;
+    color: $text-light;
+    margin: 0;
+  }
+}
+
+.herdays-qrpayment-amount-card {
+  background-color: $white;
+  border-radius: 20px;
+  padding: 30px;
+  text-align: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+  margin-bottom: 24px;
+
+  .herdays-qrpayment-amount-label {
+    font-size: 15px;
+    color: $text-light;
+    margin: 0 0 8px 0;
+  }
+
+  .herdays-qrpayment-amount-value {
+    font-size: 36px;
+    color: $primary-pink;
+    font-weight: 800;
+    margin: 0 0 20px 0;
+  }
+
+  .herdays-qrpayment-content-box {
+    background-color: $bg-pink-light;
+    border-radius: 12px;
+    padding: 16px;
+    
+    p {
+      font-size: 13px;
+      color: $text-light;
+      margin: 0 0 4px 0;
+    }
+
+    strong {
+      font-size: 16px;
+      color: $text-main;
+    }
+  }
+}
+
+.herdays-qrpayment-details {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 10px;
+
+  .herdays-qrpayment-detail-row {
+    display: flex;
+    align-items: center;
+    font-size: 15px;
+
+    .icon {
+      width: 30px;
+      color: $primary-pink;
+      font-size: 18px;
+    }
+
+    .label {
+      width: 120px;
+      color: $text-light;
+    }
+
+    .value {
+      flex: 1;
+      color: $text-main;
+      
+      strong {
+        font-weight: 600;
+      }
+    }
+
+    .herdays-qrpayment-copy-btn {
+      background: none;
+      border: none;
+      color: $primary-pink;
+      cursor: pointer;
+      font-size: 18px;
+      padding: 4px;
+      transition: transform 0.2s;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+  }
+}
+
+/* --- CỘT PHẢI --- */
+.herdays-qrpayment-right {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  /* Đẩy form sang một chút để chừa chỗ cho background trống bên phải */
+  padding-left: 20px; 
+
+  @media (max-width: 850px) {
+    padding-left: 0;
+    width: 100%;
+  }
+}
+
+.herdays-qrpayment-qr-card {
+  background-color: $white;
+  border-radius: 24px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
+  max-width: 400px;
+  width: 100%;
+
+  .herdays-qrpayment-qr-instruction {
+    font-size: 15px;
+    color: $text-main;
+    margin: 0 0 24px 0;
+  }
+
+  .herdays-qrpayment-qr-image-wrapper {
+    border: 3px solid $primary-pink;
+    border-radius: 16px;
+    padding: 16px;
+    display: inline-block;
+    margin-bottom: 24px;
+
+    .herdays-qrpayment-qr-img {
+      width: 200px;
+      height: 200px;
+      object-fit: contain;
+    }
+  }
+
+  .herdays-qrpayment-timer-section {
+    margin-bottom: 24px;
+
+    p {
+      font-size: 14px;
+      color: $text-light;
+      margin: 0 0 8px 0;
+    }
+
+    .herdays-qrpayment-timer-countdown {
+      font-size: 24px;
+      font-weight: 700;
+      color: $primary-pink;
+    }
+  }
+
+  .herdays-qrpayment-manual-text {
+    font-size: 14px;
+    color: $text-light;
+    border-top: 1px solid $border-color;
+    padding-top: 20px;
+  }
+}
+
+/* ==========================================
+   BOTTOM SECTION (INSTRUCTIONS)
+   ========================================== */
+.herdays-qrpayment-instructions {
+  background-color: $white;
+  border-radius: 20px;
+  padding: 30px 40px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.03);
+
+  .herdays-qrpayment-inst-title {
+    text-align: center;
+    font-size: 16px;
+    font-weight: 600;
+    color: $text-main;
+    margin: 0 0 24px 0;
+  }
+
+  .herdays-qrpayment-steps {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+
+    @media (max-width: 768px) {
+      flex-direction: column;
+      gap: 24px;
+    }
+  }
+
+  .herdays-qrpayment-step-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+
+    .step-icon {
+      width: 40px;
+      height: 40px;
+      background-color: $bg-pink-light;
+      color: $primary-pink;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+
+    .step-text {
+      strong {
+        display: block;
+        font-size: 14px;
+        color: $text-main;
+        margin-bottom: 4px;
+      }
+
+      p {
+        font-size: 13px;
+        color: $text-light;
+        margin: 0;
+        line-height: 1.4;
+      }
+    }
+
+    &.warning-step {
+      .step-icon {
+        background-color: #FFF0F0;
+        color: #E74C3C; // Màu đỏ cảnh báo
+      }
+      .step-text strong {
+        color: #E74C3C;
+      }
+    }
+  }
+}

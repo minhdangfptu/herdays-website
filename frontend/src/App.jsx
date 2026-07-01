@@ -31,6 +31,9 @@ import AboutUs from "./pages/Common/AboutUs.jsx";
 import DownloadAppPage from "./pages/Common/DownloadAppPage.jsx";
 import CollectData from "./pages/Common/CollectData.jsx";
 import Error404 from "./pages/Error/Error404.jsx";
+import Marketplace from "./pages/Marketplace/Marketplace.jsx";
+import Checkout from "./pages/Marketplace/Checkout.jsx";
+import QRPayment from "./pages/Marketplace/QRPayment.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -79,7 +82,9 @@ function HeaderFooterLayout() {
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/download-app" element={<DownloadAppPage />} />
-        
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/check-out" element={<Checkout />} />
+        <Route path="/qr-payment" element={<QRPayment />} />
         <Route element={<BlogShell />}>
           <Route path="/blog" element={<BlogTopicsPage />} />
           <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
