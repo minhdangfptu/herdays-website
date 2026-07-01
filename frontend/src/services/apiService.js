@@ -5,21 +5,29 @@ const API_BASE_URL = configuredBackendUrl
   ? `${configuredBackendUrl}${configuredBackendUrl.endsWith('/herdays-api') ? '' : '/herdays-api'}`
   : '/herdays-api'
 
-const request = async (path, { method = 'GET', body, isAuthenticated = false } = {}) => {
-  const headers = { Accept: 'application/json' }
-  if (body !== undefined) headers['Content-Type'] = 'application/json'
+let refreshTokenRequest = null
 
-  if (isAuthenticated) {
-    const token = localStorage.getItem('accessToken')
-    if (!token) throw new Error('Vui lòng đăng nhập bằng tài khoản quản trị.')
-    headers.Authorization = `Bearer ${token}`
-  }
+export const notifyAuthChanged = () => {
+  window.dispatchEvent(new Event('auth-state-change'))
+}
 
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method,
-    headers,
-    body: body === undefined ? undefined : JSON.stringify(body)
-  })
+export const setAuthSession = ({ accessToken, refreshToken, user }) => {
+  localStorage.setItem('accessToken', accessToken)
+  localStorage.setItem('refreshToken', refreshToken)
+  localStorage.setItem('userRole', user.role)
+  notifyAuthChanged()
+}
+
+export const clearAuthSession = () => {
+  localStorage.removeItem('accessToken')
+  localStorage.removeItem('refreshToken')
+  localStorage.removeItem('userRole')
+  notifyAuthChanged()
+}
+
+export const hasAuthSession = () => Boolean(localStorage.getItem('refreshToken'))
+
+const parseResponse = async (response) => {
   const payload = await response.json().catch(() => ({}))
   if (!response.ok || payload.success !== true) {
     const rawMessage = payload.message || 'Unable to connect to server.'
@@ -32,9 +40,78 @@ const request = async (path, { method = 'GET', body, isAuthenticated = false } =
   return payload
 }
 
+const refreshAccessToken = async () => {
+  const refreshToken = localStorage.getItem('refreshToken')
+  if (!refreshToken) throw new Error('Phiên đăng nhập đã hết hạn.')
+
+  if (!refreshTokenRequest) {
+    refreshTokenRequest = fetch(`${API_BASE_URL}/auth/refresh-token`, {
+      method: 'POST',
+      headers: {
+        Accept: 'application/json',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ refreshToken })
+    })
+      .then(parseResponse)
+      .then((response) => {
+        const tokens = response.data
+        localStorage.setItem('accessToken', tokens.accessToken)
+        localStorage.setItem('refreshToken', tokens.refreshToken)
+        notifyAuthChanged()
+        return tokens.accessToken
+      })
+      .catch((error) => {
+        clearAuthSession()
+        throw error
+      })
+      .finally(() => {
+        refreshTokenRequest = null
+      })
+  }
+
+  return refreshTokenRequest
+}
+
+const request = async (path, { method = 'GET', body, isAuthenticated = false } = {}) => {
+  const headers = { Accept: 'application/json' }
+  if (body !== undefined) headers['Content-Type'] = 'application/json'
+
+  if (isAuthenticated) {
+    const token = localStorage.getItem('accessToken') || await refreshAccessToken()
+    headers.Authorization = `Bearer ${token}`
+  }
+
+  const requestConfig = {
+    method,
+    headers,
+    body: body === undefined ? undefined : JSON.stringify(body)
+  }
+
+  const response = await fetch(`${API_BASE_URL}${path}`, requestConfig)
+
+  try {
+    return await parseResponse(response)
+  } catch (error) {
+    if (!isAuthenticated || error.statusCode !== 401) throw error
+
+    const accessToken = await refreshAccessToken()
+    requestConfig.headers.Authorization = `Bearer ${accessToken}`
+    return parseResponse(await fetch(`${API_BASE_URL}${path}`, requestConfig))
+  }
+}
+
 export const authApi = {
   login: async (credentials) => {
     const response = await request('/auth/login', { method: 'POST', body: credentials })
+    return response.data
+  },
+  refreshToken: async () => refreshAccessToken(),
+  socialLogin: async ({ provider, idToken }) => {
+    const response = await request('/auth/social-login', {
+      method: 'POST',
+      body: { provider, idToken }
+    })
     return response.data
   },
   logout: async () => {

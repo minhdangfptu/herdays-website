@@ -157,6 +157,7 @@ export const register = async ({ email, phone, otpChannel, password, fullName, t
     password: hashedPassword,
     fullName,
     role: 'user_free',
+    authProvider: 'local',
     targetStatus,
     isVerified: false
   });
@@ -321,10 +322,33 @@ export const socialLogin = async ({ idToken }) => {
   const email = normalizeEmail(googleProfile.email);
 
   if (!email) throw new HttpError(400, 'Google account does not include an email');
+  if (googleProfile.email_verified === false) throw new HttpError(400, 'Google account email is not verified');
 
-  const user = await User.findOne({ email });
-  if (!user) throw new HttpError(404, 'Please register with email, phone and password before social login');
-  if (!user.isVerified) throw new HttpError(403, 'Please confirm OTP before login');
+  let user = await User.findOne({ email });
+
+  if (!user) {
+    user = await User.create({
+      email,
+      fullName: googleProfile.name,
+      role: 'user_free',
+      authProvider: 'google',
+      googleId: googleProfile.sub,
+      isVerified: true
+    });
+  } else {
+    if (!user.isVerified) throw new HttpError(403, 'Please confirm OTP before login');
+
+    let shouldSave = false;
+    if (!user.googleId && googleProfile.sub) {
+      user.googleId = googleProfile.sub;
+      shouldSave = true;
+    }
+    if (user.authProvider !== 'google') {
+      user.authProvider = 'google';
+      shouldSave = true;
+    }
+    if (shouldSave) await user.save();
+  }
 
   const tokens = await issueTokens(user);
 

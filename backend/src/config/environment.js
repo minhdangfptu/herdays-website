@@ -11,6 +11,12 @@ const parseNumber = (value, fallback) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const parseIntegerInRange = (value, fallback, min, max) => {
+  const parsed = Math.trunc(Number(value));
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.min(Math.max(parsed, min), max);
+};
+
 const parseBoolean = (value, fallback = false) => {
   if (value === undefined || value === null || value === '') return fallback;
   return String(value).toLowerCase() === 'true';
@@ -58,6 +64,22 @@ const env = {
     accountSid: process.env.TWILIO_ACCOUNT_SID,
     authToken: process.env.TWILIO_AUTH_TOKEN,
     phoneNumber: process.env.TWILIO_PHONE_NUMBER
+  },
+  aiService: {
+    url: process.env.AI_SERVICE_URL || 'http://localhost:8090/',
+    token: process.env.AI_SERVICE_TOKEN,
+    timeoutMs: parseNumber(process.env.AI_SERVICE_TIMEOUT_MS, 30000),
+    knowledgeTimeoutMs: parseNumber(process.env.AI_SERVICE_KNOWLEDGE_TIMEOUT_MS, 120000),
+    knowledgeBatchSize: parseIntegerInRange(process.env.AI_SERVICE_KNOWLEDGE_BATCH_SIZE, 5, 1, 50)
+  },
+  redis: {
+    url: process.env.REDIS_URL,
+    chatMemoryTtlSeconds: parseIntegerInRange(
+      process.env.CHAT_MEMORY_TTL_SECONDS,
+      24 * 60 * 60,
+      60,
+      30 * 24 * 60 * 60
+    )
   }
 };
 

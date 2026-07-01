@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { ShoppingBag } from "lucide-react";
+import { Lock, ShoppingBag } from "lucide-react";
 import "./Header.scss";
 import logoTrang from "../assets/home/logo_trang.png";
 
@@ -20,9 +20,9 @@ const Header = ({ isLoggedIn = false }) => {
 
   const loggedInMenuItems = [
     { label: "Trang chủ", to: "/home" },
-    { label: "Bài viết", to: "#" },
-    { label: "Cửa hàng", to: "#" },
-    { label: "HerbotAI", to: "#" },
+    { label: "Bài viết", to: "/blog" },
+    { label: "Cửa hàng", to: "/marketplace" },
+    { label: "HerbotAI", to: "/chat-with-herbot" },
     { label: "Tải ứng dụng", to: "/download-app" },
   ];
 
@@ -35,7 +35,7 @@ const Header = ({ isLoggedIn = false }) => {
       <div className="header-container">
         {/* Logo */}
         <div className="header-logo">
-          <Link to="/home">
+          <Link to="/">
             <img src={logoTrang} alt="HERDAYS" className="logo-image" />
           </Link>
         </div>
@@ -66,6 +66,7 @@ const Header = ({ isLoggedIn = false }) => {
               <button className="header-cart-btn" aria-label="Giỏ hàng">
                 <ShoppingBag size={20} strokeWidth={2} />
               </button>
+              
 
               {/* Avatar */}
               <button className="header-avatar-btn" aria-label="Tài khoản">
@@ -75,6 +76,8 @@ const Header = ({ isLoggedIn = false }) => {
                   className="header-avatar"
                 />
               </button>
+             
+
             </div>
           ) : (
             <div className="header-auth">
