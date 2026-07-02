@@ -1,3 +1,6 @@
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { Camera, Globe, MessageCircle, Video } from "lucide-react";
 import {
   FaFacebook,
   FaInstagram,
@@ -10,40 +13,49 @@ import chPlay from "../assets/ch_play.png";
 import appStore from "../assets/app_store.png";
 
 const Footer = () => {
+  const navigate = useNavigate();
   const currentYear = new Date().getFullYear();
+
+  const isLoggedIn = !!localStorage.getItem("userRole");
+
+  const handleLinkClick = (href, requireAuth) => {
+    if (requireAuth && !isLoggedIn) {
+      navigate("/login");
+    }
+  };
 
   const footerSections = [
     {
       title: "Tính năng",
       links: [
-        { name: "Mua sắm", href: "#" },
-        { name: "Blog - Bài viết", href: "#" },
-        { name: "Herbot", href: "#" },
+        { name: "Mua sắm", href: "#", requireAuth: false },
+        { name: "Blog - Bài viết", href: "/blog", requireAuth: false },
+        { name: "Herbot", href: "/chat-with-herbot", requireAuth: true },
       ],
     },
     {
       title: "Hỗ trợ",
       links: [
-        { name: "Thu thập dữ liệu", href: "#" },
-        { name: "Chính sách bảo mật", href: "#" },
-        { name: "Điều khoản sử dụng", href: "#" },
+        { name: "Thu thập dữ liệu", href: "/collect-data", requireAuth: false },
+        { name: "Chính sách bảo mật", href: "/policy", requireAuth: false },
+        { name: "Điều khoản sử dụng", href: "/term-of-use", requireAuth: false },
       ],
     },
     {
       title: "Về Herdays",
       links: [
-        { name: "Liên hệ", href: "#" },
-        { name: "Về chúng tôi", href: "#" },
-        { name: "Hỗ trợ", href: "#" },
+        { name: "Liên hệ", href: "/contact-us", requireAuth: false },
+        { name: "Về chúng tôi", href: "/about-us", requireAuth: false },
+        { name: "Hỗ trợ", href: "/contact-us", requireAuth: false },
       ],
     },
   ];
 
   const socialLinks = [
-    { icon: FaFacebook, href: "#", label: "Facebook" },
-    { icon: FaInstagram, href: "#", label: "Instagram" },
-    { icon: FaTiktok, href: "#", label: "TikTok" },
-    { icon: FaFacebookMessenger, href: "#", label: "Messenger" },
+    { icon: FaFacebook, href: "https://www.facebook.com/herdaysvn", label: "Facebook" },
+    { icon: FaInstagram, href: "https://www.facebook.com/herdaysvn", label: "Instagram" },
+    { icon: FaTiktok, href: "https://www.facebook.com/herdaysvn", label: "TikTok" },
+    { icon: FaFacebookMessenger, href: "https://www.facebook.com/herdaysvn", label: "Messenger" },
   ];
 
   return (
@@ -86,7 +98,15 @@ const Footer = () => {
                 <ul>
                   {section.links.map((link, linkIndex) => (
                     <li key={linkIndex}>
-                      <a href={link.href}>
+                      <a
+                        href={link.requireAuth && !isLoggedIn ? undefined : link.href}
+                        onClick={(e) => {
+                          if (link.requireAuth && !isLoggedIn) {
+                            e.preventDefault();
+                            handleLinkClick(link.href, link.requireAuth);
+                          }
+                        }}
+                      >
                         {link.name}
                         <span className="link-underline" />
                       </a>

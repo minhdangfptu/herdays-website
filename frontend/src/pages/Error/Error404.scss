@@ -1,0 +1,85 @@
+// ==========================================
+// ERROR 404 PAGE STYLES (Unique Prefix: herdays-404-)
+// ==========================================
+
+.herdays-404-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #FFFFFF; /* Nền trắng tinh khôi theo thiết kế */
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .herdays-404-container {
+    max-width: 600px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .herdays-404-title {
+    font-size: 100px;
+    font-weight: 900;
+    color: #000000;
+    margin: 0;
+    line-height: 1;
+  
+    @media (max-width: 480px) {
+      font-size: 80px;
+    }
+  }
+  
+  .herdays-404-subtitle {
+    font-size: 20px;
+    font-weight: 700;
+    color: #000000;
+    margin: 10px 0 40px 0;
+  
+    @media (max-width: 480px) {
+      font-size: 16px;
+      margin-bottom: 30px;
+    }
+  }
+  
+  .herdays-404-image-wrapper {
+    margin-bottom: 60px;
+    width: 100%;
+    max-width: 450px; /* Giới hạn độ to của ảnh để không bị lố trên màn hình bự */
+    
+    @media (max-width: 480px) {
+      margin-bottom: 40px;
+    }
+  }
+  
+  .herdays-404-image {
+    width: 100%;
+    height: auto;
+    object-fit: contain;
+  }
+  
+  .herdays-404-back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #000000;
+    text-decoration: none;
+    border-bottom: 1.5px solid #000000; /* Đường gạch chân sát nét như ảnh */
+    padding-bottom: 2px;
+    transition: all 0.3s ease;
+  
+    .herdays-404-back-icon {
+      font-size: 18px;
+      font-weight: normal;
+    }
+  
+    &:hover {
+      opacity: 0.6;
+      gap: 12px; /* Hover vào thì cái mũi tên giãn nhẹ ra nhìn cho xịn */
+    }
+  }

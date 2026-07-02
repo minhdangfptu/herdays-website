@@ -1,7 +1,21 @@
 @import "tailwindcss";
 
-:root {
-  font-family: Inter, "Segoe UI", Arial, sans-serif;
+.admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.admin-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.admin-page-content {
+  flex: 1;
+  overflow: hidden;
+
   color: #4a5662;
   font-synthesis: none;
   text-rendering: optimizeLegibility;

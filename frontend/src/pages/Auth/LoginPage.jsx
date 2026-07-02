@@ -4,6 +4,7 @@ import facebookLogo from '../../assets/facebook-logo.png'
 import herdaysLogo from '../../assets/herdays-logo.png'
 import { authApi, setAuthSession } from '../../services/apiService.js'
 import './LoginPage.scss'
+import toast from 'react-hot-toast'
 
 const GOOGLE_SCRIPT_ID = 'google-identity-services'
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID
@@ -149,6 +150,7 @@ function LoginForm() {
   const handleGoogleCredential = useCallback(async (response) => {
     if (!response.credential) {
       setErrorMessage('Không nhận được thông tin đăng nhập từ Google.')
+      toast.error('Không nhận được thông tin đăng nhập từ Google.')
       return
     }
 
@@ -160,9 +162,11 @@ function LoginForm() {
         provider: 'google',
         idToken: response.credential
       })
+      toast.success('Đăng nhập thành công!')
       completeLogin(result)
     } catch (error) {
       setErrorMessage(error.message)
+      toast.error(error.message)
     } finally {
       setIsGoogleSubmitting(false)
     }
@@ -205,6 +209,7 @@ function LoginForm() {
     renderGoogleButton()
       .catch(() => {
         setErrorMessage('Không thể tải đăng nhập Google. Vui lòng thử lại sau.')
+        toast.error('Không thể tải đăng nhập Google. Vui lòng thử lại sau.')
       })
   }, [renderGoogleButton])
 
@@ -219,9 +224,11 @@ function LoginForm() {
         identifier: formData.get('identifier'),
         password: formData.get('password')
       })
+      toast.success("Đăng nhập thành công!");
       completeLogin(result)
     } catch (error) {
       setErrorMessage(error.message)
+      toast.error(error.message)
     } finally {
       setIsSubmitting(false)
     }

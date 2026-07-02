@@ -95,6 +95,7 @@ function CycleChart() {
 function RegisterForm() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isConfirmVisible, setIsConfirmVisible] = useState(false);
+  const [isTermsChecked, setIsTermsChecked] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   async function handleSubmit(event) {
@@ -222,7 +223,8 @@ function RegisterForm() {
                 className="remember-me__checkbox"
                 type="checkbox"
                 name="terms"
-                required
+                checked={isTermsChecked}
+                onChange={(e) => setIsTermsChecked(e.target.checked)}
               />
               <span>
                 Tôi đồng ý với{" "}
@@ -240,7 +242,7 @@ function RegisterForm() {
           <button
             className="submit-button"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isTermsChecked}
           >
             {isSubmitting ? "Đang đăng ký..." : "Đăng ký"}
           </button>
