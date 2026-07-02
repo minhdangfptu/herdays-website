@@ -1,59 +1,176 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { FiEdit2, FiTrash2, FiInfo, FiX } from "react-icons/fi";
 import { AiOutlineUser, AiOutlineCheck } from "react-icons/ai";
 import { Phone, Mail, Calendar, Briefcase, MapPin, Heart } from "lucide-react";
 import DeleteAccountModal from "../../components/DeleteAccountModal";
+import toast from "react-hot-toast";
+import { profileApi } from "../../services/apiService.js";
 import "./UserProfile.scss";
 
+const targetStatusLabels = {
+  tryingToConceive: "Đang mong con",
+  pregnant: "Đang trong thai kỳ",
+  ivf: "IVF",
+  normal: "Chăm sóc sức khỏe",
+  periodTracking: "Theo dõi chu kỳ",
+  relatives: "Người thân",
+};
+
+const accountTypeLabels = {
+  user_free: "User_free",
+  user_premium: "User_premium",
+  admin: "Admin",
+  others: "Khác",
+};
+
+const formatVietnamPhoneForDisplay = (phone) => {
+  if (!phone) return "";
+  if (/^\+84\d{9}$/.test(phone)) return `0${phone.slice(3)}`;
+  if (/^84\d{9}$/.test(phone)) return `0${phone.slice(2)}`;
+  return phone;
+};
+
+const normalizeProfilePhoneInput = (value) => value.replace(/\D/g, "").slice(0, 10);
+
+const isValidVietnamPhoneInput = (phone) => !phone || /^0\d{9}$/.test(phone);
+
+const buildProfileUpdates = (formData, savedProfile) => {
+  const updates = {};
+  const editableFields = ["fullName", "phone", "address"];
+
+  editableFields.forEach((field) => {
+    if ((formData[field] || "") !== (savedProfile?.[field] || "")) {
+      updates[field] = formData[field];
+    }
+  });
+
+  return updates;
+};
+
+const mapProfileToForm = (profile) => ({
+  displayName: profile.fullName || profile.email || "HERDAYS user",
+  email: profile.email || "",
+  phone: formatVietnamPhoneForDisplay(profile.phone),
+  fullName: profile.fullName || "",
+  dateOfBirth: profile.dateOfBirth
+    ? new Date(profile.dateOfBirth).toLocaleDateString("vi-VN")
+    : "",
+  accountType: accountTypeLabels[profile.accountClass] || profile.accountClass || "",
+  goal: targetStatusLabels[profile.targetStatus] || profile.targetStatus || "",
+  address: profile.address || "",
+  joinDate: "",
+});
+
+const getInitials = (name, email) => {
+  const source = name || email || "Herdays";
+  const words = source
+    .replace(/@.*/, "")
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (words.length >= 2) return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
+  return source.slice(0, 2).toUpperCase();
+};
+
 export default function UserProfile() {
+  const navigate = useNavigate();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(true);
+  const [savedProfile, setSavedProfile] = useState(null);
   const [formData, setFormData] = useState({
-    displayName: "Nhật Handsome",
-    email: "nhat.handsome.hihi@gmail.com",
-    phone: "+84 912 345 678",
-    fullName: "Nguyễn Thị Mai Anh",
-    dateOfBirth: "30/02/2000",
-    accountType: "free_user",
-    goal: "Đang trong thai kỳ",
-    address: "Hoà Lạc, Hà Nội",
-    joinDate: "15/03/2024",
+    displayName: "",
+    email: "",
+    phone: "",
+    fullName: "",
+    dateOfBirth: "",
+    accountType: "",
+    goal: "",
+    address: "",
+    joinDate: "",
   });
+
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchProfile = async () => {
+      setIsLoading(true);
+      try {
+        const profile = await profileApi.getProfile();
+        if (!isActive) return;
+        const nextProfile = mapProfileToForm(profile);
+        setSavedProfile(nextProfile);
+        setFormData(nextProfile);
+      } catch (error) {
+        if (isActive) toast.error(error.message || "Không thể tải hồ sơ.");
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    };
+
+    fetchProfile();
+
+    return () => {
+      isActive = false;
+    };
+  }, []);
 
   const userData = {
     displayName: formData.displayName,
     email: formData.email,
     phone: formData.phone,
     status: "Đang hoạt động",
-    accountType: "User_free",
-    avatar: "https://via.placeholder.com/200?text=User+Avatar",
+    accountType: formData.accountType || "User_free",
   };
 
   const handleChange = (field, value) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({
+      ...prev,
+      [field]: field === "phone" ? normalizeProfilePhoneInput(value) : value,
+    }));
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    // TODO: gọi API cập nhật thông tin
-    console.log("Lưu thông tin:", formData);
+  const handleSave = async () => {
+    const updates = buildProfileUpdates(formData, savedProfile);
+
+    if (Object.keys(updates).length === 0) {
+      toast("Không có thông tin nào cần cập nhật.");
+      setIsEditing(false);
+      return;
+    }
+
+    if (updates.fullName !== undefined && !updates.fullName.trim()) {
+      toast.error("Họ và tên không được để trống.");
+      return;
+    }
+
+    if (updates.phone !== undefined && !isValidVietnamPhoneInput(updates.phone)) {
+      toast.error("Số điện thoại Việt Nam phải có 10 chữ số và bắt đầu bằng 0.");
+      return;
+    }
+
+    const loadingToast = toast.loading("Đang cập nhật hồ sơ...");
+
+    try {
+      const result = await profileApi.updateProfile(updates);
+      const nextProfile = mapProfileToForm(result.profile);
+      setSavedProfile(nextProfile);
+      setFormData(nextProfile);
+      setIsEditing(false);
+      toast.success(result.message || "Cập nhật hồ sơ thành công.", { id: loadingToast });
+    } catch (error) {
+      toast.error(error.message || "Không thể cập nhật hồ sơ.", { id: loadingToast });
+    }
   };
 
   const handleCancel = () => {
     setIsEditing(false);
-    // Reset về dữ liệu ban đầu nếu cần
-    setFormData({
-      displayName: "Nhật Handsome",
-      email: "nhat.handsome.hihi@gmail.com",
-      phone: "+84 912 345 678",
-      fullName: "Nguyễn Thị Mai Anh",
-      dateOfBirth: "30/02/2000",
-      accountType: "free_user",
-      goal: "Đang trong thai kỳ",
-      address: "Hoà Lạc, Hà Nội",
-      joinDate: "15/03/2024",
-    });
+    if (savedProfile) setFormData(savedProfile);
+  };
+
+  const handleRetakeQuiz = () => {
+    navigate("/welcome-quiz", { state: { returnTo: "/profile" } });
   };
 
   const fieldConfigs = [
@@ -75,18 +192,22 @@ export default function UserProfile() {
       field: "phone",
       icon: Phone,
       readValue: formData.phone,
+      inputMode: "tel",
+      placeholder: "Ví dụ: 0912345678",
     },
     {
       label: "Ngày sinh",
       field: "dateOfBirth",
       icon: Calendar,
       readValue: formData.dateOfBirth,
+      readOnly: true,
     },
     {
       label: "Hạng tài khoản",
       field: "accountType",
       icon: Briefcase,
       readValue: formData.accountType,
+      readOnly: true,
     },
     {
       label: "Mục tiêu",
@@ -114,11 +235,14 @@ export default function UserProfile() {
   return (
     <main className="contact-us bg-gray-50 py-5 px-4 font-roboto">
       <div className="max-w-[1100px] mx-auto">
+        {isLoading && (
+          <p className="mb-4 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-600 shadow-sm">
+            Đang tải hồ sơ...
+          </p>
+        )}
 
-        {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            {/* Badge */}
             <div
               style={{
                 margin: 0,
@@ -137,7 +261,6 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* Actions */}
           <div className="flex gap-3">
             {isEditing ? (
               <>
@@ -166,6 +289,13 @@ export default function UserProfile() {
                   Chỉnh sửa
                 </button>
                 <button
+                  className="user-profile-btn user-profile-btn--quiz"
+                  onClick={handleRetakeQuiz}
+                >
+                  <Heart size={16} />
+                  Trả lời quiz lại
+                </button>
+                <button
                   className="user-profile-btn user-profile-btn--delete"
                   onClick={() => setShowDeleteModal(true)}
                 >
@@ -177,17 +307,12 @@ export default function UserProfile() {
           </div>
         </div>
 
-        {/* Main Content */}
         <div className="grid md:grid-cols-[1fr_2fr] gap-6 lg:gap-10">
-
-          {/* Left Column - Profile Card */}
           <div className="user-profile-card">
             <div className="user-profile-avatar-section">
-              <img
-                src={userData.avatar}
-                alt={userData.displayName}
-                className="user-profile-avatar"
-              />
+              <div className="user-profile-avatar user-profile-avatar--fallback" aria-hidden="true">
+                {getInitials(userData.displayName, userData.email)}
+              </div>
               <div className="user-profile-avatar-edit">
                 <FiEdit2 size={14} />
               </div>
@@ -219,7 +344,6 @@ export default function UserProfile() {
             </div>
           </div>
 
-          {/* Right Column - Detailed Information */}
           <div className="user-profile-details-card">
             <div className="user-profile-details-header">
               <FiInfo size={20} className="user-profile-details-icon" />
@@ -227,7 +351,7 @@ export default function UserProfile() {
             </div>
 
             <div className="user-profile-details-grid">
-              {fieldConfigs.map(({ label, field, icon: Icon, readValue, readOnly, changeGoalText }) => (
+              {fieldConfigs.map(({ label, field, icon: Icon, readValue, readOnly, changeGoalText, inputMode, placeholder }) => (
                 <div key={field} className="user-profile-detail-row">
                   <span className="user-profile-detail-label">{label}</span>
                   {isEditing && !readOnly ? (
@@ -238,7 +362,9 @@ export default function UserProfile() {
                         strokeWidth={2}
                       />
                       <input
-                        type="text"
+                        type={field === "phone" ? "tel" : "text"}
+                        inputMode={inputMode}
+                        placeholder={placeholder}
                         value={formData[field]}
                         onChange={(e) => handleChange(field, e.target.value)}
                         className="user-profile-input w-full pl-8 pr-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-800 focus:outline-none focus:border-[#ED77A5]"
@@ -248,7 +374,7 @@ export default function UserProfile() {
                     <div className="flex items-center gap-2">
                       <span className="user-profile-detail-value">{readValue}</span>
                       {changeGoalText && (
-                        <span className="user-profile-goal-link">{changeGoalText}</span>
+                        <button className="user-profile-goal-link" type="button" onClick={handleRetakeQuiz}>{changeGoalText}</button>
                       )}
                     </div>
                   )}
@@ -256,7 +382,6 @@ export default function UserProfile() {
               ))}
             </div>
           </div>
-
         </div>
       </div>
 
@@ -265,8 +390,7 @@ export default function UserProfile() {
         onClose={() => setShowDeleteModal(false)}
         onConfirm={() => {
           setShowDeleteModal(false);
-          // TODO: gọi API xóa tài khoản
-          console.log("Xóa tài khoản");
+          toast.error("Backend hiện chưa có endpoint xóa tài khoản.");
         }}
       />
     </main>

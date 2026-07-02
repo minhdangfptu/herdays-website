@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import herdaysLogo from "../../assets/herdays-logo.png";
 import { authApi } from "../../services/apiService.js";
@@ -15,21 +16,24 @@ function PasswordToggleIcon({ isVisible }) {
 }
 
 const STRENGTH_RULES = [
-  { id: "length",    label: "Ít nhất 8 ký tự",            test: (v) => v.length >= 8 },
-  { id: "uppercase", label: "Ít nhất 1 chữ hoa (A-Z)",      test: (v) => /[A-Z]/.test(v) },
-  { id: "number",    label: "Ít nhất 1 chữ số (0-9)",       test: (v) => /\d/.test(v) },
-  { id: "special",   label: "Ít nhất 1 ký tự đặc biệt (!@…)", test: (v) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(v) },
+  { id: "length",    label: "Ãt nháº¥t 8 kÃ½ tá»±",            test: (v) => v.length >= 8 },
+  { id: "uppercase", label: "Ãt nháº¥t 1 chá»¯ hoa (A-Z)",      test: (v) => /[A-Z]/.test(v) },
+  { id: "number",    label: "Ãt nháº¥t 1 chá»¯ sá»‘ (0-9)",       test: (v) => /\d/.test(v) },
+  { id: "special",   label: "Ãt nháº¥t 1 kÃ½ tá»± Ä‘áº·c biá»‡t (!@â€¦)", test: (v) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(v) },
 ];
 
 function getStrength(newPassword) {
   const passed = STRENGTH_RULES.filter((r) => r.test(newPassword)).length;
-  if (passed <= 1) return { level: 1, label: "Yếu",  color: "#ef4444" };
-  if (passed === 2) return { level: 2, label: "Trung bình", color: "#f59e0b" };
-  if (passed === 3) return { level: 3, label: "Mạnh",  color: "#22c55e" };
-  return            { level: 4, label: "Rất mạnh", color: "#16a34a" };
+  if (passed <= 1) return { level: 1, label: "Yáº¿u",  color: "#ef4444" };
+  if (passed === 2) return { level: 2, label: "Trung bÃ¬nh", color: "#f59e0b" };
+  if (passed === 3) return { level: 3, label: "Máº¡nh",  color: "#22c55e" };
+  return            { level: 4, label: "Ráº¥t máº¡nh", color: "#16a34a" };
 }
 
 function ChangePasswordPage() {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const resetToken = searchParams.get("resetToken") || "";
   const [newPassword, setNewPassword]         = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showNew, setShowNew]                 = useState(false);
@@ -57,16 +61,21 @@ function ChangePasswordPage() {
   async function handleSubmit(e) {
     e.preventDefault();
     setTouched({ new: true, confirm: true });
+    if (!resetToken) {
+      toast.error("Thiếu mã đặt lại mật khẩu. Vui lòng xác thực OTP lại.");
+      return;
+    }
     if (!isFormValid) return;
 
     setIsSubmitting(true);
-    const loadingToast = toast.loading("Đang xử lý...");
+    const loadingToast = toast.loading("Äang xá»­ lÃ½...");
 
     try {
-      await authApi.changePassword({ newPassword });
-      toast.success("Mật khẩu đã được cập nhật thành công!", { id: loadingToast });
+      await authApi.resetPassword({ resetToken, newPassword });
+      toast.success("Mật khẩu đã được đặt lại thành công!", { id: loadingToast });
+      navigate("/login");
     } catch (err) {
-      toast.error(err.message || "Cập nhật thất bại. Vui lòng thử lại.", { id: loadingToast });
+      toast.error(err.message || "Cáº­p nháº­t tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i.", { id: loadingToast });
     } finally {
       setIsSubmitting(false);
     }
@@ -75,21 +84,21 @@ function ChangePasswordPage() {
   return (
     <main className="cp-page">
       <div className="cp-card">
-        {/* ── Header ── */}
+        {/* â”€â”€ Header â”€â”€ */}
         <div className="cp-card__header">
           <img className="cp-brand-logo" src={herdaysLogo} alt="Herdays" />
-          <h1 className="cp-card__title">Nhập mật khẩu mới</h1>
+          <h1 className="cp-card__title">Nháº­p máº­t kháº©u má»›i</h1>
           <p className="cp-card__subtitle">
-            Vui lòng nhập mật khẩu mới cho tài khoản của bạn
+            Vui lÃ²ng nháº­p máº­t kháº©u má»›i cho tÃ i khoáº£n cá»§a báº¡n
           </p>
         </div>
 
-        {/* ── Form ── */}
+        {/* â”€â”€ Form â”€â”€ */}
         <form className="cp-form" onSubmit={handleSubmit} noValidate>
 
           {/* New Password */}
           <div className={`cp-field${hasError("new") ? " is-error" : ""}`}>
-            <label className="cp-field__label">Mật khẩu mới</label>
+            <label className="cp-field__label">Máº­t kháº©u má»›i</label>
             <div className="cp-input-shell">
               <span className="cp-input-shell__icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -101,7 +110,7 @@ function ChangePasswordPage() {
                 type={showNew ? "text" : "password"}
                 name="newPassword"
                 autoComplete="new-password"
-                placeholder="Nhập mật khẩu mới"
+                placeholder="Nháº­p máº­t kháº©u má»›i"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 onBlur={() => handleBlur("new")}
@@ -109,7 +118,7 @@ function ChangePasswordPage() {
               <button
                 className="cp-input-shell__toggle"
                 type="button"
-                aria-label={showNew ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                aria-label={showNew ? "áº¨n máº­t kháº©u" : "Hiá»‡n máº­t kháº©u"}
                 onClick={() => setShowNew((v) => !v)}
               >
                 <PasswordToggleIcon isVisible={showNew} />
@@ -158,7 +167,7 @@ function ChangePasswordPage() {
 
           {/* Confirm Password */}
           <div className={`cp-field${hasError("confirm") ? " is-error" : ""}`}>
-            <label className="cp-field__label">Xác nhận mật khẩu mới</label>
+            <label className="cp-field__label">XÃ¡c nháº­n máº­t kháº©u má»›i</label>
             <div className="cp-input-shell">
               <span className="cp-input-shell__icon">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -170,7 +179,7 @@ function ChangePasswordPage() {
                 type={showConfirm ? "text" : "password"}
                 name="confirmPassword"
                 autoComplete="new-password"
-                placeholder="Nhập lại mật khẩu mới"
+                placeholder="Nháº­p láº¡i máº­t kháº©u má»›i"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 onBlur={() => handleBlur("confirm")}
@@ -178,14 +187,14 @@ function ChangePasswordPage() {
               <button
                 className="cp-input-shell__toggle"
                 type="button"
-                aria-label={showConfirm ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                aria-label={showConfirm ? "áº¨n máº­t kháº©u" : "Hiá»‡n máº­t kháº©u"}
                 onClick={() => setShowConfirm((v) => !v)}
               >
                 <PasswordToggleIcon isVisible={showConfirm} />
               </button>
             </div>
             {hasError("confirm") && (
-              <p className="cp-field__error">Mật khẩu xác nhận không khớp</p>
+              <p className="cp-field__error">Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p</p>
             )}
           </div>
 
@@ -195,7 +204,7 @@ function ChangePasswordPage() {
             type="submit"
             disabled={isSubmitting || (!touched.new && !touched.confirm && newPassword.length === 0)}
           >
-            {isSubmitting ? "Đang xử lý..." : "Xác nhận"}
+            {isSubmitting ? "Äang xá»­ lÃ½..." : "XÃ¡c nháº­n"}
           </button>
         </form>
       </div>
@@ -204,3 +213,4 @@ function ChangePasswordPage() {
 }
 
 export default ChangePasswordPage;
+

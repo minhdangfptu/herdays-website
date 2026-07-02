@@ -57,6 +57,10 @@ const contactRequestSchema = new mongoose.Schema({
     ref: 'User',
     default: null
   },
+  isRessponsed: {
+    type: Boolean,
+    default: false
+  },
   createdAt: {
     type: Date,
     default: Date.now,

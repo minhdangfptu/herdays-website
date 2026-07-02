@@ -1,6 +1,4 @@
-import React from "react";
 import { useNavigate } from "react-router-dom";
-import { Camera, Globe, MessageCircle, Video } from "lucide-react";
 import {
   FaFacebook,
   FaInstagram,
@@ -28,7 +26,7 @@ const Footer = () => {
     {
       title: "Tính năng",
       links: [
-        { name: "Mua sắm", href: "#", requireAuth: false },
+        { name: "Mua sắm", href: "/marketplace", requireAuth: false },
         { name: "Blog - Bài viết", href: "/blog", requireAuth: false },
         { name: "Herbot", href: "/chat-with-herbot", requireAuth: true },
       ],

@@ -15,7 +15,7 @@ const authMiddleware = async (req, res, next) => {
     const payload = jwt.verify(token, env.jwtSecret);
     const user = await User.findById(payload.id);
 
-    if (!user || !user.isVerified) {
+    if (!user || !user.isVerified || user.isDisabled) {
       throw new HttpError(401, 'Unauthorized');
     }
 

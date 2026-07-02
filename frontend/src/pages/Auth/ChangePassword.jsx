@@ -16,18 +16,18 @@ function PasswordToggleIcon({ isVisible }) {
 }
 
 const STRENGTH_RULES = [
-  { id: "length",    label: "Ít nhất 8 ký tự",               test: (v) => v.length >= 8 },
-  { id: "uppercase", label: "Ít nhất 1 chữ hoa (A-Z)",         test: (v) => /[A-Z]/.test(v) },
-  { id: "number",    label: "Ít nhất 1 chữ số (0-9)",          test: (v) => /\d/.test(v) },
-  { id: "special",   label: "Ít nhất 1 ký tự đặc biệt (!@…)",  test: (v) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(v) },
+  { id: "length",    label: "Ãt nháº¥t 8 kÃ½ tá»±",               test: (v) => v.length >= 8 },
+  { id: "uppercase", label: "Ãt nháº¥t 1 chá»¯ hoa (A-Z)",         test: (v) => /[A-Z]/.test(v) },
+  { id: "number",    label: "Ãt nháº¥t 1 chá»¯ sá»‘ (0-9)",          test: (v) => /\d/.test(v) },
+  { id: "special",   label: "Ãt nháº¥t 1 kÃ½ tá»± Ä‘áº·c biá»‡t (!@â€¦)",  test: (v) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(v) },
 ];
 
 function getStrength(pw) {
   const passed = STRENGTH_RULES.filter((r) => r.test(pw)).length;
-  if (passed <= 1) return { level: 1, label: "Yếu",          color: "#ef4444" };
-  if (passed === 2) return { level: 2, label: "Trung bình",  color: "#f59e0b" };
-  if (passed === 3) return { level: 3, label: "Mạnh",         color: "#22c55e" };
-  return            { level: 4, label: "Rất mạnh", color: "#16a34a" };
+  if (passed <= 1) return { level: 1, label: "Yáº¿u",          color: "#ef4444" };
+  if (passed === 2) return { level: 2, label: "Trung bÃ¬nh",  color: "#f59e0b" };
+  if (passed === 3) return { level: 3, label: "Máº¡nh",         color: "#22c55e" };
+  return            { level: 4, label: "Ráº¥t máº¡nh", color: "#16a34a" };
 }
 
 export default function ChangePasswordPage() {
@@ -55,19 +55,12 @@ export default function ChangePasswordPage() {
     return false;
   };
 
-  async function handleVerifyOld(e) {
+  function handleVerifyOld(e) {
     e.preventDefault();
     if (!oldPassword.trim()) return;
-
     setVerifying(true);
-    try {
-      await authApi.verifyCurrentPassword({ currentPassword: oldPassword });
-      setIsVerified(true);
-    } catch (err) {
-      toast.error(err.message || "Mật khẩu cũ không chính xác.");
-    } finally {
-      setVerifying(false);
-    }
+    setIsVerified(true);
+    setVerifying(false);
   }
 
   async function handleSubmit(e) {
@@ -76,14 +69,14 @@ export default function ChangePasswordPage() {
     if (!allPassed || !matched) return;
 
     setIsSubmitting(true);
-    const loadingToast = toast.loading("Đang xử lý...");
+    const loadingToast = toast.loading("Äang xá»­ lÃ½...");
 
     try {
       await authApi.changePassword({ currentPassword: oldPassword, newPassword });
-      toast.success("Mật khẩu đã được cập nhật thành công!", { id: loadingToast });
+      toast.success("Máº­t kháº©u Ä‘Ã£ Ä‘Æ°á»£c cáº­p nháº­t thÃ nh cÃ´ng!", { id: loadingToast });
       navigate("/login");
     } catch (err) {
-      toast.error(err.message || "Cập nhật thất bại. Vui lòng thử lại.", { id: loadingToast });
+      toast.error(err.message || "Cáº­p nháº­t tháº¥t báº¡i. Vui lÃ²ng thá»­ láº¡i.", { id: loadingToast });
     } finally {
       setIsSubmitting(false);
     }
@@ -92,24 +85,24 @@ export default function ChangePasswordPage() {
   return (
     <main className="cp-page">
       <div className="cp-card">
-        {/* ── Header ── */}
+        {/* â”€â”€ Header â”€â”€ */}
         <div className="cp-card__header">
           <img className="cp-brand-logo" src={herdaysLogo} alt="Herdays" />
           <h1 className="cp-card__title">
-            {isVerified ? "Nhập mật khẩu mới" : "Xác minh mật khẩu cũ"}
+            {isVerified ? "Nháº­p máº­t kháº©u má»›i" : "XÃ¡c minh máº­t kháº©u cÅ©"}
           </h1>
           <p className="cp-card__subtitle">
             {isVerified
-              ? "Vui lòng nhập mật khẩu mới cho tài khoản của bạn"
-              : "Để bảo mật tài khoản, vui lòng xác minh mật khẩu hiện tại trước"}
+              ? "Vui lÃ²ng nháº­p máº­t kháº©u má»›i cho tÃ i khoáº£n cá»§a báº¡n"
+              : "Äá»ƒ báº£o máº­t tÃ i khoáº£n, vui lÃ²ng xÃ¡c minh máº­t kháº©u hiá»‡n táº¡i trÆ°á»›c"}
           </p>
         </div>
 
-        {/* ── Step 1: Verify old password ── */}
+        {/* â”€â”€ Step 1: Verify old password â”€â”€ */}
         {!isVerified && (
           <form className="cp-form" onSubmit={handleVerifyOld} noValidate>
             <div className="cp-field">
-              <label className="cp-field__label">Mật khẩu cũ</label>
+              <label className="cp-field__label">Máº­t kháº©u cÅ©</label>
               <div className="cp-input-shell">
                 <span className="cp-input-shell__icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -121,14 +114,14 @@ export default function ChangePasswordPage() {
                   type={showOld ? "text" : "password"}
                   name="oldPassword"
                   autoComplete="current-password"
-                  placeholder="Nhập mật khẩu cũ"
+                  placeholder="Nháº­p máº­t kháº©u cÅ©"
                   value={oldPassword}
                   onChange={(e) => setOldPassword(e.target.value)}
                 />
                 <button
                   className="cp-input-shell__toggle"
                   type="button"
-                  aria-label={showOld ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  aria-label={showOld ? "áº¨n máº­t kháº©u" : "Hiá»‡n máº­t kháº©u"}
                   onClick={() => setShowOld((v) => !v)}
                 >
                   <PasswordToggleIcon isVisible={showOld} />
@@ -137,7 +130,7 @@ export default function ChangePasswordPage() {
             </div>
 
             <p className="cp-change-forgot-hint">
-              <a href="/forgot-password">Quên mật khẩu?</a>
+              <a href="/forgot-password">QuÃªn máº­t kháº©u?</a>
             </p>
 
             <button
@@ -145,21 +138,21 @@ export default function ChangePasswordPage() {
               type="submit"
               disabled={verifying || !oldPassword.trim()}
             >
-              {verifying ? "Đang xác minh..." : "Tiếp tục"}
+              {verifying ? "Äang xÃ¡c minh..." : "Tiáº¿p tá»¥c"}
             </button>
 
             <p className="cp-back-link">
-              <a href="/login">Quay lại đăng nhập</a>
+              <a href="/login">Quay láº¡i Ä‘Äƒng nháº­p</a>
             </p>
           </form>
         )}
 
-        {/* ── Step 2: Set new password ── */}
+        {/* â”€â”€ Step 2: Set new password â”€â”€ */}
         {isVerified && (
           <form className="cp-form" onSubmit={handleSubmit} noValidate>
             {/* New Password */}
             <div className={`cp-field${hasError("new") ? " is-error" : ""}`}>
-              <label className="cp-field__label">Mật khẩu mới</label>
+              <label className="cp-field__label">Máº­t kháº©u má»›i</label>
               <div className="cp-input-shell">
                 <span className="cp-input-shell__icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -171,7 +164,7 @@ export default function ChangePasswordPage() {
                   type={showNew ? "text" : "password"}
                   name="newPassword"
                   autoComplete="new-password"
-                  placeholder="Nhập mật khẩu mới"
+                  placeholder="Nháº­p máº­t kháº©u má»›i"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   onBlur={() => setTouched((p) => ({ ...p, new: true }))}
@@ -179,7 +172,7 @@ export default function ChangePasswordPage() {
                 <button
                   className="cp-input-shell__toggle"
                   type="button"
-                  aria-label={showNew ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  aria-label={showNew ? "áº¨n máº­t kháº©u" : "Hiá»‡n máº­t kháº©u"}
                   onClick={() => setShowNew((v) => !v)}
                 >
                   <PasswordToggleIcon isVisible={showNew} />
@@ -224,7 +217,7 @@ export default function ChangePasswordPage() {
 
             {/* Confirm Password */}
             <div className={`cp-field${hasError("confirm") ? " is-error" : ""}`}>
-              <label className="cp-field__label">Xác nhận mật khẩu mới</label>
+              <label className="cp-field__label">XÃ¡c nháº­n máº­t kháº©u má»›i</label>
               <div className="cp-input-shell">
                 <span className="cp-input-shell__icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -236,7 +229,7 @@ export default function ChangePasswordPage() {
                   type={showConfirm ? "text" : "password"}
                   name="confirmPassword"
                   autoComplete="new-password"
-                  placeholder="Nhập lại mật khẩu mới"
+                  placeholder="Nháº­p láº¡i máº­t kháº©u má»›i"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   onBlur={() => setTouched((p) => ({ ...p, confirm: true }))}
@@ -244,14 +237,14 @@ export default function ChangePasswordPage() {
                 <button
                   className="cp-input-shell__toggle"
                   type="button"
-                  aria-label={showConfirm ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
+                  aria-label={showConfirm ? "áº¨n máº­t kháº©u" : "Hiá»‡n máº­t kháº©u"}
                   onClick={() => setShowConfirm((v) => !v)}
                 >
                   <PasswordToggleIcon isVisible={showConfirm} />
                 </button>
               </div>
               {hasError("confirm") && (
-                <p className="cp-field__error">Mật khẩu xác nhận không khớp</p>
+                <p className="cp-field__error">Máº­t kháº©u xÃ¡c nháº­n khÃ´ng khá»›p</p>
               )}
             </div>
 
@@ -260,7 +253,7 @@ export default function ChangePasswordPage() {
               type="submit"
               disabled={isSubmitting || !allPassed || !matched}
             >
-              {isSubmitting ? "Đang xử lý..." : "Xác nhận"}
+              {isSubmitting ? "Äang xá»­ lÃ½..." : "XÃ¡c nháº­n"}
             </button>
 
             <p className="cp-back-link">
@@ -275,7 +268,7 @@ export default function ChangePasswordPage() {
                   setTouched({ new: false, confirm: false });
                 }}
               >
-                Quay lại
+                Quay láº¡i
               </button>
             </p>
           </form>
@@ -284,3 +277,4 @@ export default function ChangePasswordPage() {
     </main>
   );
 }
+

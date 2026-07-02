@@ -45,6 +45,21 @@ $border-color: #EEEEEE;
   }
 }
 
+.herdays-checkout-status,
+.herdays-checkout-empty {
+  margin: 0;
+  color: $text-gray;
+  font-weight: 600;
+}
+
+.herdays-checkout-status {
+  margin-top: 24px;
+}
+
+.herdays-checkout-status--error {
+  color: #C63561;
+}
+
 // Phần Tiêu đề
 .herdays-checkout-header {
   margin-bottom: 32px;
@@ -155,6 +170,56 @@ $border-color: #EEEEEE;
       font-size: 14px;
       color: $text-gray;
       margin: 0;
+    }
+  }
+
+  .product-quantity-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid $border-color;
+      border-radius: 8px;
+      background: $white;
+      color: $primary-pink;
+      font-weight: 700;
+      cursor: pointer;
+
+      &:disabled {
+        color: $text-light-gray;
+        cursor: not-allowed;
+      }
+    }
+
+    span {
+      min-width: 18px;
+      text-align: center;
+      font-weight: 700;
+    }
+  }
+
+  .product-remove {
+    display: block;
+    margin-top: 8px;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #C63561;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:disabled {
+      color: $text-light-gray;
+      cursor: not-allowed;
     }
   }
 
