@@ -1,4 +1,5 @@
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { useState } from "react";
+import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import Header from "./components/Header.jsx";
@@ -28,6 +29,7 @@ import AdminHome from "./pages/Admin/AdminHome.jsx";
 import AdminUsersPage from "./pages/Admin/AdminUsersPage.jsx";
 import AdminUserDetailPage from "./pages/Admin/AdminUserDetailPage.jsx";
 import AdminContactsPage from "./pages/Admin/AdminContactsPage.jsx";
+import AdminProductsPage from "./pages/Admin/AdminProductsPage.jsx";
 import QuizPage from "./pages/QuizPage.jsx";
 import ChatWithAI from "./pages/AI/ChatWithAI.jsx";
 import AboutUs from "./pages/Common/AboutUs.jsx";
@@ -44,16 +46,21 @@ function RequireAdmin({ children }) {
 }
 
 function AdminLayout() {
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+
   return (
-    <div className="admin-layout">
-      <AdminSidebar />
+    <div className={`admin-layout ${isSidebarCollapsed ? "admin-layout--collapsed" : ""}`}>
+      <AdminSidebar
+        collapsed={isSidebarCollapsed}
+        onToggleCollapsed={() => setIsSidebarCollapsed((value) => !value)}
+      />
       <div className="admin-main">
         <div className="admin-page-content">
           <Routes>
             <Route index element={<AdminHome />} />
             <Route path="blog" element={<AdminPostsPage />} />
             <Route path="posts" element={<Navigate to="/admin/blog" replace />} />
-            <Route path="shop" element={<div>Shop Admin (coming soon)</div>} />
+            <Route path="shop" element={<AdminProductsPage />} />
             <Route path="herbotai" element={<div>HerbotAI Admin (coming soon)</div>} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="users/:userId" element={<AdminUserDetailPage />} />
@@ -73,37 +80,7 @@ function HeaderFooterLayout() {
   return (
     <>
       <Header />
-
-      <Routes>
-        <Route path="/contact-us" element={<ContactUs />} />
-        <Route path="/chat-with-herbot" element={<ChatWithAI />} />
-        <Route path="/upgrade-account" element={<SubscriptionStep1 />} />
-        <Route
-          path="/upgrade-account/continue"
-          element={<SubscriptionStep2 />}
-        />
-        <Route path="/upgrade-account/complete" element={<SubscriptionStep3 />} />
-        <Route path="/term-of-use" element={<TermOfUse />} />
-        <Route path="/policy" element={<Policy />} />
-        <Route path="/home" element={<HomePage />} />
-        <Route path="/" element={<Navigate to="/home" replace />} />
-        <Route path="/collect-data" element={<CollectData />} />
-        <Route path="/profile" element={<UserProfile />} />
-        <Route path="/about-us" element={<AboutUs />} />
-        <Route path="/download-app" element={<DownloadAppPage />} />
-        <Route path="/marketplace" element={<Marketplace />} />
-        <Route path="/check-out" element={<Checkout />} />
-        <Route path="/qr-payment" element={<QRPayment />} />
-        <Route element={<BlogShell />}>
-          <Route path="/blog" element={<BlogTopicsPage />} />
-          <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
-          <Route
-            path="/blog/:topicId/posts/:postId"
-            element={<BlogPostDetailPage />}
-          />
-        </Route>
-        <Route path="*" element={<Navigate to="/error-404" replace />} />
-      </Routes>
+      <Outlet />
       <Footer />
     </>
   );
@@ -131,7 +108,36 @@ function App() {
             </RequireAdmin>
           }
         />
-        <Route path="/*" element={<HeaderFooterLayout />} />
+        <Route element={<HeaderFooterLayout />}>
+          <Route path="/" element={<Navigate to="/home" replace />} />
+          <Route path="/contact-us" element={<ContactUs />} />
+          <Route path="/chat-with-herbot" element={<ChatWithAI />} />
+          <Route path="/upgrade-account" element={<SubscriptionStep1 />} />
+          <Route
+            path="/upgrade-account/continue"
+            element={<SubscriptionStep2 />}
+          />
+          <Route path="/upgrade-account/complete" element={<SubscriptionStep3 />} />
+          <Route path="/term-of-use" element={<TermOfUse />} />
+          <Route path="/policy" element={<Policy />} />
+          <Route path="/home" element={<HomePage />} />
+          <Route path="/collect-data" element={<CollectData />} />
+          <Route path="/profile" element={<UserProfile />} />
+          <Route path="/about-us" element={<AboutUs />} />
+          <Route path="/download-app" element={<DownloadAppPage />} />
+          <Route path="/marketplace" element={<Marketplace />} />
+          <Route path="/check-out" element={<Checkout />} />
+          <Route path="/qr-payment" element={<QRPayment />} />
+          <Route element={<BlogShell />}>
+            <Route path="/blog" element={<BlogTopicsPage />} />
+            <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
+            <Route
+              path="/blog/:topicId/posts/:postId"
+              element={<BlogPostDetailPage />}
+            />
+          </Route>
+        </Route>
+        <Route path="*" element={<Navigate to="/error-404" replace />} />
       </Routes>
     </BrowserRouter>
   );

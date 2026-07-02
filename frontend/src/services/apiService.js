@@ -86,8 +86,8 @@ const refreshAccessToken = async () => {
   return refreshTokenRequest
 }
 
-const request = async (path, { method = 'GET', body, isAuthenticated = false } = {}) => {
-  const headers = { Accept: 'application/json' }
+const request = async (path, { method = 'GET', body, isAuthenticated = false, headers: customHeaders = {} } = {}) => {
+  const headers = { Accept: 'application/json', ...customHeaders }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
 
   if (isAuthenticated) {
@@ -207,14 +207,15 @@ export const blogApi = {
     const response = await request('/blog/topics')
     return { topics: response.data }
   },
-  getTopicPosts: async (topicId, page = 1) => {
-    const response = await request(`/blog/topics/${topicId}/posts${buildQuery({ page })}`)
+  getTopicPosts: async (topicId, page = 1, limit) => {
+    const response = await request(`/blog/topics/${topicId}/posts${buildQuery({ page, limit })}`)
     return {
       topic: response.meta?.topic || null,
       posts: response.data,
       pagination: response.meta
     }
   },
+  getPostsByTopic: async (topicId, page = 1, limit) => blogApi.getTopicPosts(topicId, page, limit),
   getPost: async (postId) => {
     const response = await request(`/blog/posts/${postId}`)
     return { post: response.data }
@@ -347,6 +348,62 @@ export const cartApi = {
   }
 }
 
+const CHAT_SESSION_KEY = 'chatSessionId'
+
+const getChatSessionHeaders = () => {
+  const sessionId = localStorage.getItem(CHAT_SESSION_KEY)
+  return sessionId ? { 'X-Chat-Session': sessionId } : {}
+}
+
+const persistChatSession = (result) => {
+  const sessionId = result?.sessionId
+  if (sessionId) localStorage.setItem(CHAT_SESSION_KEY, sessionId)
+  return result
+}
+
+const isChatAuthenticated = () => hasAuthSession()
+
+export const chatApi = {
+  createConversation: async (payload = {}) => {
+    const response = await request('/chat/conversations', {
+      method: 'POST',
+      body: payload,
+      isAuthenticated: isChatAuthenticated(),
+      headers: getChatSessionHeaders()
+    })
+    return persistChatSession(response.data)
+  },
+  getConversations: async () => {
+    if (!hasAuthSession()) return { conversations: [] }
+    const response = await request('/chat/conversations', { isAuthenticated: true })
+    return response.data
+  },
+  getMessages: async (conversationId) => {
+    const response = await request(`/chat/conversations/${conversationId}/messages`, {
+      isAuthenticated: isChatAuthenticated(),
+      headers: getChatSessionHeaders()
+    })
+    return response.data
+  },
+  sendMessage: async (conversationId, userMessage) => {
+    const response = await request(`/chat/conversations/${conversationId}/messages`, {
+      method: 'POST',
+      body: { userMessage },
+      isAuthenticated: isChatAuthenticated(),
+      headers: getChatSessionHeaders()
+    })
+    return response.data
+  },
+  deleteConversation: async (conversationId) => {
+    const response = await request(`/chat/conversations/${conversationId}`, {
+      method: 'DELETE',
+      isAuthenticated: isChatAuthenticated(),
+      headers: getChatSessionHeaders()
+    })
+    return response.data
+  }
+}
+
 export const adminApi = {
   getUsers: async (params = {}) => {
     const response = await request(`/admin/users${buildQuery(params)}`, { isAuthenticated: true })
@@ -378,6 +435,10 @@ export const adminApi = {
       isAuthenticated: true
     })
     return response.data
+  },
+  getProducts: async (params = {}) => {
+    const response = await request(`/admin/products${buildQuery(params)}`, { isAuthenticated: true })
+    return { products: response.data, pagination: response.meta }
   },
   getContacts: async (params = {}) => {
     const response = await request(`/admin/contacts${buildQuery(params)}`, { isAuthenticated: true })
