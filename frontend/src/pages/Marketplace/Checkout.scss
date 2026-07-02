@@ -1,0 +1,309 @@
+// ==========================================
+// CHECKOUT PAGE STYLES (Unique Prefix: herdays-checkout-)
+// ==========================================
+
+// Variables (Ông có thể đồng bộ với biến global của project)
+$primary-pink: #F176A9;
+$bg-light-pink: #FAF5F7; // Màu nền hồng cực nhạt ôm trọn cả section
+$white: #FFFFFF;
+$text-dark: #333333;
+$text-gray: #666666;
+$text-light-gray: #888888;
+$green-success: #27AE60;
+$border-color: #EEEEEE;
+
+.herdays-checkout-page {
+  background-color: $bg-light-pink;
+  min-height: 100vh;
+  padding: 40px 20px 80px;
+  font-family: 'Roboto', sans-serif;
+  color: $text-dark;
+
+  @media (max-width: 768px) {
+    padding: 24px 16px 60px;
+  }
+}
+
+.herdays-checkout-container {
+  max-width: 1000px; // Ép form gọn lại cho đúng tỷ lệ bản thiết kế
+  margin: 0 auto;
+}
+
+// Nút Quay lại
+.herdays-checkout-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: $text-gray;
+  text-decoration: none;
+  font-size: 15px;
+  margin-bottom: 24px;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: $primary-pink;
+  }
+}
+
+.herdays-checkout-status,
+.herdays-checkout-empty {
+  margin: 0;
+  color: $text-gray;
+  font-weight: 600;
+}
+
+.herdays-checkout-status {
+  margin-top: 24px;
+}
+
+.herdays-checkout-status--error {
+  color: #C63561;
+}
+
+// Phần Tiêu đề
+.herdays-checkout-header {
+  margin-bottom: 32px;
+
+  .herdays-checkout-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 8px 0;
+
+    @media (max-width: 768px) {
+      font-size: 26px;
+    }
+  }
+
+  .herdays-checkout-subtitle {
+    font-size: 16px;
+    color: $text-gray;
+    margin: 0;
+
+    @media (max-width: 768px) {
+      font-size: 14px;
+    }
+  }
+}
+
+// Bố cục chia cột
+.herdays-checkout-layout {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+
+  @media (max-width: 850px) {
+    flex-direction: column; // Mobile rớt xuống thành 1 cột dọc
+  }
+}
+
+.herdays-checkout-left {
+  flex: 1.6; // Cho cột trái to hơn cột phải 1 xíu
+  width: 100%;
+}
+
+.herdays-checkout-right {
+  flex: 1;
+  width: 100%;
+  position: sticky; // Giữ form tóm tắt cố định khi cuộn màn hình
+  top: 20px;
+}
+
+// Base Card Trắng
+.herdays-checkout-card {
+  background-color: $white;
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03); // Đổ bóng siêu nhạt cho nổi nhẹ lên
+
+  @media (max-width: 768px) {
+    padding: 20px;
+  }
+}
+
+.herdays-checkout-card-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: $primary-pink;
+  margin: 0 0 24px 0;
+  border-bottom: 1px solid transparent; // Căn line xíu
+}
+
+// Danh sách sản phẩm (Cột Trái)
+.herdays-checkout-product-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.herdays-checkout-product-item {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  .product-image {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    overflow: hidden;
+    background-color: #F5F5F5;
+    flex-shrink: 0;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  .product-info {
+    flex: 1;
+
+    .product-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: $text-dark;
+      margin: 0 0 4px 0;
+    }
+
+    .product-quantity {
+      font-size: 14px;
+      color: $text-gray;
+      margin: 0;
+    }
+  }
+
+  .product-quantity-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+
+    button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border: 1px solid $border-color;
+      border-radius: 8px;
+      background: $white;
+      color: $primary-pink;
+      font-weight: 700;
+      cursor: pointer;
+
+      &:disabled {
+        color: $text-light-gray;
+        cursor: not-allowed;
+      }
+    }
+
+    span {
+      min-width: 18px;
+      text-align: center;
+      font-weight: 700;
+    }
+  }
+
+  .product-remove {
+    display: block;
+    margin-top: 8px;
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: #C63561;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+
+    &:disabled {
+      color: $text-light-gray;
+      cursor: not-allowed;
+    }
+  }
+
+  .product-price {
+    font-size: 18px;
+    font-weight: 700;
+    color: $text-dark;
+  }
+}
+
+// Tóm tắt đơn hàng (Cột Phải)
+.herdays-checkout-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+
+  .summary-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .summary-label {
+      font-size: 15px;
+      color: $text-gray;
+    }
+
+    .summary-value {
+      font-size: 16px;
+      font-weight: 500;
+      color: $text-dark;
+
+      &.text-green {
+        color: $green-success;
+        font-weight: 600;
+      }
+    }
+  }
+
+  .summary-divider {
+    border: none;
+    border-top: 1px dashed $border-color;
+    margin: 4px 0;
+  }
+
+  .total-row {
+    margin-top: 4px;
+    margin-bottom: 8px;
+
+    .summary-label {
+      font-size: 18px;
+      font-weight: 700;
+      color: $text-dark;
+    }
+
+    .total-price {
+      font-size: 22px;
+      font-weight: 700;
+      color: $text-dark;
+    }
+  }
+}
+
+// Button thanh toán
+.herdays-checkout-btn {
+  width: 100%;
+  background-color: $primary-pink;
+  color: $white;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 10px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 8px;
+
+  &:hover {
+    background-color: darken($primary-pink, 8%);
+  }
+}
+
+.summary-note {
+  text-align: center;
+  font-size: 13px;
+  color: $text-light-gray;
+  margin: 12px 0 0 0;
+}

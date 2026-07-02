@@ -73,7 +73,7 @@ const Header = () => {
   const loggedInMenuItems = [
     { label: "Trang chủ", to: "/home" },
     { label: "Bài viết", to: "/blog" },
-    { label: "Cửa hàng", to: "/upgrade-account" },
+    { label: "Cửa hàng", to: "/marketplace" },
     { label: "HerbotAI", to: "/chat-with-herbot" },
     { label: "Tải ứng dụng", to: "/download-app" },
   ];
@@ -114,7 +114,7 @@ const Header = () => {
         <div className="header-right">
           {isLoggedIn ? (
             <div className="header-user-actions">
-              <Link className="header-cart-btn" aria-label="Giỏ hàng" to="/upgrade-account">
+              <Link className="header-cart-btn" aria-label="Giỏ hàng" to="/check-out">
                 <ShoppingBag size={20} strokeWidth={2} />
               </Link>
 

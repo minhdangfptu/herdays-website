@@ -32,6 +32,11 @@ import QuizPage from "./pages/QuizPage.jsx";
 import ChatWithAI from "./pages/AI/ChatWithAI.jsx";
 import AboutUs from "./pages/Common/AboutUs.jsx";
 import DownloadAppPage from "./pages/Common/DownloadAppPage.jsx";
+import CollectData from "./pages/Common/CollectData.jsx";
+import Error404 from "./pages/Error/Error404.jsx";
+import Marketplace from "./pages/Marketplace/Marketplace.jsx";
+import Checkout from "./pages/Marketplace/Checkout.jsx";
+import QRPayment from "./pages/Marketplace/QRPayment.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -81,9 +86,14 @@ function HeaderFooterLayout() {
         <Route path="/term-of-use" element={<TermOfUse />} />
         <Route path="/policy" element={<Policy />} />
         <Route path="/home" element={<HomePage />} />
+        <Route path="/" element={<Navigate to="/home" replace />} />
+        <Route path="/collect-data" element={<CollectData />} />
         <Route path="/profile" element={<UserProfile />} />
         <Route path="/about-us" element={<AboutUs />} />
         <Route path="/download-app" element={<DownloadAppPage />} />
+        <Route path="/marketplace" element={<Marketplace />} />
+        <Route path="/check-out" element={<Checkout />} />
+        <Route path="/qr-payment" element={<QRPayment />} />
         <Route element={<BlogShell />}>
           <Route path="/blog" element={<BlogTopicsPage />} />
           <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
@@ -92,7 +102,7 @@ function HeaderFooterLayout() {
             element={<BlogPostDetailPage />}
           />
         </Route>
-        <Route path="*" element={<Navigate to="/blog" replace />} />
+        <Route path="*" element={<Navigate to="/error-404" replace />} />
       </Routes>
       <Footer />
     </>
@@ -104,6 +114,7 @@ function App() {
     <BrowserRouter>
       <Toaster position="top-center" reverseOrder={false} />
       <Routes>
+        <Route path="/error-404" element={<Error404 />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
         <Route path="/choose-method" element={<ChooseMethodPage />} />

@@ -1,8 +1,17 @@
 import { useRef } from "react";
-import { FaStar, FaChevronRight, FaChevronLeft, FaPlus, FaEnvelope } from "react-icons/fa";
+import {
+  FaStar,
+  FaChevronRight,
+  FaChevronLeft,
+  FaPlus,
+  FaEnvelope,
+} from "react-icons/fa";
 import "./HomePage.scss";
 import logomau from "../../assets/home/logo_mau.png";
 import expertBg from "../../assets/home/expert_background_card.png";
+import nhv from "../../assets/home/nhv.png";
+import pht from "../../assets/home/pht.png";
+import tvm from "../../assets/home/tvm.png";
 import herbotAi from "../../assets/home/herbot_ai.png";
 import contactImg from "../../assets/home/contact.png";
 
@@ -25,22 +34,25 @@ const HomePage = () => {
   const experts = [
     {
       id: 1,
-      name: "ThS.BS Nguyễn Hộng Vũ",
-      title: "Bác Sỹ",
+      name: "ThS.BS.Nguyễn Hoàng Vũ",
+      avatar: nhv,
+      title: "Chuyên khoa Sản Phụ Khoa",
       experience:
-        "Thạc sĩ Sản Phụ khoa ĐH Y Dược TP.HCM. Bác sĩ thực hành sản phụ khoa tại Bệnh viện Từ Dũ với chuyên môn sâu về phẫu thuật nội soi và siêu âm.",
+        "Thạc sĩ Sản Phụ khoa ĐH Y Dược TP.HCM. Bác sĩ thực hành sản phụ khoa tại Bệnh viện Từ Dũ với chuyên môn chuyên sâu về phẫu thuật nội soi và siêu âm.",
     },
     {
       id: 2,
       name: "BS. Trần Văn Minh",
-      title: "Bác Sỹ",
-      experience: "Có hơn 20 năm kinh nghiệm...",
+      avatar: tvm,
+      title: "Chuyên khoa Sản Phụ Khoa",
+      experience: "Công tác tại Bệnh viện Đa khoa Phương Đông. Phong cách làm việc nhẹ nhàng, tận tâm và luôn lắng nghe để mang đến sự yên tâm và thoải mái nhất cho người bệnh.",
     },
     {
       id: 3,
       name: "Phương Thúy Tâm",
-      title: "Bác Sỹ",
-      experience: "Có hơn 20 năm kinh nghiệm...",
+      avatar: pht,
+      title: "Chuyên gia Hỗ trợ sinh sản (IVF)",
+      experience: "Hơn hai thập kỷ cống hiến hiện thực hóa giấc mơ làm cha mẹ. Luôn sẵn sàng lắng nghe, thấu hiểu, chia sẻ và nâng đỡ tinh thần cho các cặp vợ chồng hiếm muộn.",
     },
   ];
 
@@ -208,7 +220,7 @@ const HomePage = () => {
                 </div>
                 <div className="expert-card-avatar">
                   <img
-                    src="https://placehold.co/100x100/ED77A5/FFFFFF?text=Avatar"
+                    src={expert.avatar}
                     alt={expert.name}
                   />
                 </div>

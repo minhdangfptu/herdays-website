@@ -1,0 +1,722 @@
+// ==========================================
+// ABOUT US PAGE STYLES (Unique Prefix: herdays-about-)
+// ==========================================
+
+// Variables
+$primary-pink: #F176A9;
+$dark-pink: #D05E8E;
+$light-pink-bg: #FFF5F8;
+$white: #FFFFFF;
+$grey-bg: #FAFAFA;
+$dark-navy: #3A404E;
+$text-main: #333333;
+$text-light: #666666;
+$border-color: #EEEEEE;
+
+// Cursive font fallback (Replace with your actual project script font like 'Dancing Script' or 'Playball')
+$font-cursive: 'Dancing Script', cursive, sans-serif;
+
+.herdays-about-page {
+  font-family: 'Roboto', sans-serif;
+  color: $text-main;
+  line-height: 1.6;
+
+  * { box-sizing: border-box; }
+}
+
+.herdays-about-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.herdays-about-section {
+  padding: 80px 0;
+  
+  @media (max-width: 768px) {
+    padding: 50px 0;
+  }
+}
+
+// Background Colors
+.herdays-about-hero-bg { background-color: $light-pink-bg; }
+.herdays-about-white-bg { background-color: $white; }
+.herdays-about-grey-bg { background-color: $grey-bg; }
+.herdays-about-dark-bg { background-color: $dark-navy; color: $white; }
+
+// Utility Classes
+.herdays-about-text-center { text-align: center; }
+.herdays-about-cursive-text { font-family: $font-cursive; font-weight: normal; }
+.herdays-about-cursive-title { 
+  font-family: $font-cursive; 
+  font-size: 48px; 
+  color: $primary-pink; 
+  margin-bottom: 24px; 
+}
+.herdays-about-cursive-title-huge {
+  font-family: $font-cursive; 
+  font-size: 56px; 
+  color: $primary-pink; 
+  margin: 24px auto; 
+  max-width: 800px;
+  line-height: 1.3;
+}
+
+// Shared Tag Component
+.herdays-about-tag {
+  display: inline-flex;
+  align-items: center;
+  border: 0.5px solid rgba(0, 0, 0, 0.1);
+  gap: 8px;
+  padding: 6px 16px;
+  background-color: $white;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: $primary-pink;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-bottom: 16px;
+}
+
+// Section Headers
+.herdays-about-header-center {
+  text-align: center;
+  margin-bottom: 50px;
+  
+  .herdays-about-section-title {
+    font-size: 40px;
+    font-weight: 700;
+    color: $primary-pink;
+    margin: 0 0 16px 0;
+  }
+  
+  .herdays-about-section-subtitle {
+    font-size: 16px;
+    color: $text-light;
+    max-width: 700px;
+    margin: 0 auto;
+  }
+}
+
+// Buttons
+.herdays-about-btn-pink {
+  background-color: $primary-pink;
+  color: $white;
+  border: none;
+  padding: 9px 18px;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.3s ease;
+  &:hover { opacity: 0.9; }
+}
+
+.herdays-about-btn-pink-large {
+  @extend .herdays-about-btn-pink;
+  padding: 16px 26px;
+  font-size: 16px;
+  border-radius: 8px;
+}
+
+/* ================== SECTION 1: HERO ================== */
+.herdays-about-hero {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+
+  &-content { flex: 1; }
+  
+  &-logo {
+    font-size: 56px;
+    color: $primary-pink;
+    font-weight: 800;
+    margin: 10px 0;
+    letter-spacing: 2px;
+  }
+
+  &-title {
+    font-weight: 1000;
+    font-family: $font-cursive;
+    font-size: 36px;
+    color: $primary-pink;
+    margin-bottom: 20px;
+  }
+
+  &-desc {
+    color: $text-light;
+    font-size: 16px;
+  }
+
+  &-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+  }
+
+  &-placeholder-img {
+    width: 100%;
+    height: 400px;
+    background-color: rgba($primary-pink, 0.1);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $primary-pink;
+    font-weight: bold;
+  }
+
+  @media (max-width: 768px) {
+    flex-direction: column;
+    text-align: center;
+  }
+}
+
+.herdays-about-belief {
+  &-text {
+    font-size: 18px;
+    color: $text-light;
+    max-width: 816px;
+    margin: 0 auto 20px;
+  }
+  &-highlight {
+    font-size: 20px;
+    font-weight: 700;
+    color: $primary-pink;
+    margin-bottom: 20px;
+  }
+  &-subtext {
+    font-size: 16px;
+    color: $text-light;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+}
+
+/* ================== SECTION 2: STORY ================== */
+.herdays-about-story-layout {
+  display: flex;
+  gap: 60px;
+  
+  @media (max-width: 900px) {
+    flex-direction: column;
+  }
+}
+
+.herdays-about-story-timeline {
+  flex: 1;
+  position: relative;
+  padding-left: 40px;
+  
+  .herdays-about-timeline-line {
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 136px;
+    width: 2px;
+    background-color: rgba($primary-pink, 0.3);
+  }
+
+  .herdays-about-timeline-item {
+    position: relative;
+    margin-bottom: 40px;
+    
+    .herdays-about-timeline-icon {
+      position: absolute;
+      left: -53px;
+      top: -6px;
+      width: 40px;
+      height: 40px;
+      background-color: $primary-pink;
+      color: $white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      border: 4px solid $white;
+    }
+
+    h4 {
+      margin: 0 0 8px 0;
+      font-size: 18px;
+    }
+    
+    p {
+      margin: 0;
+      color: $text-light;
+      font-size: 15px;
+    }
+  }
+}
+
+.herdays-about-story-quote {
+  flex: 1;
+  background-color: $primary-pink;
+  color: $white;
+  padding: 40px;
+  border-radius: 20px;
+  position: relative;
+
+  .herdays-about-quote-mark {
+    color: $white;
+    font-size: 80px;
+    line-height: 1;
+    font-family: serif;
+    opacity: 0.3;
+    margin-bottom: -20px;
+  }
+
+  p {
+    font-size: 16px;
+    margin-bottom: 20px;
+  }
+
+  .herdays-about-author-avatar {
+    width: 50px;
+    height: 50px;
+    background-color: $white;
+    color: $primary-pink;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+  }
+
+  .herdays-about-quote-author {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    
+    h4 { font-size: 16px; font-weight: 700; }
+    span { font-size: 14px; opacity: 0.9; }
+  }
+}
+
+/* ================== SECTION 3: GOALS & TARGETS ================== */
+.herdays-about-goals-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+
+  @media (max-width: 768px) { grid-template-columns: 1fr; }
+}
+
+.herdays-about-goal-card {
+  background-color: $white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+
+  .herdays-about-goal-icon {
+    width: 60px;
+    height: 60px;
+    background-color: $primary-pink;
+    color: $white;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin-bottom: 20px;
+  }
+
+  h3 { font-weight: 700; color: $primary-pink; font-size: 24px; margin: 0 0 16px 0; }
+  p { color: $text-light; margin: 0; }
+}
+
+.herdays-about-targets-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+
+  @media (max-width: 1024px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.herdays-about-target-card {
+  background-color: $white;
+  border: 1px solid $border-color;
+  border-radius: 16px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+
+  &-header {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    
+    .herdays-about-target-icon {
+      width: 40px;
+      height: 40px;
+      background-color: $primary-pink;
+      color: $white;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+
+    h4 { font-weight: 700; color: $primary-pink; margin: 0 0 4px 0; font-size: 16px; }
+    span { font-size: 13px; color: $text-light; }
+  }
+
+  .herdays-about-target-list {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 24px 0;
+    flex: 1;
+    
+    li {
+      font-size: 14px;
+      color: $text-light;
+      margin-bottom: 12px;
+      display: flex;
+      gap: 8px;
+      
+      .check-icon { color: $primary-pink; font-weight: bold; }
+    }
+  }
+
+  .herdays-about-target-link {
+    color: $primary-pink;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    
+    .arrow { transition: transform 0.3s; }
+    &:hover .arrow { transform: translateX(4px); }
+  }
+}
+
+/* ================== SECTION 4: HERBOT AI ================== */
+.herdays-about-ai-layout {
+  display: flex;
+  align-items: center;
+  gap: 60px;
+
+  @media (max-width: 900px) { flex-direction: column; }
+}
+
+.herdays-about-ai-mockup {
+  flex: 1.2;
+  .herdays-about-placeholder-img {
+    width: 100%;
+    height: 450px;
+    background-color: #2A2F3D;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: $white;
+  }
+}
+
+.herdays-about-ai-content {
+  flex: 1;
+
+  .herdays-about-cursive-text-large {
+    font-family: $font-cursive;
+    font-size: 50px;
+    margin: 0;
+  }
+
+  .herdays-about-ai-title-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .herdays-about-ai-heading {
+    font-weight: 700;
+    font-size: 32px;
+    color: $primary-pink;
+    margin: 0 0 16px 0;
+  }
+
+  .herdays-about-ai-desc {
+    color: #CCCCCC;
+    margin-bottom: 30px;
+  }
+
+  .herdays-about-ai-features {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-bottom: 30px;
+
+    .herdays-about-ai-feature {
+      display: flex;
+      gap: 16px;
+      align-items: flex-start;
+
+      .icon {
+        font-size: 24px;
+        color: $primary-pink;
+      }
+
+      h4 { font-weight: 700; margin: 0 0 4px 0; font-size: 16px; color: $white; }
+      p { margin: 0; font-size: 14px; color: #AAAAAA; }
+    }
+  }
+
+  .herdays-about-ai-footer-text {
+    color: #CCCCCC;
+    font-size: 15px;
+    border-top: 1px solid #555;
+    padding-top: 20px;
+  }
+}
+
+/* ================== SECTION 5: SUBSCRIPTION BOX ================== */
+.herdays-about-process-flow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  margin-bottom: 50px;
+
+  @media (max-width: 768px) { flex-wrap: wrap; }
+
+  .herdays-about-process-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    .icon {
+      width: 70px;
+      height: 70px;
+      background-color: $white;
+      border: 1px solid $border-color;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 30px;
+      color: $primary-pink;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+    }
+    
+    span { font-weight: 600; font-size: 14px; }
+  }
+
+  .arrow { color: $primary-pink; font-size: 24px; }
+}
+
+.herdays-about-pricing-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 40px;
+
+  @media (max-width: 900px) { grid-template-columns: 1fr; }
+}
+
+.herdays-about-price-card {
+  border: 1px solid $border-color;
+  border-radius: 20px;
+  padding: 30px;
+  position: relative;
+  background-color: $white;
+
+  .herdays-about-price-tag {
+    display: inline-block;
+    background-color: $light-pink-bg;
+    color: $primary-pink;
+    padding: 6px 16px;
+    border-radius: 20px;
+    
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  .herdays-about-price-flower {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 40px;
+    color: $primary-pink;
+  }
+
+  h3 { font-weight: 700; color: $primary-pink; font-size: 20px; margin: 0 0 8px 0; }
+  .desc { font-size: 14px; color: $text-light; margin-bottom: 24px; }
+
+  ul {
+    list-style: none;
+    padding: 0;
+    margin: 0 0 30px 0;
+    min-height: 180px;
+    
+    li {
+      font-size: 14px;
+      margin-bottom: 12px;
+      color: $text-light;
+      
+      .check {
+        display: inline-block;
+        width: 20px;
+        height: 20px;
+        background-color: $light-pink-bg;
+        color: $primary-pink;
+        text-align: center;
+        border-radius: 4px;
+        margin-right: 10px;
+      }
+    }
+  }
+
+  .herdays-about-price-footer {
+    border-top: 1px solid $border-color;
+    padding-top: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .price-info {
+      display: flex;
+      flex-direction: column;
+      
+      span { font-size: 12px; color: $text-light; }
+      strong { font-size: 24px; color: $primary-pink; }
+    }
+  }
+}
+
+.herdays-about-pricing-note {
+  text-align: center;
+  color: $text-light;
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: 14px;
+}
+
+/* ================== SECTION 6: MARKETPLACE & VALUES ================== */
+.herdays-about-market-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-bottom: 30px;
+
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.herdays-about-market-card {
+  background-color: $white;
+  border: 1px solid $border-color;
+  padding: 20px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-weight: 600;
+  font-size: 15px;
+  color: $primary-pink;
+
+  .icon {
+    width: 40px;
+    height: 40px;
+    background-color: $primary-pink;
+    color: $white;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+}
+
+.herdays-about-market-note {
+  text-align: center;
+  color: $text-light;
+  font-size: 14px;
+}
+
+.herdays-about-values-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.herdays-about-value-card {
+  border: 1px solid $border-color;
+  border-radius: 20px;
+  padding: 40px 20px;
+  text-align: center;
+
+  .herdays-about-value-icon {
+    width: 60px;
+    height: 60px;
+    background-color: $primary-pink;
+    color: $white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    margin: 0 auto 20px;
+  }
+
+  h3 { font-weight: 700; color: $primary-pink; margin: 0 0 12px 0; font-size: 20px; }
+  p { color: $text-light; font-size: 14px; margin: 0; }
+}
+
+/* ================== SECTION 7: WHY CHOOSE ================== */
+.herdays-about-why-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+
+  @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 600px) { grid-template-columns: 1fr; }
+}
+
+.herdays-about-why-card {
+  background-color: $white;
+  border: 1px solid $border-color;
+  border-radius: 16px;
+  padding: 30px;
+  display: flex;
+  gap: 20px;
+
+  .num {
+    font-size: 48px;
+    font-weight: 800;
+    font-family: serif;
+    color: $primary-pink;
+    line-height: 1;
+    opacity: 0.8;
+  }
+
+  h3 { font-weight: 700; color: $primary-pink; font-size: 18px; margin: 0 0 8px 0; }
+  p { color: $text-light; font-size: 14px; margin: 0; }
+
+  &.card-centered {
+    @media (min-width: 901px) {
+      grid-column: 2 / 3; // Ép thẻ số 07 ra chính giữa ở màn hình lớn
+    }
+  }
+}
+
+/* ================== SECTION 8: CTA ================== */
+.herdays-about-cta {
+  max-width: 800px;
+  
+  &-subtext {
+    color: $text-light;
+    font-size: 16px;
+    margin-bottom: 40px;
+  }
+}
