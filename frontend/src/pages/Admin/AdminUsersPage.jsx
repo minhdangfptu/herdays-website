@@ -20,7 +20,8 @@ const targetStatusLabels = {
   ivf: 'IVF',
   normal: 'Sức khỏe',
   periodTracking: 'Chu kỳ',
-  relatives: 'Người thân'
+  relatives: 'Người thân',
+  partner: 'Người thân'
 }
 
 const targetToneClasses = {
@@ -29,7 +30,8 @@ const targetToneClasses = {
   ivf: 'bg-blue-50 text-blue-600',
   normal: 'bg-slate-50 text-slate-600',
   periodTracking: 'bg-pink-50 text-pink-600',
-  relatives: 'bg-emerald-50 text-emerald-600'
+  relatives: 'bg-emerald-50 text-emerald-600',
+  partner: 'bg-emerald-50 text-emerald-600'
 }
 
 const avatarColors = [

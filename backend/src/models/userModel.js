@@ -48,7 +48,7 @@ const userSchema = new mongoose.Schema(
     },
     targetStatus: {
       type: String,
-      enum: ['tryingToConceive', 'pregnant', 'ivf', 'normal', 'periodTracking', 'relatives', null],
+      enum: ['tryingToConceive', 'pregnant', 'ivf', 'normal', 'periodTracking', 'relatives', 'partner', null],
       default: null
     },
     isVerified: {
