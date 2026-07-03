@@ -15,6 +15,7 @@ const targetStatusLabels = {
   normal: "Chăm sóc sức khỏe",
   periodTracking: "Theo dõi chu kỳ",
   relatives: "Người thân",
+  partner: "Người thân",
 };
 
 const accountTypeLabels = {

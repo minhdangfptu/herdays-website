@@ -12,11 +12,18 @@ const ROLE_BY_GENERAL_ANSWER = {
   'Đang điều trị IVF': 'ivf'
 };
 
+const AUDIENCE_QUESTION_INDEX = 2;
+const ROLE_QUESTION_INDEX = 3;
+const APP_USER_AUDIENCE_ANSWER = 'người dùng ứng dụng';
+const PARTNER_AUDIENCE_ANSWER = 'người thân';
+const PARTNER_ROLE = 'partner';
+
 export const TARGET_STATUS_BY_ROLE = {
   period: 'periodTracking',
   fertility: 'tryingToConceive',
   'pregnancy-care': 'pregnant',
-  ivf: 'ivf'
+  ivf: 'ivf',
+  [PARTNER_ROLE]: 'partner'
 };
 
 const isFutureDateAnswer = (answer) => {
@@ -74,34 +81,60 @@ export const submitQuizAnswers = async (userId, payload) => {
     ]);
   }
 
-  const roleQuestion = await QuizQuestion.findOne({
+  const audienceQuestion = await QuizQuestion.findOne({
     tag: 'general',
-    index: 2,
+    index: AUDIENCE_QUESTION_INDEX,
     isActive: true
   }).select('content').lean();
 
-  const roleAnswerItem = payload.questionAnswerContent.find(
-    ({ question }) => question === roleQuestion?.content
+  const audienceAnswerItem = payload.questionAnswerContent.find(
+    ({ question }) => question === audienceQuestion?.content
   );
-  const roleAnswerValues = Array.isArray(roleAnswerItem?.answer)
-    ? roleAnswerItem.answer
-    : [roleAnswerItem?.answer];
-  const rawRoleAnswer = roleAnswerValues.length === 1 ? roleAnswerValues[0] : null;
-  const finalRole = ROLE_BY_GENERAL_ANSWER[rawRoleAnswer];
+  const audienceAnswerValues = Array.isArray(audienceAnswerItem?.answer)
+    ? audienceAnswerItem.answer
+    : [audienceAnswerItem?.answer];
+  const rawAudienceAnswer = audienceAnswerValues.length === 1 ? audienceAnswerValues[0] : null;
+
+  const roleQuestion = await QuizQuestion.findOne({
+    tag: 'general',
+    index: ROLE_QUESTION_INDEX,
+    isActive: true
+  }).select('content').lean();
+
+  let finalRole = null;
+
+  if (rawAudienceAnswer === PARTNER_AUDIENCE_ANSWER) {
+    finalRole = PARTNER_ROLE;
+  } else if (rawAudienceAnswer === APP_USER_AUDIENCE_ANSWER) {
+    const roleAnswerItem = payload.questionAnswerContent.find(
+      ({ question }) => question === roleQuestion?.content
+    );
+    const roleAnswerValues = Array.isArray(roleAnswerItem?.answer)
+      ? roleAnswerItem.answer
+      : [roleAnswerItem?.answer];
+    const rawRoleAnswer = roleAnswerValues.length === 1 ? roleAnswerValues[0] : null;
+    finalRole = ROLE_BY_GENERAL_ANSWER[rawRoleAnswer];
+  }
 
   if (!finalRole) {
     throw new HttpError(400, 'Dữ liệu đầu vào không hợp lệ', [
       {
         field: 'questionAnswerContent',
-        message: 'The answer to general question index 2 is missing or invalid'
+        message: 'The audience answer or role answer is missing or invalid'
       }
     ]);
   }
 
-  const expectedQuestions = await QuizQuestion.find({
-    tag: { $in: ['general', finalRole] },
-    isActive: true
-  }).select('content question_type').lean();
+  const expectedQuestions = finalRole === PARTNER_ROLE
+    ? await QuizQuestion.find({
+      tag: 'general',
+      index: { $lte: AUDIENCE_QUESTION_INDEX },
+      isActive: true
+    }).select('content question_type').lean()
+    : await QuizQuestion.find({
+      tag: { $in: ['general', finalRole] },
+      isActive: true
+    }).select('content question_type').lean();
 
   const expectedQuestionContents = new Set(expectedQuestions.map(({ content }) => content));
   const hasInvalidQuestion = submittedQuestions.some(

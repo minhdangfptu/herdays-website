@@ -16,6 +16,7 @@ const targetStatusTopicSlugs = {
   normal: 'chu-ky-kinh-nguyet',
   periodTracking: 'chu-ky-kinh-nguyet',
   relatives: 'khac',
+  partner: 'khac',
 };
 
 const preferredTopicOrder = [

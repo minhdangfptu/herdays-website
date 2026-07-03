@@ -41,7 +41,7 @@ export const validateRegister = (body) => {
 
   if (
     body.targetStatus &&
-    !['tryingToConceive', 'pregnant', 'ivf', 'normal', 'periodTracking', 'relatives'].includes(body.targetStatus)
+    !['tryingToConceive', 'pregnant', 'ivf', 'normal', 'periodTracking', 'relatives', 'partner'].includes(body.targetStatus)
   ) {
     throw new HttpError(400, 'Invalid targetStatus');
   }

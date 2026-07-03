@@ -13,7 +13,8 @@ const targetStatusLabels = {
   ivf: 'IVF',
   normal: 'Sức khỏe',
   periodTracking: 'Chu kỳ',
-  relatives: 'Người thân'
+  relatives: 'Người thân',
+  partner: 'Người thân'
 }
 
 const roleLabels = {
