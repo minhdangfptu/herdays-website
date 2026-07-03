@@ -23,6 +23,15 @@ const quizQuestions = withDefaultQuestionType([
   {
     tag: 'general',
     index: 2,
+    content: 'Bạn tham gia với tư cách là',
+    options: [
+      'người dùng ứng dụng',
+      'người thân'
+    ]
+  },
+  {
+    tag: 'general',
+    index: 3,
     content: 'Bạn đang ở giai đoạn nào trong hành trình của mình?',
     options: [
       'Theo dõi chu kỳ kinh nguyệt',

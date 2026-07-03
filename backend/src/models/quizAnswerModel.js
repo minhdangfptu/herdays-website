@@ -2,7 +2,10 @@ import mongoose from 'mongoose';
 
 import { QUIZ_TAGS } from './quizQuestionModel.js';
 
-export const QUIZ_FINAL_ROLES = QUIZ_TAGS.filter((tag) => tag !== 'general');
+export const QUIZ_FINAL_ROLES = [
+  ...QUIZ_TAGS.filter((tag) => tag !== 'general'),
+  'partner'
+];
 
 const questionAnswerSchema = new mongoose.Schema({
   question: {

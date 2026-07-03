@@ -40,6 +40,10 @@ const ROLE_BY_GENERAL_ANSWER = {
   'Đang điều trị IVF': 'ivf'
 };
 
+const AUDIENCE_QUESTION_INDEX = 2;
+const ROLE_QUESTION_INDEX = 3;
+const PARTNER_AUDIENCE_ANSWER = 'người thân';
+
 const numberQuickOptions = ['26', '28', '30', '32', '35'];
 
 const formatQuestion = (question) => ({
@@ -172,11 +176,13 @@ function QuizPage() {
     }
   };
 
-  const submitQuiz = async () => {
-    const questionAnswerContent = questions.map((question) => ({
-      question: question.source.content,
-      answer: normalizeAnswer(answers[question.id])
-    }));
+  const submitQuiz = async (includedQuestions = questions) => {
+    const questionAnswerContent = includedQuestions
+      .filter((question) => !isEmptyAnswer(answers[question.id]))
+      .map((question) => ({
+        question: question.source.content,
+        answer: normalizeAnswer(answers[question.id])
+      }));
 
     setIsSubmitting(true);
     setErrorMessage('');
@@ -207,7 +213,19 @@ function QuizPage() {
 
     setErrorMessage('');
 
-    const roleTag = currentQuestion.tag === 'general' && currentQuestion.index === 2
+    if (
+      currentQuestion.tag === 'general'
+      && currentQuestion.index === AUDIENCE_QUESTION_INDEX
+      && currentAnswer === PARTNER_AUDIENCE_ANSWER
+    ) {
+      const partnerQuestions = questions.filter(
+        (question) => question.tag === 'general' && question.index <= AUDIENCE_QUESTION_INDEX
+      );
+      await submitQuiz(partnerQuestions);
+      return;
+    }
+
+    const roleTag = currentQuestion.tag === 'general' && currentQuestion.index === ROLE_QUESTION_INDEX
       ? ROLE_BY_GENERAL_ANSWER[currentAnswer]
       : null;
 
