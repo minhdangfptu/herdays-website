@@ -158,7 +158,7 @@ function LoginForm() {
   return (
     <section className="login-form-panel" aria-labelledby="login-title">
       <div className="login-form-panel__content">
-        <img className="brand-logo" src={herdaysLogo} alt="Herdays" />
+        <img style={{marginTop: '40px'}} className="brand-logo" src={herdaysLogo} alt="Herdays" />
 
         <div className="login-copy">
           <h1 id="login-title">Đăng nhập</h1>

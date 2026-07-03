@@ -6,9 +6,9 @@ const normalizeVietnamPhoneNumber = (phone) => {
   const normalizedPhone = phone.trim().replace(/[\s().-]/g, '');
   if (!normalizedPhone) return null;
 
-  if (/^0\d{9}$/.test(normalizedPhone)) return `+84${normalizedPhone.slice(1)}`;
-  if (/^\+84\d{9}$/.test(normalizedPhone)) return normalizedPhone;
-  if (/^84\d{9}$/.test(normalizedPhone)) return `+${normalizedPhone}`;
+  if (/^0\d{9,10}$/.test(normalizedPhone)) return `+84${normalizedPhone.slice(1)}`;
+  if (/^\+84\d{9,10}$/.test(normalizedPhone)) return normalizedPhone;
+  if (/^84\d{9,10}$/.test(normalizedPhone)) return `+${normalizedPhone}`;
 
   throw new HttpError(400, 'Invalid Vietnamese phone format');
 };

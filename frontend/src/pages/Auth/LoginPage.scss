@@ -60,7 +60,6 @@ $desktop-content-scale: 0.88;
   height: auto;
   margin: 0 auto 36px;
   object-fit: contain;
-  margin-top: 40px
 }
 
 .login-copy {
@@ -688,7 +687,6 @@ a:focus-visible {
     width: min(250px, 100%);
     height: auto;
     margin-bottom: 14px;
-    margin-top: 40px;
   }
 
   .login-copy h1 {
@@ -934,6 +932,7 @@ a:focus-visible {
     width: min(250px, 82vw);
     height: auto;
     margin-bottom: 30px;
+    
   }
 
   .login-copy h1 {

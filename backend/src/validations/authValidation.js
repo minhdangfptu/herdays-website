@@ -1,7 +1,7 @@
 import HttpError from '../utils/httpError.js';
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const phoneRegex = /^\+?[1-9]\d{7,14}$/;
+const phoneRegex = /^(\+84|0)\d{9}$/;
 
 export const normalizeEmail = (email) => email?.trim().toLowerCase();
 
