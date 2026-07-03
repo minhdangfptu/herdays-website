@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import {
   Phone,
   Mail,
@@ -11,15 +12,16 @@ import { contactApi } from "../../services/apiService";
 import mapContact from "../../assets/contact_map.png";
 import "./ContactUs.scss";
 export default function ContactUs() {
-  const [formData, setFormData] = useState({
+  const [searchParams] = useSearchParams();
+  const [formData, setFormData] = useState(() => ({
     name: "",
     phone: "",
-    email: "",
+    email: searchParams.get("email") || "",
     address: "",
     city: "",
     subject: "",
     message: "",
-  });
+  }));
 
   const [status, setStatus] = useState("idle"); // "idle" | "loading" | "success" | "error"
   const [fieldErrors, setFieldErrors] = useState({});

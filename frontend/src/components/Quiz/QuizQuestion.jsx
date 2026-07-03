@@ -1,6 +1,54 @@
 import "./QuizQuestion.scss";
 import { Clock } from "lucide-react";
 import quizIntro from "../../assets/quiz_intro.png"
+import { useEffect, useState } from "react";
+
+// 0. MÀN LOADING
+const LOADING_MESSAGES = ["Đang cấu hình riêng", "Đang cá nhân hoá", "Sắp xong rồi"];
+
+export const LoadingStep = () => {
+  const [msgIndex, setMsgIndex] = useState(0);
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMsgIndex((i) => (i + 1) % LOADING_MESSAGES.length);
+    }, 1600);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div className="flex flex-col items-center text-center w-full max-w-[600px] mx-auto px-4">
+      <div className="w-28 h-28 rounded-full flex items-center justify-center mb-8 bg-pink-100">
+        <div className="w-16 h-16 rounded-full border-4 border-[#F176A9] border-t-transparent animate-spin" />
+      </div>
+      <p className="text-[20px] md:text-[24px] font-semibold text-[#F176A9] transition-opacity duration-400">
+        {LOADING_MESSAGES[msgIndex]}
+      </p>
+    </div>
+  );
+};
+
+// 8. MÀN HOÀN THÀNH
+export const CompletionStep = ({ onStart }) => (
+  <div className="flex flex-col items-center text-center w-full max-w-[600px] mx-auto px-4">
+    <div className="w-46 h-46 rounded-full overflow-hidden mb-6 shadow-md bg-pink-100 border-4 border-white">
+      <img src={quizIntro} alt="Completion" className="w-full h-full object-cover" />
+    </div>
+    <h2 className="text-[28px] md:text-[32px] font-bold text-[#F176A9] mb-4">
+      Chào mừng bạn đến với Herdays
+    </h2>
+    <p className="text-gray-600 text-[15px] md:text-base leading-relaxed px-4 mb-8">
+      Chúc mừng bạn đã thiết lập xong, bây giờ hãy để chúng mình hỗ trợ và yêu thương bạn nhé!
+    </p>
+    <button
+      type="button"
+      onClick={onStart}
+      className="min-w-[200px] rounded-full bg-[#F176A9] px-12 py-3 font-bold text-white shadow-md transition-all hover:bg-[#D96593] active:scale-95"
+    >
+      Bắt đầu thôi
+    </button>
+  </div>
+);
 // 1. MÀN INTRO
 export const IntroStep = ({ data }) => (
   <div className="flex flex-col items-center text-center w-full max-w-[600px] mx-auto px-4">

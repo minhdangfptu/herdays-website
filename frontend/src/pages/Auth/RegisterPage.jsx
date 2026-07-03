@@ -99,6 +99,7 @@ function RegisterForm() {
   const navigate = useNavigate()
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isConfirmVisible, setIsConfirmVisible] = useState(false)
+  const [isTermsAccepted, setIsTermsAccepted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const navigateAfterSocialAuth = useCallback((result) => {
@@ -279,6 +280,8 @@ function RegisterForm() {
                 className="remember-me__checkbox"
                 type="checkbox"
                 name="terms"
+                checked={isTermsAccepted}
+                onChange={(e) => setIsTermsAccepted(e.target.checked)}
                 required
               />
               <span>
@@ -297,7 +300,7 @@ function RegisterForm() {
           <button
             className="submit-button"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isTermsAccepted}
           >
             {isSubmitting ? 'Đang đăng ký...' : 'Đăng ký'}
           </button>

@@ -112,13 +112,13 @@ const EnterOTP = () => {
         <img className="enter-otp-logo" src={herdaysLogo} alt="Herdays" />
 
         <div className="enter-otp-heading">
-          <h1>Äiá»n mÃ£ OTP</h1>
+          <h1>Điền mã OTP</h1>
           <p>
-            ChÃºng tÃ´i Ä‘Ã£ gá»­i Email chá»©a mÃ£ OTP Ä‘áº¿n Ä‘á»‹a chá»‰ Email:{' '}
+            Chúng tôi đã gửi Email chứa mã OTP đến địa chỉ Email:{' '}
             <strong>{maskContact(contact)}</strong>
           </p>
           <p className="enter-otp-helper">
-            Vui lÃ²ng Ä‘iá»n mÃ£ 6 chá»¯ sá»‘ Ä‘Æ°á»£c gá»­i Ä‘áº¿n Email
+            Vui lòng điền mã 6 chữ số được gửi đến Email
           </p>
         </div>
 
@@ -135,21 +135,21 @@ const EnterOTP = () => {
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
                 onKeyDown={(e) => handleKeyDown(index, e)}
-                aria-label={`KÃ½ tá»± thá»© ${index + 1}`}
+                aria-label={`Ký tự thứ ${index + 1}`}
               />
             ))}
           </div>
 
           {isSubmitting && (
             <p className="enter-otp-status enter-otp-status--loading">
-              Äang xÃ¡c thá»±c...
+              Đang xác thực...
             </p>
           )}
 
           <p className="enter-otp-resend">
-            ChÆ°a nháº­n Ä‘Æ°á»£c mÃ£?{' '}
+            Chưa nhận được mã?{' '}
             <button className="enter-otp-resend-btn" type="button" onClick={handleResend}>
-              Gá»­i láº¡i
+              Gửi lại
             </button>
           </p>
 
@@ -158,12 +158,12 @@ const EnterOTP = () => {
             type="submit"
             disabled={!isOtpComplete || isSubmitting}
           >
-            {isSubmitting ? 'Äang xÃ¡c thá»±c...' : 'Tiáº¿p tá»¥c'}
+            {isSubmitting ? 'Đang xác thực...' : 'Tiếp tục'}
           </button>
         </form>
 
         <a className="enter-otp-back" href="/login">
-          Quay vá» trang Ä‘Äƒng nháº­p
+          Quay về trang đăng nhập
         </a>
       </div>
     </main>

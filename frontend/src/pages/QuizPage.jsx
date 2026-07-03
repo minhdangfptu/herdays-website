@@ -1,13 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef } from 'react';
 import toast from 'react-hot-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import QuizLayout from '../components/Quiz/QuizLayout';
 import {
   CheckboxGridStep,
+  CompletionStep,
   DatePickerStep,
   GridSingleChoiceStep,
   IntroStep,
+  LoadingStep,
   ShortAnswerStep,
   SingleNumberInputStep,
   VerticalSingleChoiceStep
@@ -19,6 +21,16 @@ const INTRO_STEP = {
   questionType: 'INTRO',
   title: 'Cùng tìm hiểu chính mình nhé!',
   description: 'Chào bạn, mỗi cơ thể là một vũ trụ riêng! Để HerDays trở thành người bạn đồng hành hiểu cậu nhất, hãy dành vài phút hoàn thành khảo sát này nhé!'
+};
+
+const LOADING_STEP = {
+  id: 'loading',
+  questionType: 'LOADING'
+};
+
+const COMPLETION_STEP = {
+  id: 'completion',
+  questionType: 'COMPLETION'
 };
 
 const ROLE_BY_GENERAL_ANSWER = {
@@ -96,6 +108,8 @@ function QuizPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+  const [phase, setPhase] = useState('quiz'); // 'quiz' | 'loading' | 'completion'
+  const loadingTimerRef = useRef(null);
 
   useEffect(() => {
     if (!hasAuthSession()) {
@@ -124,6 +138,7 @@ function QuizPage() {
 
     return () => {
       isActive = false;
+      if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
     };
   }, [navigate]);
 
@@ -168,10 +183,13 @@ function QuizPage() {
     try {
       const result = await quizApi.submitAnswers(questionAnswerContent);
       toast.success(result.message || 'Đã lưu câu trả lời quiz.');
-      navigate(returnTo, { replace: true });
+      setIsSubmitting(false);
+      setPhase('loading');
+      loadingTimerRef.current = setTimeout(() => {
+        setPhase('completion');
+      }, 5000);
     } catch (error) {
       setErrorMessage(error.message || 'Không thể lưu câu trả lời quiz.');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -211,6 +229,14 @@ function QuizPage() {
     : null;
 
   const renderInteractiveArea = () => {
+    if (phase === 'loading') {
+      return <LoadingStep />;
+    }
+
+    if (phase === 'completion') {
+      return <CompletionStep onStart={() => navigate(returnTo, { replace: true })} />;
+    }
+
     if (isLoading) {
       return <p className="rounded-full bg-white/90 px-6 py-3 font-semibold text-[#F176A9] shadow-sm">Đang tải câu hỏi...</p>;
     }
@@ -261,12 +287,14 @@ function QuizPage() {
     return <GridSingleChoiceStep data={currentQuestion} value={currentAnswer} onChange={handleAnswer} />;
   };
 
+  const isNavVisible = phase === 'quiz';
+
   return (
     <QuizLayout
-      onBack={handleBack}
-      onNext={handleNext}
-      isLastStep={isSubmitStep}
-      isNextDisabled={isNextDisabled || isLoading}
+      onBack={isNavVisible ? handleBack : null}
+      onNext={isNavVisible ? handleNext : null}
+      isLastStep={isNavVisible && isSubmitStep}
+      isNextDisabled={!isNavVisible || isNextDisabled || isLoading}
       isSubmitting={isSubmitting}
     >
       {renderInteractiveArea()}
