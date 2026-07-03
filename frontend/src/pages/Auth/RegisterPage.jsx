@@ -99,6 +99,7 @@ function RegisterForm() {
   const navigate = useNavigate()
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isConfirmVisible, setIsConfirmVisible] = useState(false)
+  const [isTermsAccepted, setIsTermsAccepted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
   const navigateAfterSocialAuth = useCallback((result) => {
@@ -217,8 +218,11 @@ function RegisterForm() {
                 type="tel"
                 name="phone"
                 autoComplete="tel"
-                placeholder="Nhập số điện thoại của bạn"
+                placeholder="Ví dụ: 0398826650"
                 required
+                pattern="^0\d{9,10}$"
+                maxLength={11}
+                title="Số điện thoại Việt Nam gồm 10-11 chữ số, bắt đầu bằng 0"
               />
             </span>
           </label>
@@ -279,6 +283,8 @@ function RegisterForm() {
                 className="remember-me__checkbox"
                 type="checkbox"
                 name="terms"
+                checked={isTermsAccepted}
+                onChange={(e) => setIsTermsAccepted(e.target.checked)}
                 required
               />
               <span>
@@ -297,7 +303,7 @@ function RegisterForm() {
           <button
             className="submit-button"
             type="submit"
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isTermsAccepted}
           >
             {isSubmitting ? 'Đang đăng ký...' : 'Đăng ký'}
           </button>

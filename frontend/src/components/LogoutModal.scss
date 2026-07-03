@@ -84,13 +84,14 @@ $text-secondary: #8b98aa;
 
 .logout-modal-actions {
   display: flex;
-  gap: 12px;
+  flex-direction: column;
+  gap: 10px;
   width: 100%;
 }
 
 .logout-modal-cancel,
 .logout-modal-confirm {
-  flex: 1;
+  width: 100%;
   height: 44px;
   border: none;
   border-radius: 10px;
@@ -106,7 +107,6 @@ $text-secondary: #8b98aa;
 
   &:hover {
     background: #e4e6ea;
-    transform: translateY(-1px);
   }
 
   &:active {
@@ -120,7 +120,6 @@ $text-secondary: #8b98aa;
 
   &:hover {
     background: $brand-pink-hover;
-    transform: translateY(-1px);
   }
 
   &:active {

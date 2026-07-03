@@ -1,3 +1,5 @@
+@use "sass:color";
+
 // ============================================
 // UserProfile Styles
 // ============================================
@@ -318,6 +320,11 @@ $info-blue: #2196F3;
   font-weight: 600;
   text-align: right;
 
+  &--empty {
+    color: lighten($dark-text, 35%);
+    font-weight: 400;
+  }
+
   @media (max-width: 480px) {
     text-align: left;
     font-size: 12px;
@@ -411,6 +418,11 @@ $info-blue: #2196F3;
   font-size: 15px;
   color: $dark-text;
   font-weight: 600;
+
+  &--empty {
+    color: lighten($dark-text, 35%);
+    font-weight: 400;
+  }
 
   @media (max-width: 480px) {
     font-size: 14px;

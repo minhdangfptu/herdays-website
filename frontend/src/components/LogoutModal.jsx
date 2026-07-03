@@ -1,5 +1,5 @@
 import { useState } from "react";
-import herdaysLogo from "../../assets/herdays-logo.png";
+import herdaysLogo from "../assets/herdays-logo.png";
 import "./LogoutModal.scss";
 
 const LogoutModal = ({ isOpen, onClose, onConfirm }) => {

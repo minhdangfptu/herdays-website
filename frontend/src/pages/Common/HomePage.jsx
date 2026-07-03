@@ -1,4 +1,6 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import {
   FaStar,
   FaChevronRight,
@@ -8,26 +10,50 @@ import {
 } from "react-icons/fa";
 import "./HomePage.scss";
 import logomau from "../../assets/home/logo_mau.png";
+import boxDau from "../../assets/home/box/box_dau.png";
+import boxBau1 from "../../assets/home/box/box_bau_1.png";
+import boxBau2 from "../../assets/home/box/box_bau_2.png";
+import boxPersonal from "../../assets/home/box/box_personal.png";
 import expertBg from "../../assets/home/expert_background_card.png";
 import nhv from "../../assets/home/nhv.png";
 import pht from "../../assets/home/pht.png";
 import tvm from "../../assets/home/tvm.png";
 import herbotAi from "../../assets/home/herbot_ai.png";
 import contactImg from "../../assets/home/contact.png";
+import { hasAuthSession } from "../../services/apiService.js";
 
 const HomePage = () => {
+  const navigate = useNavigate();
   const subscriptionRef = useRef(null);
   const expertsRef = useRef(null);
+  const [newsletterEmail, setNewsletterEmail] = useState("");
+
+  const requireAuth = (target) => {
+    if (!hasAuthSession()) {
+      toast.error("Vui lòng đăng nhập để tiếp tục.");
+      navigate("/login");
+      return false;
+    }
+    if (target) navigate(target);
+    return true;
+  };
+
+  const handleNewsletterSubmit = () => {
+    if (!newsletterEmail.trim()) return;
+    navigate(`/contact-us?email=${encodeURIComponent(newsletterEmail.trim())}`);
+    setNewsletterEmail("");
+  };
 
   const subscriptionBoxes = [
-    { id: 1, name: "Box Đầu", category: "Theo dõi chu kỳ", price: "363.638 đ" },
-    { id: 2, name: "Box Bầu 1", category: "Đặc mang thai", price: "363.638 đ" },
-    { id: 3, name: "Box Bầu 2", category: "Đặc mang thai", price: "363.638 đ" },
+    { id: 1, name: "Box Dâu", category: "Theo dõi chu kỳ", price: "363.638 đ", image: boxDau },
+    { id: 2, name: "Box Bầu 1", category: "Đang mang thai", price: "363.638 đ", image: boxBau1 },
+    { id: 3, name: "Box Bầu 2", category: "Đang mang thai", price: "363.638 đ", image: boxBau2 },
     {
       id: 4,
       name: "Box Cá Nhân Hóa",
       category: "Marketplace",
       price: "363.638 đ",
+      image: boxPersonal,
     },
   ];
 
@@ -91,9 +117,9 @@ const HomePage = () => {
                 Hệ thống tự động phân tích dữ liệu sức khỏe và đưa ra các gợi ý
                 chăm sóc, thực đơn dinh dưỡng phù hợp riêng cho từng cá nhân.
               </p>
-              <a href="#" className="feature-link">
+              <button type="button" className="feature-link" onClick={() => requireAuth("/chat-with-herbot")}>
                 Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
-              </a>
+              </button>
             </div>
             <div className="feature-card">
               <h3 className="feature-card-title">Dự đoán hành trình</h3>
@@ -102,9 +128,9 @@ const HomePage = () => {
                 nguyệt, lên kế hoạch thụ thai, quản lý thai kỳ cho đến lộ trình
                 IVF chuyên sâu.
               </p>
-              <a href="#" className="feature-link">
+              <button type="button" className="feature-link" onClick={() => requireAuth("/home")}>
                 Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
-              </a>
+              </button>
             </div>
             <div className="feature-card">
               <h3 className="feature-card-title">Marketplace tiện ích</h3>
@@ -113,9 +139,9 @@ const HomePage = () => {
                 chọn sản phẩm wellness, vitamin và đồ self-care theo nhu cầu
                 thực tế
               </p>
-              <a href="#" className="feature-link">
+              <button type="button" className="feature-link" onClick={() => requireAuth("/marketplace")}>
                 Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -149,7 +175,7 @@ const HomePage = () => {
               <div key={`sub-${i}`} className="subscription-card">
                 <div className="subscription-card-image">
                   <img
-                    src={`https://placehold.co/200x200/ED77A5/FFFFFF?text=${box.name}`}
+                    src={box.image}
                     alt={box.name}
                   />
                 </div>
@@ -162,7 +188,7 @@ const HomePage = () => {
                     ))}
                   </div>
                   <p className="subscription-card-price">{box.price}</p>
-                  <button className="subscription-card-button">
+                  <button className="subscription-card-button" onClick={() => requireAuth("/upgrade-account")}>
                     <FaPlus />
                   </button>
                 </div>
@@ -184,9 +210,9 @@ const HomePage = () => {
           </button>
         </div>
         <div className="subscription-footer">
-          <a href="#" className="subscription-link">
+          <button type="button" className="subscription-link" onClick={() => requireAuth("/home")}>
             Tìm hiểu thêm →
-          </a>
+          </button>
         </div>
       </section>
 
@@ -253,9 +279,9 @@ const HomePage = () => {
           
         </div>
         <div style={{marginTop: '20px'}} className="subscription-footer">
-          <a href="#" className="subscription-link">
+          <button type="button" className="subscription-link" onClick={() => requireAuth("/home")}>
             Tìm hiểu thêm →
-          </a>
+          </button>
         </div>
       </section>
 
@@ -281,9 +307,9 @@ const HomePage = () => {
               liệu cá nhân để đưa ra các gợi ý chăm sóc phù hợp và nhắc nhở
               những mốc thời gian quan trọng
             </p>
-            <a href="#" className="herbot-link">
+            <button type="button" className="herbot-link" onClick={() => requireAuth("/chat-with-herbot")}>
               Khám phá ngay
-            </a>
+            </button>
           </div>
         </div>
       </section>
@@ -306,8 +332,11 @@ const HomePage = () => {
                 type="email"
                 placeholder="Nhập địa chỉ email của bạn"
                 className="contact-control newsletter-input"
+                value={newsletterEmail}
+                onChange={(e) => setNewsletterEmail(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleNewsletterSubmit()}
               />
-              <button className="newsletter-button">Gửi</button>
+              <button className="newsletter-button" onClick={handleNewsletterSubmit}>Gửi</button>
             </div>
           </div>
           <img

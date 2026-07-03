@@ -28,6 +28,13 @@ const ROLE_BY_GENERAL_ANSWER = {
   'Đang điều trị IVF': 'ivf'
 };
 
+const FINISH_STEP = {
+  id: 'finish',
+  questionType: 'FINISH',
+  title: 'Chào mừng bạn đến với Herdays',
+  description: 'Chúc mừng bạn đã thiết lập xong, bây giờ hãy để chúng mình hỗ trợ và yêu thương bạn nhé! 💖'
+};
+
 const AUDIENCE_QUESTION_INDEX = 2;
 const ROLE_QUESTION_INDEX = 3;
 const PARTNER_AUDIENCE_ANSWER = 'người thân';
@@ -99,6 +106,7 @@ function QuizPage() {
   const [selectedRoleTag, setSelectedRoleTag] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPersonalizing, setIsPersonalizing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
@@ -173,12 +181,23 @@ function QuizPage() {
     setErrorMessage('');
     try {
       const result = await quizApi.submitAnswers(questionAnswerContent);
-      toast.success(result.message || 'Đã lưu câu trả lời quiz.');
+      setIsPersonalizing(true);
+      const loadingToastId = toast.loading('Đang cá nhân hoá trải nghiệm cho bạn ...');
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      toast.success('Chào mừng bạn đến với Herdays', {
+        icon: '💖',
+        id: loadingToastId,
+        duration: 5000
+      });
       navigate(returnTo, { replace: true });
     } catch (error) {
+      console.log('[submitQuiz] LỖI TỪ BE:', error);
       setErrorMessage(error.message || 'Không thể lưu câu trả lời quiz.');
+      setIsPersonalizing(false);
+      setIsSubmitting(false);
     } finally {
       setIsSubmitting(false);
+      setIsPersonalizing(false);
     }
   };
 
@@ -225,7 +244,10 @@ function QuizPage() {
   };
 
   const handleBack = currentIndex > 0
-    ? () => setCurrentIndex((value) => Math.max(0, value - 1))
+    ? () => {
+        setCurrentIndex((value) => Math.max(0, value - 1));
+        setIsPersonalizing(false);
+      }
     : null;
 
   const renderInteractiveArea = () => {
@@ -286,6 +308,7 @@ function QuizPage() {
       isLastStep={isSubmitStep}
       isNextDisabled={isNextDisabled || isLoading}
       isSubmitting={isSubmitting}
+      isPersonalizing={isPersonalizing}
     >
       {renderInteractiveArea()}
     </QuizLayout>
