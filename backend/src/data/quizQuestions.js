@@ -1,10 +1,23 @@
 const numberOptions = Array.from({ length: 100 }, (_, index) => String(index + 1));
 
-const quizQuestions = [
+const QUESTION_TYPES = {
+  SINGLE_CHOICE: 'single_choice',
+  MULTIPLE_CHOICE: 'multiple_choice',
+  DATE: 'date',
+  SHORT_ANSWER: 'short_answer'
+};
+
+const withDefaultQuestionType = (questions) => questions.map((question) => ({
+  question_type: QUESTION_TYPES.SINGLE_CHOICE,
+  ...question
+}));
+
+const quizQuestions = withDefaultQuestionType([
   {
     tag: 'general',
     index: 1,
     content: 'Độ tuổi của bạn?',
+    question_type: QUESTION_TYPES.DATE,
     options: ['Nhập ngày tháng năm sinh']
   },
   {
@@ -46,6 +59,7 @@ const quizQuestions = [
     tag: 'period',
     index: 4,
     content: 'Bạn thường gặp triệu chứng nào trước kỳ kinh?',
+    question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
     options: ['Cáu gắt', 'Buồn bã', 'Thèm ăn', 'Buồn nôn', 'Đau lưng', 'Đau ngực', 'Khác/Không có']
   },
   {
@@ -123,12 +137,14 @@ const quizQuestions = [
     tag: 'fertility',
     index: 6,
     content: 'Bạn có bệnh lý nền nào không?',
+    question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
     options: ['Tiểu đường', 'Tuyến giáp', 'Huyết áp', 'Khác/Không có']
   },
   {
     tag: 'fertility',
     index: 7,
     content: 'Bạn có nhận thấy bất kỳ triệu chứng nào liên quan đến chu kỳ của mình không?',
+    question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
     options: [
       'Đau bụng kinh', 'Mụn', 'Đầy bụng', 'Biến đổi tâm trạng', 'Đau đầu',
       'Mệt', 'Khó ngủ', 'Lo âu và căng thẳng', 'Không có triệu chứng đáng kể'
@@ -164,6 +180,7 @@ const quizQuestions = [
     tag: 'pregnancy-care',
     index: 1,
     content: 'Bạn đang ở tuần thai thứ bao nhiêu?',
+    question_type: QUESTION_TYPES.SHORT_ANSWER,
     options: ['Nhập số tuần và ngày (ngày từ 0-31)']
   },
   {
@@ -176,6 +193,7 @@ const quizQuestions = [
     tag: 'pregnancy-care',
     index: 3,
     content: 'Bạn có đang gặp triệu chứng nào?',
+    question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
     options: [
       'Phù chân', 'Nghén', 'Buồn nôn', 'Mệt mỏi, thiếu năng lượng', 'Táo bón',
       'Khó tiêu', 'Đau lưng', 'Chuột rút', 'Khó ngủ', 'Ít hoặc không có triệu chứng đáng kể'
@@ -197,6 +215,7 @@ const quizQuestions = [
     tag: 'pregnancy-care',
     index: 5,
     content: 'Bạn có bệnh lý nền nào không?',
+    question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
     options: ['Tiểu đường', 'Tuyến giáp', 'Huyết áp', 'Khác/Không có']
   },
   {
@@ -240,6 +259,7 @@ const quizQuestions = [
     tag: 'ivf',
     index: 6,
     content: 'Bạn đang gặp triệu chứng nào?',
+    question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
     options: ['Đầy bụng', 'Căng tức ngực', 'Mệt mỏi', 'Khó ngủ', 'Thay đổi cảm xúc', 'Không có triệu chứng đáng kể']
   },
   {
@@ -252,6 +272,7 @@ const quizQuestions = [
     tag: 'ivf',
     index: 8,
     content: 'Bạn muốn được hỗ trợ điều gì nhất trong giai đoạn này?',
+    question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
     options: ['Hướng dẫn tiêm thuốc', 'Theo dõi triệu chứng', 'Dinh dưỡng tăng chất lượng trứng', 'Nhắc lịch khám và xét nghiệm']
   },
   {
@@ -264,12 +285,13 @@ const quizQuestions = [
     tag: 'ivf',
     index: 10,
     content: 'Trong quá trình IVF, bạn cần thông tin nhất về điều gì? (chọn tối đa 3)',
+    question_type: QUESTION_TYPES.MULTIPLE_CHOICE,
     options: [
       'Quy trình từng giai đoạn', 'Thuốc và tác dụng phụ', 'Tỷ lệ thành công',
       'Dinh dưỡng', 'Cách tăng chất lượng trứng/phôi',
       'Dấu hiệu bất thường cần đi khám', 'Chi phí và lộ trình'
     ]
   }
-];
+]);
 
 export default quizQuestions;

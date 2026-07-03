@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { blogApi } from '../../services/apiService.js'
 import ImageUploader from './ImageUploader.jsx'
+import RichTextEditor from './RichTextEditor.jsx'
 
 const EMPTY_FORM = {
   postTopicId: '',
@@ -54,22 +55,12 @@ function PostEditor({ post, topics, onSaved, onCancel }) {
     setForm((current) => ({ ...current, thumbnail: image.url }))
   }
 
-  const handleImagesUploaded = (uploadedImages) => {
-    setForm((current) => ({
-      ...current,
-      images: [...new Set([...current.images, ...uploadedImages.map((image) => image.url)])]
-    }))
-  }
-
   const handleRemoveThumbnail = () => {
     setForm((current) => ({ ...current, thumbnail: '' }))
   }
 
-  const handleRemoveImage = (imageUrl) => {
-    setForm((current) => ({
-      ...current,
-      images: current.images.filter((image) => image !== imageUrl)
-    }))
+  const handleContentChange = (content) => {
+    setForm((current) => ({ ...current, content }))
   }
 
   return (
@@ -100,10 +91,10 @@ function PostEditor({ post, topics, onSaved, onCancel }) {
         Tiêu đề
         <input className={fieldClassName} name="title" value={form.title} maxLength="200" onChange={handleChange} required />
       </label>
-      <label className="mt-5 grid gap-2 text-sm font-semibold text-slate-600">
-        Nội dung HTML
-        <textarea className={`${fieldClassName} min-h-64 font-mono text-sm`} name="content" value={form.content} onChange={handleChange} required />
-      </label>
+      <div className="mt-5 grid gap-2 text-sm font-semibold text-slate-600">
+        Nội dung
+        <RichTextEditor value={form.content} onChange={handleContentChange} />
+      </div>
       <div className="mt-5 grid gap-3">
         <p className="text-sm font-semibold text-slate-600">Ảnh đại diện</p>
         <ImageUploader label={form.thumbnail ? 'Thay ảnh đại diện' : 'Chọn ảnh đại diện'} onUploaded={handleThumbnailUploaded} />
@@ -111,22 +102,6 @@ function PostEditor({ post, topics, onSaved, onCancel }) {
           <div className="relative w-fit">
             <img className="h-28 w-44 rounded-xl object-cover" src={form.thumbnail} alt="Xem trước ảnh đại diện" />
             <button className="absolute right-2 top-2 rounded-full bg-white/90 px-2 py-1 text-xs font-bold text-red-600 shadow" type="button" onClick={handleRemoveThumbnail}>Xóa</button>
-          </div>
-        )}
-      </div>
-      <div className="mt-5 grid gap-3">
-        <p className="text-sm font-semibold text-slate-600">Ảnh nội dung ({form.images.length}/20)</p>
-        {form.images.length < 20 && (
-          <ImageUploader label="Chọn ảnh nội dung" multiple maxFiles={20 - form.images.length} onUploaded={handleImagesUploaded} />
-        )}
-        {form.images.length > 0 && (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {form.images.map((image, index) => (
-              <div className="relative" key={`${image}-${index}`}>
-                <img className="aspect-square w-full rounded-xl object-cover" src={image} alt={`Ảnh nội dung ${index + 1}`} />
-                <button className="absolute right-2 top-2 rounded-full bg-white/90 px-2 py-1 text-xs font-bold text-red-600 shadow" type="button" onClick={() => handleRemoveImage(image)}>Xóa</button>
-              </div>
-            ))}
           </div>
         )}
       </div>

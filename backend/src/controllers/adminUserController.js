@@ -40,3 +40,15 @@ export const getUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const disableUser = async (req, res, next) => {
+  try {
+    const user = await adminUserService.disableUser(req.user.id, req.params.id);
+    sendSuccess(res, {
+      message: 'Vô hiệu hóa tài khoản thành công',
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -1,7 +1,27 @@
-import React from 'react';
+import { useMemo } from 'react';
+import { useLocation } from 'react-router-dom';
 import './QRPayment.scss';
 
+const formatCurrency = (value) =>
+  new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0
+  }).format(Number(value) || 0);
+
 export default function QRPayment() {
+  const { state } = useLocation();
+  const amount = Number(state?.amount) || 0;
+  const orderCode = state?.orderCode || 'HD000000';
+  const transferContent = useMemo(
+    () => `${orderCode} - Thanh toán đơn hàng`,
+    [orderCode]
+  );
+
+  const handleCopyTransferContent = () => {
+    navigator.clipboard?.writeText(transferContent);
+  };
+
   return (
     // Thêm background-image chứa logo ngân hàng/ví điện tử của ông vào class này nhé
     <div className="herdays-qrpayment-wrapper">
@@ -22,10 +42,10 @@ export default function QRPayment() {
 
             <div className="herdays-qrpayment-amount-card">
               <p className="herdays-qrpayment-amount-label">Số tiền thanh toán</p>
-              <h2 className="herdays-qrpayment-amount-value">500.000đ</h2>
+              <h2 className="herdays-qrpayment-amount-value">{formatCurrency(amount)}</h2>
               <div className="herdays-qrpayment-content-box">
                 <p>Nội dung chuyển khoản</p>
-                <strong>HD2478 - Thanh toán đơn hàng</strong>
+                <strong>{transferContent}</strong>
               </div>
             </div>
 
@@ -48,8 +68,15 @@ export default function QRPayment() {
               <div className="herdays-qrpayment-detail-row">
                 <span className="icon">📝</span>
                 <span className="label">Nội dung CK</span>
-                <span className="value">HD2478 - Thanh toán đơn hàng</span>
-                <button className="herdays-qrpayment-copy-btn" title="Copy">📄</button>
+                <span className="value">{transferContent}</span>
+                <button
+                  className="herdays-qrpayment-copy-btn"
+                  type="button"
+                  title="Copy"
+                  onClick={handleCopyTransferContent}
+                >
+                  📄
+                </button>
               </div>
             </div>
           </div>

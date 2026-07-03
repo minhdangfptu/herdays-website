@@ -1,197 +1,146 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
+
+import { EmptyState, ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx';
+import { blogApi } from '../../services/apiService.js';
+import blogTopicBanner from '../../assets/blog_topic_banner.png';
 import './BlogPostsPage.scss';
 
+const getPostImage = (post) => post.thumbnail || post.images?.[0] || blogTopicBanner;
+
+const formatDate = (value) => {
+  if (!value) return '';
+  return new Date(value).toLocaleDateString('vi-VN');
+};
+
+const getAuthorName = (post) => post.authorId?.fullName || 'HERDAYS';
+
 const BlogPostsPage = () => {
-  const setCurrentPage = useState(1)[1];
+  const { topicId } = useParams();
+  const [currentPage, setCurrentPage] = useState(1);
+  const [posts, setPosts] = useState([]);
+  const [topic, setTopic] = useState(null);
+  const [pagination, setPagination] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState('');
 
-  const posts = [
-    {
-      id: 1,
-      title: 'Chu kỳ kinh nguyệt bao nhiêu ngày là bình thường?',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/400x260?text=Post1'
-    },
-    {
-      id: 2,
-      title: 'IVF Là Gì? Hiểu Đúng Về Thụ Tinh Trong Ống Nghiệm Để Vượt Tin Trên Hành Trình Tìm ...',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/400x260?text=Post2'
-    },
-    {
-      id: 3,
-      title: 'Thai Kỳ 40 Tuần: Hành Trình Kỳ Diệu Của Mẹ Và Bé Qua Từng Giai Đoạn',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/400x260?text=Post3'
-    },
-    {
-      id: 4,
-      title: 'Chu kỳ kinh nguyệt bao nhiêu ngày là bình thường?',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/400x260?text=Post4'
-    },
-    {
-      id: 5,
-      title: 'IVF Là Gì? Hiểu Đúng Về Thụ Tinh Trong Ống Nghiệm Để Vượt Tin Trên Hành Trình Tìm ...',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/400x260?text=Post5'
-    },
-    {
-      id: 6,
-      title: 'Thai Kỳ 40 Tuần: Hành Trình Kỳ Diệu Của Mẹ Và Bé Qua Từng Giai Đoạn',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/400x260?text=Post6'
-    },
-    {
-      id: 7,
-      title: 'Chu kỳ kinh nguyệt bao nhiêu ngày là bình thường?',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/400x260?text=Post7'
-    },
-    {
-      id: 8,
-      title: 'IVF Là Gì? Hiểu Đúng Về Thụ Tinh Trong Ống Nghiệm Để Vượt Tin Trên Hành Trình Tìm ...',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/400x260?text=Post8'
-    },
-    {
-      id: 9,
-      title: 'Thai Kỳ 40 Tuần: Hành Trình Kỳ Diệu Của Mẹ Và Bé Qua Từng Giai Đoạn',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/400x260?text=Post9'
-    }
-  ];
+  useEffect(() => {
+    let isActive = true;
 
-  const relatedPosts = [
-    {
-      id: 101,
-      title: 'Chu kỳ kinh nguyệt bao nhiêu ngày là bình thường?',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/120x90?text=R1'
-    },
-    {
-      id: 102,
-      title: 'IVF Là Gì? Hiểu Đúng Về Thụ Tinh Trong Ống Nghiệm',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/120x90?text=R2'
-    },
-    {
-      id: 103,
-      title: 'Thai Kỳ 40 Tuần: Hành Trình Kỳ Diệu Của Mẹ Và Bé',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/120x90?text=R3'
-    },
-    {
-      id: 104,
-      title: 'Chu kỳ kinh nguyệt bao nhiêu ngày là bình thường?',
-      author: 'Admin_Quy Hoàng',
-      date: 'Nov 29, 2024',
-      image: 'https://via.placeholder.com/120x90?text=R4'
-    }
-  ];
+    const fetchPosts = async () => {
+      setIsLoading(true);
+      setErrorMessage('');
+
+      try {
+        const result = await blogApi.getTopicPosts(topicId, currentPage);
+        if (!isActive) return;
+        setPosts(result.posts || []);
+        setTopic(result.topic || null);
+        setPagination(result.pagination || null);
+      } catch (error) {
+        if (isActive) setErrorMessage(error.message);
+      } finally {
+        if (isActive) setIsLoading(false);
+      }
+    };
+
+    fetchPosts();
+
+    return () => {
+      isActive = false;
+    };
+  }, [currentPage, topicId]);
+
+  const totalPages = pagination?.totalPages || 1;
+  const relatedPosts = useMemo(() => posts.slice(0, 4), [posts]);
 
   const MainPostCard = ({ post }) => (
-    <article className="blog-posts-main-card">
+    <Link className="blog-posts-main-card" to={`/blog/${topicId}/posts/${post._id}`}>
       <div className="blog-posts-main-card__image">
-        <img src={post.image} alt={post.title} />
+        <img src={getPostImage(post)} alt={post.title} />
       </div>
       <div className="blog-posts-main-card__content">
         <h3 className="blog-posts-main-card__title">{post.title}</h3>
         <div className="blog-posts-main-card__meta">
           <div className="blog-posts-main-card__author-info">
-            <img
-              src="https://via.placeholder.com/24x24?text=Avatar"
-              alt="Avatar"
-              className="blog-posts-main-card__avatar"
-            />
-            <span className="blog-posts-main-card__author">{post.author}</span>
+            <span className="blog-posts-main-card__avatar">H</span>
+            <span className="blog-posts-main-card__author">{getAuthorName(post)}</span>
           </div>
-          <span className="blog-posts-main-card__date">{post.date}</span>
+          <span className="blog-posts-main-card__date">{formatDate(post.createdAt)}</span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 
   const RelatedCard = ({ post }) => (
-    <article className="blog-posts-related-card">
+    <Link className="blog-posts-related-card" to={`/blog/${topicId}/posts/${post._id}`}>
       <div className="blog-posts-related-card__image">
-        <img src={post.image} alt={post.title} />
+        <img src={getPostImage(post)} alt={post.title} />
       </div>
       <div className="blog-posts-related-card__content">
         <h4 className="blog-posts-related-card__title">{post.title}</h4>
         <div className="blog-posts-related-card__meta">
-          <span className="blog-posts-related-card__author">{post.author}</span>
-          <span className="blog-posts-related-card__date">{post.date}</span>
+          <span className="blog-posts-related-card__author">{getAuthorName(post)}</span>
+          <span className="blog-posts-related-card__date">{formatDate(post.createdAt)}</span>
         </div>
       </div>
-    </article>
+    </Link>
   );
 
   return (
     <div className="blog-posts-page">
-      {/* Banner */}
       <div className="blog-posts-banner">
         <div className="blog-posts-banner__inner">
-          <h1 className="blog-posts-banner__title">Các bài viết dành cho bạn</h1>
+          <h1 className="blog-posts-banner__title">
+            {topic?.name || 'Bài viết HERDAYS'}
+          </h1>
           <p className="blog-posts-banner__subtitle">
-            Các bài viết chủ đề: chu kỳ kinh nguyệt
+            {topic?.description || 'Các bài viết chuyên môn từ HERDAYS'}
           </p>
         </div>
       </div>
 
-      {/* Main Content */}
       <div className="blog-posts-container">
-        <div className="blog-posts-layout">
-          {/* Left Column - Main Posts List (2/3) */}
-          <div className="blog-posts-main">
-            {posts.map((post) => (
-              <MainPostCard key={post.id} post={post} />
-            ))}
-
-            {/* Pagination */}
-            <div className="blog-posts-pagination">
-              <button
-                className="blog-posts-pagination__btn blog-posts-pagination__btn--active"
-                onClick={() => setCurrentPage(1)}
-              >
-                1
-              </button>
-              <button
-                className="blog-posts-pagination__btn"
-                onClick={() => setCurrentPage(2)}
-              >
-                2
-              </button>
-              <button
-                className="blog-posts-pagination__btn"
-                onClick={() => setCurrentPage(3)}
-              >
-                3
-              </button>
-            </div>
-          </div>
-
-          {/* Right Column - Related Posts (1/3) */}
-          <aside className="blog-posts-sidebar">
-            <h2 className="blog-posts-sidebar__title">Bài viết liên quan</h2>
-            <div className="blog-posts-sidebar__list">
-              {relatedPosts.map((post) => (
-                <RelatedCard key={post.id} post={post} />
+        {isLoading && <LoadingState label="Đang tải bài viết..." />}
+        {!isLoading && errorMessage && <ErrorState message={errorMessage} />}
+        {!isLoading && !errorMessage && posts.length === 0 && (
+          <EmptyState message="Chưa có bài viết nào trong chủ đề này." />
+        )}
+        {!isLoading && !errorMessage && posts.length > 0 && (
+          <div className="blog-posts-layout">
+            <div className="blog-posts-main">
+              {posts.map((post) => (
+                <MainPostCard key={post._id} post={post} />
               ))}
+
+              {totalPages > 1 && (
+                <div className="blog-posts-pagination">
+                  {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                    <button
+                      key={page}
+                      className={`blog-posts-pagination__btn ${
+                        currentPage === page ? 'blog-posts-pagination__btn--active' : ''
+                      }`}
+                      type="button"
+                      onClick={() => setCurrentPage(page)}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
-          </aside>
-        </div>
+
+            <aside className="blog-posts-sidebar">
+              <h2 className="blog-posts-sidebar__title">Bài viết liên quan</h2>
+              <div className="blog-posts-sidebar__list">
+                {relatedPosts.map((post) => (
+                  <RelatedCard key={post._id} post={post} />
+                ))}
+              </div>
+            </aside>
+          </div>
+        )}
       </div>
     </div>
   );

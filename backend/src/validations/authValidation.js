@@ -128,11 +128,16 @@ export const validateRefreshToken = (body) => {
 };
 
 export const validateSocialLogin = (body) => {
-  if (body.provider !== 'google') throw new HttpError(400, 'Only google social login is supported');
-  if (!body.idToken) throw new HttpError(400, 'idToken is required');
+  if (!['google', 'facebook'].includes(body.provider)) {
+    throw new HttpError(400, 'Only google and facebook social login are supported');
+  }
+
+  if (body.provider === 'google' && !body.idToken) throw new HttpError(400, 'idToken is required');
+  if (body.provider === 'facebook' && !body.accessToken) throw new HttpError(400, 'accessToken is required');
 
   return {
     provider: body.provider,
-    idToken: body.idToken
+    idToken: body.idToken,
+    accessToken: body.accessToken
   };
 };

@@ -1,5 +1,18 @@
 import HttpError from '../utils/httpError.js';
 
+const normalizeVietnamPhoneNumber = (phone) => {
+  if (typeof phone !== 'string') throw new HttpError(400, 'Invalid Vietnamese phone format');
+
+  const normalizedPhone = phone.trim().replace(/[\s().-]/g, '');
+  if (!normalizedPhone) return null;
+
+  if (/^0\d{9}$/.test(normalizedPhone)) return `+84${normalizedPhone.slice(1)}`;
+  if (/^\+84\d{9}$/.test(normalizedPhone)) return normalizedPhone;
+  if (/^84\d{9}$/.test(normalizedPhone)) return `+${normalizedPhone}`;
+
+  throw new HttpError(400, 'Invalid Vietnamese phone format');
+};
+
 export const validateUpdateProfile = (body) => {
   const updates = {};
 
@@ -19,11 +32,7 @@ export const validateUpdateProfile = (body) => {
   }
 
   if (body.phone !== undefined) {
-    const phoneRegex = /^\+?[1-9]\d{7,14}$/;
-    if (typeof body.phone !== 'string' || !phoneRegex.test(body.phone.trim())) {
-      throw new HttpError(400, 'Invalid phone format');
-    }
-    updates.phone = body.phone.trim();
+    updates.phone = normalizeVietnamPhoneNumber(body.phone);
   }
 
   if (body.address !== undefined) {

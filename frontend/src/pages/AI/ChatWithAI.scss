@@ -61,10 +61,17 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
 }
 
 .chat-ai-user-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 50px;
   height: 50px;
   border-radius: 50%;
-  object-fit: cover;
+  background-color: $chat-ai-light-pink;
+  color: $chat-ai-primary-pink;
+  font-size: 18px;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
 .chat-ai-user-info {
@@ -181,14 +188,26 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
   display: flex;
   align-items: center;
   justify-content: space-between;
+  width: 100%;
   padding: 10px 12px;
+  border: 0;
   border-radius: 6px;
+  background: transparent;
   cursor: pointer;
+  text-align: left;
   transition: background-color 0.3s ease;
 
-  &:hover {
+  &:hover,
+  &.active {
     background-color: $chat-ai-light-gray;
   }
+}
+
+.chat-ai-history-empty {
+  margin: 0;
+  padding: 10px 12px;
+  color: $chat-ai-gray-text;
+  font-size: 13px;
 }
 
 .chat-ai-history-content {
@@ -359,10 +378,16 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
 }
 
 .chat-ai-message-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 40px;
   height: 40px;
   border-radius: 50%;
-  object-fit: cover;
+  background-color: $chat-ai-light-pink;
+  color: $chat-ai-primary-pink;
+  font-size: 14px;
+  font-weight: 700;
   flex-shrink: 0;
 }
 
@@ -383,6 +408,7 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
 
 .chat-ai-message-body {
   display: flex;
+  flex-direction: column;
   align-items: flex-start;
   gap: 8px;
 
@@ -396,6 +422,87 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
     @media (max-width: 768px) {
       font-size: 13px;
     }
+  }
+}
+
+.chat-ai-blog-suggestions {
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(241, 118, 169, 0.18);
+}
+
+.chat-ai-blog-suggestions__header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: $chat-ai-primary-pink;
+  font-size: 12px;
+  font-weight: 700;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.chat-ai-blog-suggestions__list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.chat-ai-blog-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba(241, 118, 169, 0.2);
+  border-radius: 10px;
+  background: $chat-ai-white;
+  color: inherit;
+  text-decoration: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: rgba(241, 118, 169, 0.45);
+    box-shadow: 0 8px 20px rgba(241, 118, 169, 0.12);
+    transform: translateY(-1px);
+  }
+}
+
+.chat-ai-blog-card__title {
+  color: $chat-ai-dark-text;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.chat-ai-blog-card__excerpt {
+  display: -webkit-box;
+  color: $chat-ai-gray-text;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.chat-ai-blog-card__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  width: fit-content;
+  margin-top: 2px;
+  color: $chat-ai-primary-pink;
+  font-size: 12px;
+  font-weight: 700;
+
+  svg {
+    width: 13px;
+    height: 13px;
   }
 }
 
@@ -450,6 +557,27 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
 
 .chat-ai-message.ai {
   background-color: $chat-ai-light-gray;
+}
+
+.chat-ai-error {
+  align-self: center;
+  max-width: 560px;
+  border: 1px solid #fecdd3;
+  border-radius: 8px;
+  background: #fff1f2;
+  color: #be123c;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 10px 14px;
+}
+
+.chat-ai-typing {
+  align-self: flex-start;
+  border-radius: 16px;
+  background-color: $chat-ai-light-gray;
+  color: $chat-ai-gray-text;
+  font-size: 13px;
+  padding: 10px 14px;
 }
 
 // Input Area
@@ -522,6 +650,11 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
 
   &:hover {
     background-color: darken($chat-ai-primary-pink, 8%);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.6;
   }
 
   &:active {

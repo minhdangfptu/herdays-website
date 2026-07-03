@@ -1,5 +1,8 @@
 import crypto from 'crypto';
+import sanitizeHtml from 'sanitize-html';
 
+import env from '../config/environment.js';
+import BlogPost from '../models/blogPostModel.js';
 import ChatConversation from '../models/chatConversationModel.js';
 import ChatMessage from '../models/chatMessageModel.js';
 import { requestChatResponse } from '../providers/aiServiceProvider.js';
@@ -13,6 +16,29 @@ import { getLatestChatQuizContext } from './quizService.js';
 
 const GUEST_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const MEMBER_HISTORY_LIMIT = 50;
+const BLOG_CITATION_LIMIT = 3;
+const BLOG_SEARCH_LIMIT = 80;
+const BLOG_STOP_WORDS = new Set([
+  'ban',
+  'bai',
+  'biet',
+  'cho',
+  'co',
+  'cua',
+  'duoc',
+  'gi',
+  'giup',
+  'hoi',
+  'khong',
+  'la',
+  'mot',
+  'nay',
+  'nhu',
+  'toi',
+  'trong',
+  'va',
+  've'
+]);
 
 const buildError = (statusCode, message) => {
   const error = new Error(message);
@@ -23,6 +49,100 @@ const buildError = (statusCode, message) => {
 const buildGuestExpiresAt = () => new Date(Date.now() + GUEST_SESSION_TTL_MS);
 
 const createSessionId = () => crypto.randomUUID();
+
+const normalizeText = (value = '') => value
+  .toString()
+  .normalize('NFD')
+  .replace(/[\u0300-\u036f]/g, '')
+  .replace(/đ/g, 'd')
+  .replace(/Đ/g, 'd')
+  .toLowerCase();
+
+const tokenize = (value = '') => normalizeText(value)
+  .split(/[^a-z0-9]+/)
+  .filter((word) => word.length > 2 && !BLOG_STOP_WORDS.has(word));
+
+const toPlainText = (value = '') => sanitizeHtml(value, {
+  allowedTags: [],
+  allowedAttributes: {}
+}).replace(/\s+/g, ' ').trim();
+
+const buildBlogPostUrl = (post) => {
+  const frontendUrl = env.frontendUrl.replace(/\/$/, '');
+  const topicId = post.postTopicId?._id?.toString() || post.postTopicId?.toString();
+
+  if (!topicId) return `${frontendUrl}/blog`;
+  return `${frontendUrl}/blog/${topicId}/posts/${post._id.toString()}`;
+};
+
+const hasBlogCitation = (citations = []) => citations.some((citation) => citation?.sourceType === 'blog');
+
+const getTokenHitCount = (queryTokens, text) => {
+  const textTokens = new Set(tokenize(text));
+  return queryTokens.reduce((total, token) => total + (textTokens.has(token) ? 1 : 0), 0);
+};
+
+const buildFallbackBlogCitations = async (userMessage, citations = []) => {
+  if (hasBlogCitation(citations)) return citations;
+
+  const queryTokens = tokenize(userMessage);
+  if (queryTokens.length === 0) return citations;
+
+  const posts = await BlogPost.find({ status: 'Published' })
+    .select('title content postTopicId createdAt')
+    .populate('postTopicId', 'name slug')
+    .sort({ createdAt: -1 })
+    .limit(BLOG_SEARCH_LIMIT)
+    .lean();
+
+  const fallbackCitations = posts
+    .map((post) => {
+      const topicName = post.postTopicId?.name || '';
+      const topicSlug = post.postTopicId?.slug || '';
+      const plainContent = toPlainText(post.content);
+      const titleScore = getTokenHitCount(queryTokens, post.title) * 3;
+      const topicScore = getTokenHitCount(queryTokens, `${topicName} ${topicSlug}`) * 2;
+      const contentScore = getTokenHitCount(queryTokens, plainContent);
+      const score = titleScore + topicScore + contentScore;
+
+      return {
+        sourceId: `blog:${post._id.toString()}`,
+        sourceType: 'blog',
+        title: post.title,
+        url: buildBlogPostUrl(post),
+        excerpt: plainContent.slice(0, 180),
+        score
+      };
+    })
+    .filter((citation) => citation.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, BLOG_CITATION_LIMIT);
+
+  return [...citations, ...fallbackCitations];
+};
+
+const hydrateMessagesWithFallbackBlogCitations = async (messages) => {
+  let previousUserMessage = '';
+
+  for (const message of messages) {
+    if (message.role === 'user') {
+      previousUserMessage = message.content;
+      continue;
+    }
+
+    if (message.role !== 'assistant' || !previousUserMessage || hasBlogCitation(message.citations)) {
+      continue;
+    }
+
+    const citations = await buildFallbackBlogCitations(previousUserMessage, message.citations || []);
+    if (citations.length === (message.citations || []).length) continue;
+
+    message.citations = citations;
+    await message.save();
+  }
+
+  return messages;
+};
 
 const serializeConversation = (conversation) => ({
   id: conversation._id.toString(),
@@ -176,6 +296,7 @@ export const getMemberConversations = async ({ userId }) => {
 export const getConversationMessages = async ({ conversationId, userId, sessionId }) => {
   const conversation = await findOwnedConversation({ conversationId, userId, sessionId });
   const messages = await ChatMessage.find({ conversation: conversation._id }).sort({ createdAt: 1 });
+  await hydrateMessagesWithFallbackBlogCitations(messages);
 
   return {
     conversation: serializeConversation(conversation),
@@ -226,6 +347,7 @@ export const sendMessage = async ({ conversationId, userId, sessionId, payload }
       memory
     })
   );
+  aiResponse.citations = await buildFallbackBlogCitations(payload.userMessage, aiResponse.citations || []);
 
   const assistantMessage = await ChatMessage.create({
     conversation: conversation._id,

@@ -57,6 +57,19 @@ $info-blue: #2196F3;
   }
 }
 
+.user-profile-btn--quiz {
+  background-color: rgba($info-blue, 0.1);
+  color: $info-blue;
+
+  &:hover {
+    background-color: rgba($info-blue, 0.18);
+  }
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
 .user-profile-btn--delete {
   background-color: $primary-pink;
   color: $white;
@@ -405,6 +418,9 @@ $info-blue: #2196F3;
 }
 
 .user-profile-goal-link {
+  border: 0;
+  background: transparent;
+  padding: 0;
   font-size: 12px;
   color: $primary-pink;
   font-weight: 500;

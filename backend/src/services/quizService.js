@@ -19,6 +19,31 @@ export const TARGET_STATUS_BY_ROLE = {
   ivf: 'ivf'
 };
 
+const isFutureDateAnswer = (answer) => {
+  if (typeof answer !== 'string') return false;
+
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(answer);
+  if (!match) return false;
+
+  const [, rawYear, rawMonth, rawDay] = match;
+  const year = Number(rawYear);
+  const month = Number(rawMonth);
+  const day = Number(rawDay);
+  const answerDate = new Date(year, month - 1, day);
+
+  if (
+    answerDate.getFullYear() !== year
+    || answerDate.getMonth() !== month - 1
+    || answerDate.getDate() !== day
+  ) {
+    return false;
+  }
+
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  return answerDate.getTime() > today.getTime();
+};
+
 const buildChatQuizSummary = (quizAnswer) => {
   if (!quizAnswer) return null;
 
@@ -76,7 +101,7 @@ export const submitQuizAnswers = async (userId, payload) => {
   const expectedQuestions = await QuizQuestion.find({
     tag: { $in: ['general', finalRole] },
     isActive: true
-  }).select('content').lean();
+  }).select('content question_type').lean();
 
   const expectedQuestionContents = new Set(expectedQuestions.map(({ content }) => content));
   const hasInvalidQuestion = submittedQuestions.some(
@@ -88,6 +113,23 @@ export const submitQuizAnswers = async (userId, payload) => {
       {
         field: 'questionAnswerContent',
         message: `Answers must include every active general and ${finalRole} question`
+      }
+    ]);
+  }
+
+  const expectedQuestionByContent = new Map(
+    expectedQuestions.map((question) => [question.content, question])
+  );
+  const futureDateAnswerIndex = payload.questionAnswerContent.findIndex(({ question, answer }) => (
+    expectedQuestionByContent.get(question)?.question_type === 'date'
+    && isFutureDateAnswer(answer)
+  ));
+
+  if (futureDateAnswerIndex !== -1) {
+    throw new HttpError(400, 'Dữ liệu đầu vào không hợp lệ', [
+      {
+        field: `questionAnswerContent.${futureDateAnswerIndex}.answer`,
+        message: 'Date answer must not be in the future'
       }
     ]);
   }

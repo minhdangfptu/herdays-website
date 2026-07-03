@@ -1,4 +1,4 @@
-﻿$desktop-content-scale: 0.88;
+$desktop-content-scale: 0.88;
 
 .login-page {
   position: relative;
@@ -133,6 +133,10 @@
   box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
 }
 
+.input-shell input:focus-visible {
+  outline: none;
+}
+
 .field-icon,
 .password-toggle {
   position: absolute;
@@ -190,6 +194,7 @@
   cursor: pointer;
 }
 
+.remember-me input,
 .remember-me__checkbox {
   appearance: none;
   width: 20px;
@@ -202,9 +207,10 @@
   flex-shrink: 0;
 }
 
+.remember-me input:checked,
 .remember-me__checkbox:checked {
   border-color: #ed77a5;
-  background: #ed77a5;
+  background-color: #ed77a5;
   background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 12 10' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 5l3 3 7-7' stroke='%23fff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round' fill='none'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
   background-position: center;
@@ -240,9 +246,6 @@
   background: #df6598;
 }
 
-.submit-button:active {
-}
-
 .divider {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
@@ -260,66 +263,144 @@
   content: '';
 }
 
+/* =========================
+   Social Login Fixed
+   ========================= */
+
 .social-login {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 34px;
+  align-items: stretch;
+  gap: 20px;
+  width: 100%;
+  min-width: 0;
 }
 
-.social-login button {
-  display: flex;
-  height: 48px;
+.social-login > * {
+  width: 100%;
   min-width: 0;
+  height: 44px;
+}
+
+/* Facebook button */
+.social-login button,
+.social-login > button {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  max-width: none;
+  min-width: 0;
+  height: 44px;
+  min-height: 44px;
+  max-height: 44px;
   align-items: center;
   justify-content: center;
   gap: 11px;
-  border: 1px solid #8b98aa;
-  border-radius: 12px;
-  color: #4a5662;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  color: #3c4043;
   background: #fff;
   font: inherit;
   font-size: 14px;
   font-weight: 500;
+  line-height: 1;
   white-space: nowrap;
   cursor: pointer;
   transition: border-color 160ms ease, background 160ms ease;
 }
 
-.social-login button:hover {
-  border-color: #ed77a5;
-  background: #fff7fa;
-}
+/* Google wrapper */
 .google-login-button {
-  display: flex;
-  height: 48px;
+  position: relative;
+  box-sizing: border-box;
+  display: flex !important;
+  width: 100%;
+  max-width: none;
   min-width: 0;
-  align-items: center;
-  justify-content: center;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  align-items: stretch !important;
+  justify-content: stretch !important;
   overflow: hidden;
 }
 
-.google-login-button > div,
-.google-login-button iframe {
-  max-width: 100%;
+.google-login-button__provider {
+  position: absolute !important;
+  inset: 0 !important;
+  z-index: 2;
+  display: flex !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  align-items: stretch !important;
+  opacity: 0.01;
 }
 
-.google-login-button span {
-  color: #4a5662;
+/* Google generated div */
+.google-login-button__provider > div {
+  width: 100% !important;
+  height: 44px !important;
+}
+
+/* Google iframe */
+.google-login-button iframe {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  border: 0 !important;
+}
+
+.google-login-button__facade {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 11px;
+  border: 1px solid #dadce0;
+  border-radius: 4px;
+  color: #3c4043;
+  background: #fff;
+  font: inherit;
   font-size: 14px;
   font-weight: 500;
-  text-align: center;
+  line-height: 1;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.social-login button:hover {
+  border-color: #dadce0;
+  background: #fff;
+}
+
+.social-login button:disabled {
+  cursor: not-allowed;
+  opacity: 1;
+}
+
+.social-login button:disabled:hover {
+  border-color: #dadce0;
+  background: #fff;
 }
 
 .social-login img {
-  width: 20px;
-  height: 20px;
+  width: 24px;
+  height: 24px;
   flex: 0 0 auto;
   object-fit: contain;
-}
-
-.social-login button:last-child img {
-  width: 31px;
-  height: 31px;
 }
 
 .register-prompt {
@@ -553,10 +634,6 @@
   background: #fff;
 }
 
-.input-shell input:focus-visible {
-  outline: none;
-}
-
 button:focus-visible,
 a:focus-visible {
   outline: 3px solid rgb(164 35 95 / 28%);
@@ -588,18 +665,10 @@ a:focus-visible {
   .cycle-card__bars span {
     width: 42px;
   }
-
 }
 
-/* Compact desktop composition; Tailwind controls the outer card dimensions. */
+/* Compact desktop composition */
 @media (min-width: 961px) {
-  // Scale both columns as one visual system so every child keeps its proportion.
-  // .login-form-panel__content,
-  // .welcome-panel__content {
-  //   transform: scale($desktop-content-scale);
-  //   transform-origin: center;
-  // }
-
   .login-form-panel {
     padding: 60px 70px;
   }
@@ -632,9 +701,8 @@ a:focus-visible {
   }
 
   .input-shell,
-  .submit-button,
-  .social-login button {
-    height: 44px;
+  .submit-button {
+    height: 30px;
   }
 
   .input-shell input {
@@ -654,6 +722,25 @@ a:focus-visible {
 
   .social-login {
     gap: 20px;
+  }
+
+  .social-login,
+  .social-login > *,
+  .social-login button,
+  .social-login > button,
+  .google-login-button,
+  .google-login-button__provider,
+  .google-login-button__provider > div,
+  .google-login-button__facade {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+  }
+
+  .google-login-button iframe {
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
   }
 
   .social-login button {
@@ -746,7 +833,6 @@ a:focus-visible {
     width: 14px;
     height: 14px;
   }
-
 }
 
 @media (min-width: 961px) and (max-width: 1180px) {
@@ -854,6 +940,27 @@ a:focus-visible {
     gap: 12px;
   }
 
+  .social-login,
+  .social-login > *,
+  .social-login button,
+  .social-login > button,
+  .google-login-button,
+  .google-login-button__provider,
+  .google-login-button__provider > div,
+  .google-login-button__facade {
+    width: 100% !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+  }
+
+  .google-login-button iframe {
+    width: 100% !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+  }
+
   .welcome-panel {
     padding: 45px 16px 40px;
   }
@@ -908,4 +1015,5 @@ a:focus-visible {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+  
 }

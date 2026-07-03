@@ -43,13 +43,27 @@ export const SingleNumberInputStep = ({ data, value, onChange }) => (
       {(data?.quickOptions || [3, 4, 5, 6]).map((num) => (
         <button
           key={num}
-          onClick={() => onChange(num)}
+          type="button"
+          onClick={() => onChange(String(num))}
           className="px-6 py-2 bg-[#E5E7EB] hover:bg-[#F176A9] text-gray-600 hover:text-white rounded-full text-sm font-medium transition-all"
         >
           {num} ngày
         </button>
       ))}
     </div>
+  </div>
+);
+
+export const ShortAnswerStep = ({ data, value, onChange }) => (
+  <div className="flex flex-col items-center w-full max-w-[600px] mx-auto">
+    <h2 className="text-[28px] md:text-[32px] font-bold text-[#F176A9] mb-8 text-center leading-tight">{data?.title}</h2>
+    <input
+      type="text"
+      placeholder={data?.placeholder || "Nhập câu trả lời"}
+      value={value || ""}
+      onChange={(e) => onChange(e.target.value)}
+      className="quiz-input w-full max-w-[420px] px-5 py-3 rounded-xl border border-gray-200 bg-white outline-none text-gray-700 shadow-sm focus:border-[#F176A9] transition-colors"
+    />
   </div>
 );
 
@@ -90,6 +104,7 @@ export const VerticalSingleChoiceStep = ({ data, value, onChange }) => (
       {data?.options?.map((opt) => (
         <button
           key={opt.id}
+          type="button"
           onClick={() => onChange(opt.value)}
           className={`w-full text-left px-6 py-4 rounded-xl border transition-all shadow-sm font-medium !font-medium ${
             value === opt.value
@@ -112,6 +127,7 @@ export const GridSingleChoiceStep = ({ data, value, onChange }) => (
       {data?.options?.map((opt) => (
         <button
           key={opt.id}
+          type="button"
           onClick={() => onChange(opt.value)}
           className={`w-full text-left px-5 py-4 rounded-xl border transition-all shadow-sm min-h-[72px] flex items-center font-medium !font-medium ${
             value === opt.value

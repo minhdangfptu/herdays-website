@@ -12,7 +12,7 @@ const userSchema = new mongoose.Schema(
     password: {
       type: String,
       required() {
-        return this.authProvider !== 'google';
+        return this.authProvider === 'local';
       },
       select: false
     },
@@ -23,10 +23,15 @@ const userSchema = new mongoose.Schema(
     },
     authProvider: {
       type: String,
-      enum: ['local', 'google'],
+      enum: ['local', 'google', 'facebook'],
       default: 'local'
     },
     googleId: {
+      type: String,
+      trim: true,
+      default: null
+    },
+    facebookId: {
       type: String,
       trim: true,
       default: null
@@ -49,6 +54,11 @@ const userSchema = new mongoose.Schema(
     isVerified: {
       type: Boolean,
       default: false
+    },
+    isDisabled: {
+      type: Boolean,
+      default: false,
+      index: true
     },
     dateOfBirth: {
       type: Date,
@@ -85,6 +95,14 @@ userSchema.index(
   {
     unique: true,
     partialFilterExpression: { googleId: { $exists: true, $type: 'string' } }
+  }
+);
+
+userSchema.index(
+  { facebookId: 1 },
+  {
+    unique: true,
+    partialFilterExpression: { facebookId: { $exists: true, $type: 'string' } }
   }
 );
 

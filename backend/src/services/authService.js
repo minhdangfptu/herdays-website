@@ -7,6 +7,7 @@ import Otp from '../models/otpModel.js';
 import RefreshToken from '../models/refreshTokenModel.js';
 import User from '../models/userModel.js';
 import { sendOtpEmail } from '../providers/emailProvider.js';
+import { verifyFacebookAccessToken } from '../providers/facebookProvider.js';
 import { verifyGoogleIdToken } from '../providers/googleProvider.js';
 import { sendOtpSms } from '../providers/smsProvider.js';
 import HttpError from '../utils/httpError.js';
@@ -204,10 +205,12 @@ export const confirmOtp = async ({ identifier, otp, purpose }) => {
   if (purpose === 'register') {
     user.isVerified = true;
     await user.save();
+    const tokens = await issueTokens(user);
 
     return {
       message: 'OTP confirmed successfully',
-      user: sanitizeUser(user)
+      user: sanitizeUser(user),
+      ...tokens
     };
   }
 
@@ -224,6 +227,7 @@ export const login = async ({ identifier, password }) => {
   const isMatched = await bcrypt.compare(password, user.password);
   if (!isMatched) throw new HttpError(401, 'Invalid credentials');
 
+  if (user.isDisabled) throw new HttpError(403, 'User account is disabled');
   if (!user.isVerified) throw new HttpError(403, 'Please confirm OTP before login');
 
   const tokens = await issueTokens(user);
@@ -309,7 +313,7 @@ export const refreshToken = async ({ refreshToken: token }) => {
   if (!tokenRecord) throw new HttpError(401, 'Invalid or expired refresh token');
 
   const user = await User.findById(payload.id);
-  if (!user || !user.isVerified) throw new HttpError(401, 'Invalid or expired refresh token');
+  if (!user || !user.isVerified || user.isDisabled) throw new HttpError(401, 'Invalid or expired refresh token');
 
   tokenRecord.revokedAt = new Date();
   await tokenRecord.save();
@@ -317,34 +321,75 @@ export const refreshToken = async ({ refreshToken: token }) => {
   return issueTokens(user);
 };
 
-export const socialLogin = async ({ idToken }) => {
+const getSocialProfile = async ({ provider, idToken, accessToken }) => {
+  if (provider === 'facebook') {
+    const facebookProfile = await verifyFacebookAccessToken(accessToken);
+    return {
+      provider,
+      providerIdField: 'facebookId',
+      id: facebookProfile.id,
+      email: facebookProfile.email,
+      name: facebookProfile.name,
+      missingEmailMessage: 'Facebook account does not include an email'
+    };
+  }
+
   const googleProfile = await verifyGoogleIdToken(idToken);
-  const email = normalizeEmail(googleProfile.email);
+  return {
+    provider,
+    providerIdField: 'googleId',
+    id: googleProfile.sub,
+    email: googleProfile.email,
+    name: googleProfile.name,
+    emailVerified: googleProfile.email_verified,
+    missingEmailMessage: 'Google account does not include an email'
+  };
+};
 
-  if (!email) throw new HttpError(400, 'Google account does not include an email');
-  if (googleProfile.email_verified === false) throw new HttpError(400, 'Google account email is not verified');
+export const socialLogin = async ({ provider, idToken, accessToken }) => {
+  const socialProfile = await getSocialProfile({ provider, idToken, accessToken });
+  const email = normalizeEmail(socialProfile.email);
 
-  let user = await User.findOne({ email });
+  if (!email) throw new HttpError(400, socialProfile.missingEmailMessage);
+  if (socialProfile.emailVerified === false) throw new HttpError(400, 'Google account email is not verified');
+
+  const providerIdQuery = socialProfile.id
+    ? { [socialProfile.providerIdField]: socialProfile.id }
+    : null;
+  const userQuery = providerIdQuery
+    ? { $or: [{ email }, providerIdQuery] }
+    : { email };
+  let user = await User.findOne(userQuery);
+  let isNewUser = false;
 
   if (!user) {
     user = await User.create({
       email,
-      fullName: googleProfile.name,
+      fullName: socialProfile.name,
       role: 'user_free',
-      authProvider: 'google',
-      googleId: googleProfile.sub,
+      authProvider: provider,
+      [socialProfile.providerIdField]: socialProfile.id,
       isVerified: true
     });
+    isNewUser = true;
   } else {
+    if (user.isDisabled) throw new HttpError(403, 'User account is disabled');
     if (!user.isVerified) throw new HttpError(403, 'Please confirm OTP before login');
+    if (
+      user[socialProfile.providerIdField] &&
+      socialProfile.id &&
+      user[socialProfile.providerIdField] !== socialProfile.id
+    ) {
+      throw new HttpError(409, 'Social account is linked to another user');
+    }
 
     let shouldSave = false;
-    if (!user.googleId && googleProfile.sub) {
-      user.googleId = googleProfile.sub;
+    if (!user[socialProfile.providerIdField] && socialProfile.id) {
+      user[socialProfile.providerIdField] = socialProfile.id;
       shouldSave = true;
     }
-    if (user.authProvider !== 'google') {
-      user.authProvider = 'google';
+    if (user.authProvider !== provider) {
+      user.authProvider = provider;
       shouldSave = true;
     }
     if (shouldSave) await user.save();
@@ -354,6 +399,7 @@ export const socialLogin = async ({ idToken }) => {
 
   return {
     user: sanitizeUser(user),
+    isNewUser,
     ...tokens
   };
 };

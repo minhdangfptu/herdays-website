@@ -1,9 +1,27 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { FiArrowLeft } from 'react-icons/fi'
 
 import { ErrorState, LoadingState, EmptyState } from '../../components/blog/AsyncState.jsx'
 import { blogApi } from '../../services/apiService.js'
 import './BlogPostDetailPage.scss'
+
+const formatDate = (value) => {
+  if (!value) return ''
+  return new Date(value).toLocaleDateString('vi-VN')
+}
+
+const getAuthorName = (post) => post.authorId?.fullName || 'HERDAYS Admin'
+
+const getInitials = (name) => {
+  const words = (name || 'HERDAYS')
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+
+  if (words.length >= 2) return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase()
+  return (words[0] || 'H').slice(0, 2).toUpperCase()
+}
 
 function BlogPostDetailPage() {
   const { topicId, postId } = useParams()
@@ -14,29 +32,32 @@ function BlogPostDetailPage() {
 
   useEffect(() => {
     let isActive = true
-    blogApi
-      .getPost(postId)
-      .then((result) => {
+
+    const fetchPost = async () => {
+      setIsLoading(true)
+      setErrorMessage('')
+      setRelatedPosts([])
+
+      try {
+        const result = await blogApi.getPost(postId)
         if (!isActive) return
-        setIsLoading(true)
-        setErrorMessage('')
         setPost(result.post)
         const tid = result.post?.topicId?._id || result.post?.postTopicId?._id
-        if (tid) return blogApi.getPostsByTopic(tid)
-        return null
-      })
-      .then((relatedResult) => {
-        if (!isActive || !relatedResult) return
-        setRelatedPosts(
-          (relatedResult.posts || []).filter((p) => p._id !== postId).slice(0, 4),
-        )
-      })
-      .catch((error) => {
+        if (!tid) return
+        const relatedResult = await blogApi.getTopicPosts(tid)
+        if (isActive) {
+          setRelatedPosts(
+            (relatedResult.posts || []).filter((p) => p._id !== postId).slice(0, 4),
+          )
+        }
+      } catch (error) {
         if (isActive) setErrorMessage(error.message)
-      })
-      .finally(() => {
+      } finally {
         if (isActive) setIsLoading(false)
-      })
+      }
+    }
+
+    fetchPost()
 
     return () => {
       isActive = false
@@ -47,48 +68,45 @@ function BlogPostDetailPage() {
   if (errorMessage) return <ErrorState message={errorMessage} />
   if (!post) return <EmptyState message="Không tìm thấy bài viết." />
 
+  const authorName = getAuthorName(post)
+
   return (
     <div className="blog-detail-page">
-      {/* ── Banner ────────────────────────────────────── */}
-      <div className="blog-detail-banner">
-        <div className="blog-detail-banner__inner">
-          <Link className="blog-detail-banner__back" to={`/blog/${topicId}/posts`}>
-            ← Quay lại
-          </Link>
-          <h1 className="blog-detail-banner__title">Bài viết: {post.title}</h1>
-        </div>
-      </div>
-
-      {/* ── Main Content ─────────────────────────────── */}
       <div className="blog-detail-container">
+        <Link className="blog-detail-back-button" to={`/blog/${topicId}/posts`}>
+          <FiArrowLeft size={18} />
+          <span>Quay lại</span>
+        </Link>
+
         <div className="blog-detail-layout">
           <article className="blog-detail-article">
-            {/* Meta */}
-            <div className="blog-detail-article__meta">
-              <span className="blog-detail-article__category">
-                {post.postTopicId?.name || 'Chủ đề'}
-              </span>
-              <span className="blog-detail-article__dot">·</span>
-              <span className="blog-detail-article__author">
-                {post.authorId?.fullName || 'HERDAYS'}
-              </span>
-              <span className="blog-detail-article__dot">·</span>
-              <time className="blog-detail-article__date">
-                {new Date(post.createdAt).toLocaleDateString('vi-VN')}
-              </time>
-            </div>
+            <header className="blog-detail-article__header">
+              <h1 className="blog-detail-article__title">{post.title}</h1>
 
-            {/* Title */}
-            <h2 className="blog-detail-article__title">{post.title}</h2>
+              <div className="blog-detail-author">
+                <div className="blog-detail-author__profile">
+                  <span className="blog-detail-author__avatar">{getInitials(authorName)}</span>
+                  <span className="blog-detail-author__text">
+                    <strong>{authorName}</strong>
+                    <span>Tác giả</span>
+                  </span>
+                </div>
+                <time className="blog-detail-author__date">
+                  {formatDate(post.createdAt)}
+                </time>
+              </div>
+            </header>
 
-            {/* Rich-text body (BE sends <h1>/<h2>/<h3>/<p>/<ol>/<ul>/<img> inside <span>) */}
+            {post.thumbnail && (
+              <img className="blog-detail-article__hero" src={post.thumbnail} alt={post.title} />
+            )}
+
             <div
               className="blog-detail-article__content"
               dangerouslySetInnerHTML={{ __html: post.content }}
             />
           </article>
 
-          {/* ── Related Posts ──────────────────────────── */}
           {relatedPosts.length > 0 && (
             <section className="blog-detail-related">
               <h3 className="blog-detail-related__heading">
@@ -110,7 +128,7 @@ function BlogPostDetailPage() {
                         />
                       ) : (
                         <span className="blog-detail-related__card-placeholder">
-                          📝
+                          H
                         </span>
                       )}
                     </div>
@@ -126,7 +144,7 @@ function BlogPostDetailPage() {
                           ·
                         </span>
                         <span className="blog-detail-related__card-date">
-                          {new Date(item.createdAt).toLocaleDateString('vi-VN')}
+                          {formatDate(item.createdAt)}
                         </span>
                       </div>
                     </div>
