@@ -6,6 +6,7 @@ import authMiddleware from '../middlewares/authMiddleware.js';
 const router = express.Router();
 
 router.post('/answers', authMiddleware, quizController.submitAnswers);
+router.get('/answers', authMiddleware, quizController.getLatestAnswer);
 router.get('/:tag', quizController.getQuestions);
 
 export default router;

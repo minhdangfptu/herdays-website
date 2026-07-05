@@ -21,17 +21,15 @@ const INTRO_STEP = {
   description: 'Chào bạn, mỗi cơ thể là một vũ trụ riêng! Để HerDays trở thành người bạn đồng hành hiểu cậu nhất, hãy dành vài phút hoàn thành khảo sát này nhé!'
 };
 
-const ROLE_BY_GENERAL_ANSWER = {
-  'Theo dõi chu kỳ kinh nguyệt': 'period',
-  'Đang muốn có thai': 'fertility',
-  'Đang mang thai': 'pregnancy-care',
-  'Đang điều trị IVF': 'ivf'
-};
-
 const AUDIENCE_QUESTION_INDEX = 2;
 const ROLE_QUESTION_INDEX = 3;
-const PARTNER_AUDIENCE_ANSWER = 'người thân';
-
+const PARTNER_AUDIENCE_OPTION_INDEX = 1;
+const ROLE_BY_GENERAL_OPTION_INDEX = {
+  0: 'period',
+  1: 'fertility',
+  2: 'pregnancy-care',
+  3: 'ivf'
+};
 const numberQuickOptions = ['26', '28', '30', '32', '35'];
 
 const formatQuestion = (question) => ({
@@ -87,6 +85,20 @@ const isFutureDateAnswer = (answer) => {
 const normalizeAnswer = (answer) => {
   if (Array.isArray(answer)) return answer.map(String);
   return String(answer);
+};
+
+const getSelectedOptionIndex = (question, answer) => (
+  question?.options?.findIndex((option) => option.value === answer) ?? -1
+);
+
+const getApiErrorMessage = (error, fallback) => {
+  if (Array.isArray(error.details) && error.details.length > 0) {
+    return error.details
+      .map(({ field, message }) => (field ? `${field}: ${message}` : message))
+      .join('\n');
+  }
+
+  return error.message || fallback;
 };
 
 function QuizPage() {
@@ -161,22 +173,28 @@ function QuizPage() {
     }
   };
 
-  const submitQuiz = async (includedQuestions = questions) => {
-    const questionAnswerContent = includedQuestions
-      .filter((question) => !isEmptyAnswer(answers[question.id]))
-      .map((question) => ({
-        question: question.source.content,
-        answer: normalizeAnswer(answers[question.id])
-      }));
+  const submitQuiz = async (includedQuestions = questions, finalRole = selectedRoleTag) => {
+    const missingAnswerQuestion = includedQuestions.find((question) => isEmptyAnswer(answers[question.id]));
+    if (missingAnswerQuestion) {
+      const missingStepIndex = steps.findIndex((step) => step.id === missingAnswerQuestion.id);
+      if (missingStepIndex !== -1) setCurrentIndex(missingStepIndex);
+      setErrorMessage('Vui lòng trả lời đầy đủ tất cả câu hỏi trước khi hoàn thành quiz.');
+      return;
+    }
+
+    const questionAnswerContent = includedQuestions.map((question) => ({
+      question: question.source.content,
+      answer: normalizeAnswer(answers[question.id])
+    }));
 
     setIsSubmitting(true);
     setErrorMessage('');
     try {
-      const result = await quizApi.submitAnswers(questionAnswerContent);
+      const result = await quizApi.submitAnswers(questionAnswerContent, finalRole);
       toast.success(result.message || 'Đã lưu câu trả lời quiz.');
       navigate(returnTo, { replace: true });
     } catch (error) {
-      setErrorMessage(error.message || 'Không thể lưu câu trả lời quiz.');
+      setErrorMessage(getApiErrorMessage(error, 'Không thể lưu câu trả lời quiz.'));
     } finally {
       setIsSubmitting(false);
     }
@@ -198,17 +216,17 @@ function QuizPage() {
     if (
       currentQuestion.tag === 'general'
       && currentQuestion.index === AUDIENCE_QUESTION_INDEX
-      && currentAnswer === PARTNER_AUDIENCE_ANSWER
+      && getSelectedOptionIndex(currentQuestion, currentAnswer) === PARTNER_AUDIENCE_OPTION_INDEX
     ) {
       const partnerQuestions = questions.filter(
         (question) => question.tag === 'general' && question.index <= AUDIENCE_QUESTION_INDEX
       );
-      await submitQuiz(partnerQuestions);
+      await submitQuiz(partnerQuestions, 'partner');
       return;
     }
 
     const roleTag = currentQuestion.tag === 'general' && currentQuestion.index === ROLE_QUESTION_INDEX
-      ? ROLE_BY_GENERAL_ANSWER[currentAnswer]
+      ? ROLE_BY_GENERAL_OPTION_INDEX[getSelectedOptionIndex(currentQuestion, currentAnswer)]
       : null;
 
     if (roleTag && roleTag !== selectedRoleTag) {

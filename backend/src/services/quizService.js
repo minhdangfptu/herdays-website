@@ -101,11 +101,11 @@ export const submitQuizAnswers = async (userId, payload) => {
     isActive: true
   }).select('content').lean();
 
-  let finalRole = null;
+  let finalRole = payload.finalRole;
 
-  if (rawAudienceAnswer === PARTNER_AUDIENCE_ANSWER) {
+  if (!finalRole && rawAudienceAnswer === PARTNER_AUDIENCE_ANSWER) {
     finalRole = PARTNER_ROLE;
-  } else if (rawAudienceAnswer === APP_USER_AUDIENCE_ANSWER) {
+  } else if (!finalRole && rawAudienceAnswer === APP_USER_AUDIENCE_ANSWER) {
     const roleAnswerItem = payload.questionAnswerContent.find(
       ({ question }) => question === roleQuestion?.content
     );
@@ -198,18 +198,28 @@ export const submitQuizAnswers = async (userId, payload) => {
   };
 };
 
-export const getLatestChatQuizContext = async (userId) => {
+export const getLatestQuizAnswer = async (userId) => {
   if (!userId) return null;
 
   const quizAnswer = await QuizAnswer.findOne({ userId })
     .sort({ createdAt: -1 })
-    .select('questionAnswerContent finalRole')
     .lean();
 
   if (!quizAnswer) return null;
 
   return {
+    ...quizAnswer,
     targetStatus: TARGET_STATUS_BY_ROLE[quizAnswer.finalRole] || null,
     quizSummary: buildChatQuizSummary(quizAnswer)
+  };
+};
+
+export const getLatestChatQuizContext = async (userId) => {
+  const quizAnswer = await getLatestQuizAnswer(userId);
+  if (!quizAnswer) return null;
+
+  return {
+    targetStatus: quizAnswer.targetStatus,
+    quizSummary: quizAnswer.quizSummary
   };
 };

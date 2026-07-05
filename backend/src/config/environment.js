@@ -11,6 +11,37 @@ const parseNumber = (value, fallback) => {
   return Number.isFinite(parsed) ? parsed : fallback;
 };
 
+const parseJwtDuration = (value, fallback) => {
+  if (value === undefined || value === null || value === '') return fallback;
+
+  const normalizedValue = String(value).trim();
+  if (/^\d+$/.test(normalizedValue)) return Number(normalizedValue);
+
+  return normalizedValue;
+};
+
+const parseDurationMs = (value, fallback) => {
+  if (value === undefined || value === null || value === '') return fallback;
+
+  const normalizedValue = String(value).trim().toLowerCase();
+  const match = normalizedValue.match(/^(\d+(?:\.\d+)?)(ms|s|m|h|d|w)?$/);
+  if (!match) return fallback;
+
+  const amount = Number(match[1]);
+  if (!Number.isFinite(amount)) return fallback;
+
+  const multipliers = {
+    ms: 1,
+    s: 1000,
+    m: 60 * 1000,
+    h: 60 * 60 * 1000,
+    d: 24 * 60 * 60 * 1000,
+    w: 7 * 24 * 60 * 60 * 1000
+  };
+
+  return amount * (multipliers[match[2] || 's'] || 1000);
+};
+
 const parseIntegerInRange = (value, fallback, min, max) => {
   const parsed = Math.trunc(Number(value));
   if (!Number.isFinite(parsed)) return fallback;
@@ -30,9 +61,12 @@ const env = {
   mongodbDbName: process.env.MONGODB_DB_NAME || 'HerDay',
   jwtSecret: process.env.JWT_SECRET,
   refreshTokenSecret: process.env.REFRESH_TOKEN_SECRET,
-  accessTokenExpiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || '15m',
-  refreshTokenExpiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d',
-  refreshTokenExpiresInMs: parseNumber(process.env.REFRESH_TOKEN_EXPIRES_IN_MS, 7 * 24 * 60 * 60 * 1000),
+  accessTokenExpiresIn: parseJwtDuration(process.env.ACCESS_TOKEN_EXPIRES_IN, '15m'),
+  refreshTokenExpiresIn: parseJwtDuration(process.env.REFRESH_TOKEN_EXPIRES_IN, '30d'),
+  refreshTokenExpiresInMs: parseNumber(
+    process.env.REFRESH_TOKEN_EXPIRES_IN_MS,
+    parseDurationMs(process.env.REFRESH_TOKEN_EXPIRES_IN, 30 * 24 * 60 * 60 * 1000)
+  ),
   resetTokenExpiresIn: process.env.RESET_TOKEN_EXPIRES_IN || '10m',
   resetTokenExpiresInMs: parseNumber(process.env.RESET_TOKEN_EXPIRES_IN_MS, 10 * 60 * 1000),
   bcryptSaltRounds: parseNumber(process.env.BCRYPT_SALT_ROUNDS, 10),

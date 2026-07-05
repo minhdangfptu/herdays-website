@@ -259,10 +259,14 @@ export const quizApi = {
     const response = await request(`/quiz/${tag}`)
     return { questions: response.data }
   },
-  submitAnswers: async (questionAnswerContent) => {
+  getLatestAnswer: async () => {
+    const response = await request('/quiz/answers', { isAuthenticated: true })
+    return response.data
+  },
+  submitAnswers: async (questionAnswerContent, finalRole) => {
     const response = await request('/quiz/answers', {
       method: 'POST',
-      body: { questionAnswerContent },
+      body: { questionAnswerContent, finalRole },
       isAuthenticated: true
     })
     return { message: response.message, result: response.data }
