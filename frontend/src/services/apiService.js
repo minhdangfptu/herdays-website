@@ -259,10 +259,14 @@ export const quizApi = {
     const response = await request(`/quiz/${tag}`)
     return { questions: response.data }
   },
-  submitAnswers: async (questionAnswerContent) => {
+  getLatestAnswer: async () => {
+    const response = await request('/quiz/answers', { isAuthenticated: true })
+    return response.data
+  },
+  submitAnswers: async (questionAnswerContent, finalRole) => {
     const response = await request('/quiz/answers', {
       method: 'POST',
-      body: { questionAnswerContent },
+      body: { questionAnswerContent, finalRole },
       isAuthenticated: true
     })
     return { message: response.message, result: response.data }
@@ -342,6 +346,21 @@ export const cartApi = {
   clear: async () => {
     const response = await request('/cart', {
       method: 'DELETE',
+      isAuthenticated: true
+    })
+    return response.data
+  }
+}
+
+export const orderApi = {
+  listMine: async () => {
+    const response = await request('/orders', { isAuthenticated: true })
+    return response.data
+  },
+  createFromCart: async ({ paymentMethod = 'bank_transfer', lovelyMessage = '' } = {}) => {
+    const response = await request('/orders', {
+      method: 'POST',
+      body: { paymentMethod, lovelyMessage },
       isAuthenticated: true
     })
     return response.data
@@ -439,6 +458,46 @@ export const adminApi = {
   getProducts: async (params = {}) => {
     const response = await request(`/admin/products${buildQuery(params)}`, { isAuthenticated: true })
     return { products: response.data, pagination: response.meta }
+  },
+  getSingleProducts: async (params = {}) => {
+    const response = await request(`/admin/products/products${buildQuery(params)}`, { isAuthenticated: true })
+    return { products: response.data, pagination: response.meta }
+  },
+  createProduct: async (payload) => {
+    const response = await request('/admin/products/products', {
+      method: 'POST',
+      body: payload,
+      isAuthenticated: true
+    })
+    return { message: response.message, product: response.data }
+  },
+  updateProduct: async (id, payload) => {
+    const response = await request(`/admin/products/products/${id}`, {
+      method: 'PUT',
+      body: payload,
+      isAuthenticated: true
+    })
+    return { message: response.message, product: response.data }
+  },
+  getBoxes: async (params = {}) => {
+    const response = await request(`/admin/products/boxes${buildQuery(params)}`, { isAuthenticated: true })
+    return { boxes: response.data, pagination: response.meta }
+  },
+  createBox: async (payload) => {
+    const response = await request('/admin/products/boxes', {
+      method: 'POST',
+      body: payload,
+      isAuthenticated: true
+    })
+    return { message: response.message, box: response.data }
+  },
+  updateBox: async (id, payload) => {
+    const response = await request(`/admin/products/boxes/${id}`, {
+      method: 'PUT',
+      body: payload,
+      isAuthenticated: true
+    })
+    return { message: response.message, box: response.data }
   },
   getContacts: async (params = {}) => {
     const response = await request(`/admin/contacts${buildQuery(params)}`, { isAuthenticated: true })

@@ -29,6 +29,27 @@ const boxSchema = new mongoose.Schema(
     category: {
       type: String,
       default: null
+    },
+    products: {
+      type: [
+        {
+          productId: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product',
+            required: true
+          },
+          quantity: {
+            type: Number,
+            min: 1,
+            default: 1
+          }
+        }
+      ],
+      default: []
+    },
+    productCategories: {
+      type: [String],
+      default: []
     }
   },
   {

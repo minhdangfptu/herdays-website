@@ -64,6 +64,10 @@ const orderSchema = new mongoose.Schema(
     endDate: {
       type: Date,
       default: null
+    },
+    deleteAt: {
+      type: Date,
+      default: null
     }
   },
   {
@@ -80,6 +84,7 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ userId: 1 });
 orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ createdAt: -1 });
+orderSchema.index({ deleteAt: 1 }, { expireAfterSeconds: 0 });
 
 const Order = mongoose.model('Order', orderSchema);
 
