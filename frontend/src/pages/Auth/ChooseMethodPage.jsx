@@ -1,3 +1,5 @@
+import { useState } from 'react';
+import toast from 'react-hot-toast';
 import herdaysLogo from '../../assets/herdays-logo.png';
 import './ChooseMethodPage.scss';
 
@@ -27,6 +29,16 @@ const methods = [
 ];
 
 const ChooseMethodPage = () => {
+  const [loadingId, setLoadingId] = useState(null);
+
+  function handleMethodClick(methodId) {
+    if (methodId === 'phone') {
+      toast('Chức năng đang phát triển.', { icon: '🚧' });
+      return;
+    }
+    setLoadingId(methodId);
+    window.location.href = `/confirmation-data?method=${methodId}`;
+  };
   return (
     <main className="choose-method-page">
       <div className="choose-method-card">
@@ -39,10 +51,12 @@ const ChooseMethodPage = () => {
 
         <div className="method-list">
           {methods.map((method) => (
-            <a
+            <button
               key={method.id}
               className="method-card"
-              href={`/confirmation-data?method=${method.id}`}
+              type="button"
+              onClick={() => handleMethodClick(method.id)}
+              disabled={loadingId !== null}
             >
               <span className="method-card__icon">{method.icon}</span>
               <span className="method-card__text">
@@ -54,7 +68,7 @@ const ChooseMethodPage = () => {
                   <path d="m9 18 6-6-6-6" />
                 </svg>
               </span>
-            </a>
+            </button>
           ))}
         </div>
 

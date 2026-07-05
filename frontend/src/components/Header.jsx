@@ -15,6 +15,9 @@ const Header = () => {
   const profileMenuRef = useRef(null);
   const navigate = useNavigate();
 
+  const authProvider = localStorage.getItem('authProvider');
+  const canChangePassword = authProvider === 'local';
+
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
@@ -128,6 +131,13 @@ const Header = () => {
                 </li>
               ))}
             </ul>
+
+            {!isLoggedIn && (
+              <div className="header-nav-auth">
+                <Link className="btn-signup" to="/login">Đăng nhập</Link>
+                <Link className="btn-login" to="/register">Đăng ký</Link>
+              </div>
+            )}
           </nav>
 
           <div className="header-right">
@@ -160,15 +170,17 @@ const Header = () => {
                         <UserRound size={18} strokeWidth={2} />
                         <span>Tài khoản</span>
                       </Link>
-                      <Link
-                        className="header-profile-dropdown__item"
-                        role="menuitem"
-                        to="/change-password"
-                        onClick={() => setIsProfileMenuOpen(false)}
-                      >
-                        <Lock size={18} strokeWidth={2} />
-                        <span>Đổi mật khẩu</span>
-                      </Link>
+                      {canChangePassword && (
+                        <Link
+                          className="header-profile-dropdown__item"
+                          role="menuitem"
+                          to="/change-password"
+                          onClick={() => setIsProfileMenuOpen(false)}
+                        >
+                          <Lock size={18} strokeWidth={2} />
+                          <span>Đổi mật khẩu</span>
+                        </Link>
+                      )}
                       <button
                         className="header-profile-dropdown__item"
                         role="menuitem"

@@ -347,6 +347,38 @@ $text-dark: #333333;
       }
     }
 
+    .header-nav-auth {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 1rem 1.25rem 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.2);
+      margin-top: 0.5rem;
+
+      .btn-login,
+      .btn-signup {
+        width: 100%;
+        text-align: center;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 1rem;
+        text-decoration: none;
+      }
+
+      .btn-login {
+        background-color: $secondary-color;
+        color: $primary-color;
+        border: none;
+      }
+
+      .btn-signup {
+        background-color: transparent;
+        color: $secondary-color;
+        border: 1px solid rgba(255, 255, 255, 0.5);
+      }
+    }
+
     .header-auth {
       display: none;
     }
@@ -412,7 +444,7 @@ $text-dark: #333333;
       gap: 1rem;
 
       .btn-signup {
-        padding: 0.5rem 2rem;
+        padding: 0.5rem 0rem;
         font-size: 1rem;
       }
 
@@ -445,6 +477,10 @@ $text-dark: #333333;
       flex-direction: row;
       gap: 2rem;
       padding: 0;
+    }
+
+    .header-nav-auth {
+      display: none;
     }
 
     .menu-toggle {

@@ -178,6 +178,9 @@ $font-primary: 'Roboto', sans-serif;
   margin-top: 50px;
   margin-bottom: auto;
   padding: 0 20px;
+  @media (max-width: 480px) {
+    transform: translateY(230%);
+  }
 }
 
 .overlay-heading {
@@ -276,7 +279,9 @@ $font-primary: 'Roboto', sans-serif;
     grid-template-columns: repeat(2, 1fr);
     gap: 10px;
     padding: 0 20px;
-    margin-bottom: 16px;
+    margin-bottom: -106px;
+
+    
   }
 
   .download-app-mockups-card {
@@ -293,6 +298,10 @@ $font-primary: 'Roboto', sans-serif;
   padding: 80px 20px;
   background-color: $white;
   border-bottom: 1px solid $border-color;
+  @media (max-width: 480px) {
+    margin-top: 362px;
+  }
+
 
   .download-app-container {
     display: flex;

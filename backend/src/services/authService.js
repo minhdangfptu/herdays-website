@@ -268,6 +268,16 @@ export const resetPassword = async ({ resetToken, newPassword }) => {
   return { message: 'Password reset successfully' };
 };
 
+export const verifyPassword = async (userId, { password }) => {
+  const user = await User.findById(userId).select('+password');
+  if (!user || !user.password) throw new HttpError(404, 'User not found');
+
+  const isMatched = await bcrypt.compare(password, user.password);
+  if (!isMatched) throw new HttpError(400, 'Current password is incorrect');
+
+  return { verified: true };
+};
+
 export const changePassword = async (userId, { currentPassword, newPassword }) => {
   const user = await User.findById(userId).select('+password');
   if (!user || !user.password) throw new HttpError(404, 'User not found');

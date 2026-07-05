@@ -17,6 +17,7 @@ export const setAuthSession = ({ accessToken, refreshToken, user }) => {
   if (accessToken) localStorage.setItem('accessToken', accessToken)
   if (refreshToken) localStorage.setItem('refreshToken', refreshToken)
   if (user?.role) localStorage.setItem('userRole', user.role)
+  if (user?.authProvider) localStorage.setItem('authProvider', user.authProvider)
   notifyAuthChanged()
 }
 
@@ -24,6 +25,7 @@ export const clearAuthSession = () => {
   localStorage.removeItem('accessToken')
   localStorage.removeItem('refreshToken')
   localStorage.removeItem('userRole')
+  localStorage.removeItem('authProvider')
   notifyAuthChanged()
 }
 
@@ -181,6 +183,14 @@ export const authApi = {
     const response = await request('/auth/change-password', {
       method: 'PUT',
       body: { currentPassword, newPassword },
+      isAuthenticated: true
+    })
+    return response.data
+  },
+  verifyPassword: async ({ password }) => {
+    const response = await request('/auth/verify-password', {
+      method: 'POST',
+      body: { password },
       isAuthenticated: true
     })
     return response.data
