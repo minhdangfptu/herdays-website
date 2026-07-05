@@ -10,7 +10,8 @@ import {
   validateRefreshToken,
   validateRegister,
   validateResetPassword,
-  validateSocialLogin
+  validateSocialLogin,
+  validateVerifyPassword
 } from '../validations/authValidation.js';
 
 export const register = async (req, res, next) => {
@@ -80,6 +81,15 @@ export const changePassword = async (req, res, next) => {
   try {
     const result = await authService.changePassword(req.user.id, validateChangePassword(req.body));
     sendServiceResult(res, { result, message: 'Đổi mật khẩu thành công' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyPassword = async (req, res, next) => {
+  try {
+    const result = await authService.verifyPassword(req.user.id, validateVerifyPassword(req.body));
+    sendServiceResult(res, { result, message: 'Mật khẩu hợp lệ' });
   } catch (error) {
     next(error);
   }

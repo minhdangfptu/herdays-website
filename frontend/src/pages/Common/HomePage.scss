@@ -86,16 +86,17 @@ $font-dancing: 'Dancing Script', cursive;
   }
   @media (max-width: 1900px) {
     background-position: center 75%;
+    min-height: 112vh;
   }
 
   @media (max-width: 768px) {
-    min-height: 600px;
+    min-height: 660px;
     background-position: center bottom;
     padding-top: 24px;
   }
 
   @media (max-width: 480px) {
-    min-height: 480px;
+    min-height: 660px;
     background-position: center bottom;
   }
 }
