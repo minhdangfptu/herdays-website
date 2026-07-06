@@ -38,6 +38,19 @@ export const getMyOrders = async (req, res, next) => {
   }
 };
 
+export const getMyOrder = async (req, res, next) => {
+  try {
+    const id = validateOrderId(req.params.id);
+    const order = await orderService.getOrderByIdForUser(id, req.user.id);
+    sendSuccess(res, {
+      message: 'Lấy chi tiết đơn hàng của bạn thành công',
+      data: order
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const createOrderFromCart = async (req, res, next) => {
   try {
     const order = await orderService.createOrderFromCart(
@@ -48,6 +61,19 @@ export const createOrderFromCart = async (req, res, next) => {
     sendSuccess(res, {
       statusCode: 201,
       message: 'Tạo đơn hàng thành công',
+      data: order
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelMyOrder = async (req, res, next) => {
+  try {
+    const id = validateOrderId(req.params.id);
+    const order = await orderService.cancelOrderForUser(id, req.user.id);
+    sendSuccess(res, {
+      message: 'Hủy đơn hàng thành công',
       data: order
     });
   } catch (error) {

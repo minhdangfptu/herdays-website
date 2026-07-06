@@ -136,7 +136,9 @@ function App() {
           <Route path="/check-out" element={<Checkout />} />
           <Route path="/qr-payment" element={<QRPayment />} />
           <Route path="/cart" element={<Cart />} />
+          <Route path="/box-customize" element={<BoxCustomize />} />
           <Route path="/box-customize/:boxId" element={<BoxCustomize />} />
+          <Route path="/product-detail/:type/:itemId" element={<ProductDetailPage />} />
           <Route path="/product-detail/:productId" element={<ProductDetailPage />} />
           <Route element={<BlogShell />}>
             <Route path="/blog" element={<BlogTopicsPage />} />

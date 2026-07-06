@@ -1,123 +1,212 @@
-'use client';
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate, useParams } from 'react-router-dom'
+import toast from 'react-hot-toast'
+import { MdKeyboardArrowRight } from 'react-icons/md'
+import { cartApi, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import './BoxCustomize.scss'
 
-import React, { useState } from 'react';
-import { MdKeyboardArrowRight } from 'react-icons/md';
-import './BoxCustomize.scss';
+const formatCurrency = (value) =>
+  new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency: 'VND',
+    maximumFractionDigits: 0
+  }).format(Number(value) || 0)
+
+const getProductImage = (product) =>
+  product.thumbnail || `https://placehold.co/280x280/f8c4d8/ffffff?text=${encodeURIComponent(product.productName || 'HerDays')}`
+
+const normalizeBoxProduct = (item) => ({
+  id: String(item.productId),
+  productName: item.productName || 'San pham trong box',
+  category: item.category || 'Trong box',
+  thumbnail: item.thumbnail,
+  quantity: item.quantity || 1
+})
 
 export default function BoxCustomize() {
-  // Mock data dựa theo ảnh thiết kế
-  const mockProducts = [
-    { id: 1, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 1', tag: 'PK1', image: '/images/nan-milk.jpg' },
-    { id: 2, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 1', tag: 'PK1', image: '/images/nan-milk.jpg' },
-    { id: 3, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 1', tag: 'PK1', image: '/images/nan-milk.jpg' },
-    { id: 4, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 1', tag: 'PK1', image: '/images/nan-milk.jpg' },
-    { id: 5, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 2', tag: 'PK2', image: '/images/nan-milk.jpg' },
-    { id: 6, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 2', tag: 'PK2', image: '/images/nan-milk.jpg' },
-    { id: 7, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 2', tag: 'PK2', image: '/images/nan-milk.jpg' },
-    { id: 8, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 2', tag: 'PK2', image: '/images/nan-milk.jpg' },
-    { id: 9, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 3', tag: 'PK3', image: '/images/nan-milk.jpg' },
-    { id: 10, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 3', tag: 'PK3', image: '/images/nan-milk.jpg' },
-    { id: 11, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 3', tag: 'PK3', image: '/images/nan-milk.jpg' },
-    { id: 12, name: 'Sữa Nan cho bà bầu', price: 1000000, category: 'Phân khúc 3', tag: 'PK3', image: '/images/nan-milk.jpg' },
-  ];
+  const { boxId } = useParams()
+  const navigate = useNavigate()
+  const [box, setBox] = useState(null)
+  const [products, setProducts] = useState([])
+  const [selectedItems, setSelectedItems] = useState([])
+  const [loading, setLoading] = useState(true)
+  const [errorMessage, setErrorMessage] = useState('')
+  const [isAdding, setIsAdding] = useState(false)
 
-  // Group sản phẩm theo phân khúc
-  const groupedProducts = mockProducts.reduce((acc, product) => {
-    if (!acc[product.category]) acc[product.category] = [];
-    acc[product.category].push(product);
-    return acc;
-  }, {});
+  useEffect(() => {
+    let isMounted = true
 
-  // State quản lý giỏ hàng tạm thời
-  const [selectedItems, setSelectedItems] = useState([]);
+    const loadCustomizeData = async () => {
+      setLoading(true)
+      setErrorMessage('')
+
+      try {
+        const [productResult, boxResult] = await Promise.all([
+          marketplaceApi.listProducts({ limit: 100 }),
+          boxId ? marketplaceApi.getBox(boxId) : Promise.resolve(null)
+        ])
+
+        if (!isMounted) return
+
+        const nextProducts = productResult.items || []
+        const initialProducts = (boxResult?.products || []).map(normalizeBoxProduct)
+
+        setProducts(nextProducts)
+        setBox(boxResult)
+        setSelectedItems(initialProducts)
+      } catch (error) {
+        if (isMounted) setErrorMessage(error.message || 'Khong the tai du lieu customize box.')
+      } finally {
+        if (isMounted) setLoading(false)
+      }
+    }
+
+    loadCustomizeData()
+
+    return () => {
+      isMounted = false
+    }
+  }, [boxId])
+
+  const groupedProducts = useMemo(() => (
+    products.reduce((acc, product) => {
+      const category = product.category || 'San pham khac'
+      if (!acc[category]) acc[category] = []
+      acc[category].push(product)
+      return acc
+    }, {})
+  ), [products])
 
   const toggleProduct = (product) => {
-    const isSelected = selectedItems.some((item) => item.id === product.id);
-    if (isSelected) {
-      setSelectedItems(selectedItems.filter((item) => item.id !== product.id));
-    } else {
-      setSelectedItems([...selectedItems, product]);
-    }
-  };
+    const productId = String(product.id)
+    const isSelected = selectedItems.some((item) => item.id === productId)
 
-  const totalPrice = selectedItems.reduce((sum, item) => sum + item.price, 0);
+    if (isSelected) {
+      setSelectedItems((current) => current.filter((item) => item.id !== productId))
+      return
+    }
+
+    setSelectedItems((current) => [
+      ...current,
+      {
+        id: productId,
+        productName: product.productName,
+        category: product.category,
+        thumbnail: product.thumbnail,
+        quantity: 1
+      }
+    ])
+  }
+
+  const handleBuyNow = async () => {
+    if (!box?.id) {
+      toast.error('Vui long chon mot box truoc khi mua.')
+      return
+    }
+
+    if (!hasAuthSession()) {
+      toast.error('Vui long dang nhap de them box vao gio hang.')
+      navigate('/login')
+      return
+    }
+
+    setIsAdding(true)
+
+    try {
+      await cartApi.addItem({ boxId: box.id, quantity: 1 })
+      toast.success('Da them box vao gio hang.')
+      navigate('/check-out')
+    } catch (error) {
+      toast.error(error.message || 'Khong the them box vao gio hang.')
+    } finally {
+      setIsAdding(false)
+    }
+  }
 
   return (
     <div className="box-customize-page">
       <div className="box-customize-container">
-        
-        {/* Breadcrumb */}
         <div className="box-breadcrumb">
-          <a href="/">Trang chủ</a>
+          <Link to="/">Trang chu</Link>
           <MdKeyboardArrowRight />
-          <a href="/shop">Cửa hàng</a>
+          <Link to="/marketplace">Cua hang</Link>
           <MdKeyboardArrowRight />
-          <span className="box-breadcrumb-active">HerDays Box của bạn</span>
+          <span className="box-breadcrumb-active">{box?.boxName || 'HerDays Box cua ban'}</span>
         </div>
 
-        {/* Header */}
         <div className="box-header">
-          <h1 className="box-title">HerDays Box của bạn</h1>
-          <p className="box-subtitle">Thêm sản phẩm từ marketplace để bắt đầu nhé</p>
+          <h1 className="box-title">{box?.boxName || 'HerDays Box cua ban'}</h1>
+          <p className="box-subtitle">
+            {box?.description || 'Chon san pham tu marketplace de xem cau hinh box ca nhan hoa.'}
+          </p>
         </div>
 
-        {/* Main Selection Area */}
-        <div className="box-selection-card">
+        {loading && <p className="box-customize-status">Dang tai san pham...</p>}
+        {errorMessage && <p className="box-customize-status box-customize-status--error">{errorMessage}</p>}
 
-          <div className="selection-card-body">
-            {Object.keys(groupedProducts).map((category, index) => (
-              <div key={category} className="category-section">
-                
-                {/* Divider có chữ ở giữa */}
-                <div className="category-divider">
-                  <span>{category}</span>
-                </div>
+        {!loading && !errorMessage && (
+          <div className="box-selection-card">
+            <div className="selection-card-body">
+              {Object.keys(groupedProducts).length === 0 ? (
+                <p className="box-customize-status">Chua co san pham nao de tuy chinh box.</p>
+              ) : (
+                Object.entries(groupedProducts).map(([category, categoryProducts]) => (
+                  <div key={category} className="category-section">
+                    <div className="category-divider">
+                      <span>{category}</span>
+                    </div>
 
-                <div className="product-grid">
-                  {groupedProducts[category].map((product) => {
-                    const isSelected = selectedItems.some((item) => item.id === product.id);
-                    return (
-                      <div 
-                        key={product.id} 
-                        className={`product-card ${isSelected ? 'selected' : ''}`}
-                        onClick={() => toggleProduct(product)}
-                      >
-                        <div className="product-image">
-                          <img src={product.image} alt={product.name} />
-                        </div>
-                        <div className="product-info">
-                          <h3 className="product-name">{product.name}</h3>
-                          <div className="product-meta">
-                            {/* <span className="product-price">
-                              {product.price.toLocaleString('vi-VN')}đ
-                            </span> */}
-                            <span className="product-tag">{product.tag}</span>
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            ))}
+                    <div className="product-grid">
+                      {categoryProducts.map((product) => {
+                        const isSelected = selectedItems.some((item) => item.id === String(product.id))
+                        return (
+                          <button
+                            key={product.id}
+                            type="button"
+                            className={`product-card ${isSelected ? 'selected' : ''}`}
+                            onClick={() => toggleProduct(product)}
+                          >
+                            <div className="product-image">
+                              <img src={getProductImage(product)} alt={product.productName} />
+                            </div>
+                            <div className="product-info">
+                              <h3 className="product-name">{product.productName}</h3>
+                              <div className="product-meta">
+                                <span className="product-tag">{product.quantity > 0 ? `Con ${product.quantity}` : 'Het hang'}</span>
+                              </div>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Sticky Bottom Bar */}
       <div className="sticky-bottom-bar">
         <div className="bar-content">
           <div className="bar-left">
-            <span className="bar-title">Box bầu cá nhân hoá</span>
-            <span className="bar-price">{totalPrice.toLocaleString('vi-VN')}đ</span>
+            <span className="bar-title">{box?.boxName || 'Box ca nhan hoa'}</span>
+            <span className="bar-price">{formatCurrency(box?.price || 0)}</span>
           </div>
-          
+
           <div className="bar-right">
-            <span className="bar-count">Đã chọn {selectedItems.length} sản phẩm</span>
-            <button className="bar-checkout-btn">Mua ngay</button>
+            <span className="bar-count">Da chon {selectedItems.length} san pham</span>
+            <button
+              className="bar-checkout-btn"
+              type="button"
+              disabled={isAdding || !box?.id}
+              onClick={handleBuyNow}
+            >
+              {isAdding ? 'Dang them...' : 'Mua ngay'}
+            </button>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

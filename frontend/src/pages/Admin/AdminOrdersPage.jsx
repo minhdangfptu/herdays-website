@@ -16,11 +16,11 @@ const ADMIN_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Robot
 const ORDER_STATUSES = [
   { value: 'pending', label: 'Chờ', className: 'bg-orange-50 text-orange-600' },
   { value: 'confirmed', label: 'Đã duyệt', className: 'bg-blue-50 text-blue-600' },
-  { value: 'preparing', label: 'Đang chuẩn bị', className: 'bg-indigo-50 text-indigo-600' },
-  { value: 'delivering', label: 'Đang giao', className: 'bg-purple-50 text-purple-600' },
-  { value: 'delivered', label: 'Thành công', className: 'bg-emerald-50 text-emerald-600' },
-  { value: 'Cancel', label: 'Đã xóa', className: 'bg-slate-100 text-slate-500' }
+  { value: 'delivered', label: 'Giao hàng thành công', className: 'bg-emerald-50 text-emerald-600' },
+  { value: 'deleted', label: 'Đã xóa', className: 'bg-slate-100 text-slate-500' },
+  { value: 'cancelled', label: 'Đã hủy', className: 'bg-red-50 text-red-600' }
 ];
+const ORDER_STATUS_FLOW = ['pending', 'confirmed', 'delivered', 'deleted'];
 
 const STATUS_META = ORDER_STATUSES.reduce((map, status) => ({
   ...map,
@@ -50,6 +50,16 @@ const getPagination = (pagination, page) => ({
   totalPages: pagination?.totalPages || 1,
   totalItems: pagination?.total || pagination?.totalItems || 0
 });
+
+const getNextStatus = (status) => {
+  const currentIndex = ORDER_STATUS_FLOW.indexOf(status);
+  return currentIndex >= 0 ? ORDER_STATUS_FLOW[currentIndex + 1] || null : null;
+};
+
+const getSelectableStatuses = (status) => {
+  const nextStatus = getNextStatus(status);
+  return ORDER_STATUSES.filter((item) => item.value === status || item.value === nextStatus);
+};
 
 function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -105,10 +115,14 @@ function AdminOrdersPage() {
 
   const handleStatusChange = async (order, nextStatus) => {
     if (!nextStatus || nextStatus === order.orderStatus) return;
+    if (nextStatus !== getNextStatus(order.orderStatus)) {
+      toast.error('Trạng thái đơn hàng chỉ được chuyển sang bước kế tiếp.');
+      return;
+    }
 
     if (
-      nextStatus === 'delivered'
-      && !window.confirm('Đơn hàng thành công sẽ tự xóa khỏi hệ thống sau 10 phút. Tiếp tục?')
+      nextStatus === 'deleted'
+      && !window.confirm('Đơn hàng đã xóa sẽ tự bị xóa khỏi hệ thống sau 10 phút. Tiếp tục?')
     ) {
       return;
     }
@@ -120,8 +134,8 @@ function AdminOrdersPage() {
       setOrders((current) => current.map((item) => (
         item.id === order.id ? updatedOrder : item
       )));
-      toast.success(nextStatus === 'delivered'
-        ? 'Đã chuyển sang thành công. Đơn sẽ tự xóa sau 10 phút.'
+      toast.success(nextStatus === 'deleted'
+        ? 'Đã chuyển sang trạng thái đã xóa. Đơn sẽ tự xóa khỏi hệ thống sau 10 phút.'
         : 'Đã cập nhật trạng thái đơn hàng');
     } catch (error) {
       toast.error(error.message);
@@ -144,7 +158,7 @@ function AdminOrdersPage() {
           <div>
             <h1 className="text-2xl font-bold text-slate-950">Quản lý đơn hàng</h1>
             <p className="mt-1 text-sm font-medium text-slate-500">
-              Admin có thể chuyển trạng thái giao dịch. Đơn ở trạng thái thành công sẽ tự xóa sau 10 phút.
+              Admin chỉ có thể chuyển đơn hàng theo đúng thứ tự: Chờ, Đã duyệt, Giao hàng thành công, Đã xóa.
             </p>
           </div>
 
@@ -229,6 +243,11 @@ function AdminOrdersPage() {
                 const products = (order.items || []).map((item) => item.itemName || item.itemId).join(', ');
                 const totalQuantity = (order.items || []).reduce((total, item) => total + Number(item.quantity || 0), 0);
                 const isUpdating = updatingOrderId === order.id;
+                const nextStatus = getNextStatus(order.orderStatus);
+                const selectableStatuses = getSelectableStatuses(order.orderStatus);
+                const statusOptions = selectableStatuses.length > 0
+                  ? selectableStatuses
+                  : [{ value: order.orderStatus, label: order.orderStatus }];
 
                 return (
                   <tr key={order.id} className="transition hover:bg-pink-50/30">
@@ -246,11 +265,11 @@ function AdminOrdersPage() {
                     <td className="px-5 py-4">
                       <select
                         value={order.orderStatus}
-                        disabled={isUpdating}
+                        disabled={isUpdating || !nextStatus}
                         onChange={(event) => handleStatusChange(order, event.target.value)}
                         className={`h-9 rounded-md border border-transparent px-2 text-xs font-bold outline-none transition focus:border-pink-200 focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:opacity-70 ${statusMeta.className}`}
                       >
-                        {ORDER_STATUSES.map((item) => (
+                        {statusOptions.map((item) => (
                           <option key={item.value} value={item.value}>{item.label}</option>
                         ))}
                       </select>

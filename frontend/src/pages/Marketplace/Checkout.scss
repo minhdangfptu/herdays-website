@@ -148,6 +148,20 @@ $border-color: #EEEEEE;
   align-items: center;
   gap: 16px;
 
+  .product-select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+
+    input {
+      width: 18px;
+      height: 18px;
+      accent-color: $primary-pink;
+      cursor: pointer;
+    }
+  }
+
   .product-image {
     width: 80px;
     height: 80px;

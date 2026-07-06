@@ -26,6 +26,17 @@ $font-primary: 'Roboto', sans-serif;
   background-color: $white;
 }
 
+.product-detail-status {
+  max-width: 1200px;
+  margin: 24px auto;
+  color: $gray-text;
+  font-weight: 700;
+}
+
+.product-detail-status--error {
+  color: #c63561;
+}
+
 // ============================================
 // Breadcrumb
 // ============================================
@@ -249,6 +260,11 @@ $font-primary: 'Roboto', sans-serif;
   transition: 0.2s;
 
   &:hover { background-color: $dark-pink; }
+
+  &:disabled {
+    background-color: #d8a8bb;
+    cursor: not-allowed;
+  }
 }
 
 // ============================================

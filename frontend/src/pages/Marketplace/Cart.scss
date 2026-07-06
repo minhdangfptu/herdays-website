@@ -285,6 +285,16 @@ $font-primary: 'Roboto', sans-serif;
   font-weight: 500;
 }
 
+.cart-status {
+  margin: 20px 0;
+  color: $gray-text;
+  font-weight: 700;
+}
+
+.cart-status--error {
+  color: #c63561;
+}
+
 .cart-expected-delivery {
   font-size: 14px;
   color: $dark-text;
@@ -325,6 +335,25 @@ $font-primary: 'Roboto', sans-serif;
   @media (max-width: 480px) {
     grid-template-columns: 1fr 1fr 1fr;
   }
+}
+
+.cart-select-all,
+.cart-product-select {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+
+  input {
+    width: 18px;
+    height: 18px;
+    accent-color: $primary-pink;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+}
+
+.cart-select-all {
+  align-items: center;
 }
 
 .cart-table-body {
@@ -528,6 +557,11 @@ $font-primary: 'Roboto', sans-serif;
   &:hover {
     color: $primary-pink;
   }
+
+  &:disabled {
+    color: #bbb;
+    cursor: not-allowed;
+  }
 }
 
 .cart-quantity-input {
@@ -568,6 +602,11 @@ $font-primary: 'Roboto', sans-serif;
 
   &:hover {
     color: $primary-pink;
+  }
+
+  &:disabled {
+    color: #bbb;
+    cursor: not-allowed;
   }
 }
 
@@ -678,6 +717,7 @@ $font-primary: 'Roboto', sans-serif;
     transition: all 0.3s ease;
     font-family: $font-primary;
     white-space: nowrap;
+    text-decoration: none;
 
   @media (max-width: 480px) {
     padding: 12px 24px;
@@ -702,5 +742,10 @@ $font-primary: 'Roboto', sans-serif;
 
   &:hover {
     background-color: darken($primary-pink, 8%);
+  }
+
+  &:disabled {
+    background-color: #d8a8bb;
+    cursor: not-allowed;
   }
 }

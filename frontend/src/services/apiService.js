@@ -325,6 +325,29 @@ export const boxApi = {
   }
 }
 
+export const marketplaceApi = {
+  listAll: async (params = {}) => {
+    const response = await request(`/marketplace${buildQuery(params)}`)
+    return { items: response.data, pagination: response.meta }
+  },
+  listProducts: async (params = {}) => {
+    const response = await request(`/marketplace/products${buildQuery(params)}`)
+    return { items: response.data, pagination: response.meta }
+  },
+  getProduct: async (id) => {
+    const response = await request(`/marketplace/products/${id}`)
+    return response.data
+  },
+  listBoxes: async (params = {}) => {
+    const response = await request(`/marketplace/boxes${buildQuery(params)}`)
+    return { items: response.data, pagination: response.meta }
+  },
+  getBox: async (id) => {
+    const response = await request(`/marketplace/boxes/${id}`)
+    return response.data
+  }
+}
+
 export const cartApi = {
   getCart: async () => {
     const response = await request('/cart', { isAuthenticated: true })
@@ -367,10 +390,21 @@ export const orderApi = {
     const response = await request('/orders', { isAuthenticated: true })
     return response.data
   },
-  createFromCart: async ({ paymentMethod = 'bank_transfer', lovelyMessage = '' } = {}) => {
+  getById: async (id) => {
+    const response = await request(`/orders/${id}`, { isAuthenticated: true })
+    return response.data
+  },
+  createFromCart: async ({ paymentMethod = 'bank_transfer', lovelyMessage = '', boxIds } = {}) => {
     const response = await request('/orders', {
       method: 'POST',
-      body: { paymentMethod, lovelyMessage },
+      body: { paymentMethod, lovelyMessage, boxIds },
+      isAuthenticated: true
+    })
+    return response.data
+  },
+  cancel: async (id) => {
+    const response = await request(`/orders/${id}/cancel`, {
+      method: 'PATCH',
       isAuthenticated: true
     })
     return response.data

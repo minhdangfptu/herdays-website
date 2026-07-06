@@ -132,6 +132,37 @@ $font-dancing: 'Dancing Script', cursive;
   }
 }
 
+.marketplace-hero__goals {
+  display: flex;
+  max-width: 460px;
+  flex: 0 0 420px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.marketplace-hero__goal {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(237, 119, 165, 0.26);
+  border-radius: 999px;
+  background: #fff;
+  color: #9b4a69;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.25;
+  padding: 8px 14px;
+  white-space: nowrap;
+
+  span {
+    color: #ed77a5;
+    font-size: 0.78rem;
+    text-transform: uppercase;
+  }
+}
+
 .marketplace-eyebrow {
   color: #9b4a69 !important;
   font-size: 0.82rem;
@@ -181,6 +212,33 @@ $font-dancing: 'Dancing Script', cursive;
 
 .marketplace-status--error {
   color: #c63561;
+}
+
+.marketplace-section {
+  max-width: 1100px;
+  margin: 0 auto 34px;
+}
+
+.marketplace-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 24px 18px;
+
+  h2 {
+    margin: 0;
+    color: #2f343a;
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+
+  a {
+    color: #ed77a5;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
 }
 
 .marketplace-grid {
@@ -244,6 +302,19 @@ $font-dancing: 'Dancing Script', cursive;
     background: #d8a8bb;
     cursor: not-allowed;
   }
+}
+
+.marketplace-product__button-link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 11px 14px;
+  background: #fff0f6;
+  color: #ed77a5;
+  font-weight: 700;
+  text-decoration: none;
 }
 
 .marketplace-product__category {
@@ -374,6 +445,17 @@ $font-dancing: 'Dancing Script', cursive;
 
   .marketplace-hero {
     display: block;
+  }
+
+  .marketplace-hero__goals {
+    max-width: none;
+    margin-top: 18px;
+    justify-content: flex-start;
+  }
+
+  .marketplace-hero__goal {
+    max-width: 100%;
+    white-space: normal;
   }
 
   .marketplace-cart-link {

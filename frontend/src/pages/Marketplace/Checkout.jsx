@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { cartApi, hasAuthSession, orderApi } from '../../services/apiService.js'
 import { RefreshCw } from 'lucide-react'
@@ -33,7 +33,13 @@ const SUBSCRIPTION_PLANS = [
 ]
 
 export default function Checkout() {
+  const location = useLocation()
+  const initialSelectedBoxIds = useMemo(
+    () => Array.isArray(location.state?.selectedBoxIds) ? location.state.selectedBoxIds.map(String) : [],
+    [location.state]
+  )
   const [cartItems, setCartItems] = useState([])
+  const [selectedBoxIds, setSelectedBoxIds] = useState(initialSelectedBoxIds)
   const [loading, setLoading] = useState(true)
   const [updatingBoxId, setUpdatingBoxId] = useState('')
   const [isCheckingOut, setIsCheckingOut] = useState(false)
@@ -52,7 +58,13 @@ export default function Checkout() {
 
     cartApi.getCart()
       .then((cart) => {
-        if (isMounted) setCartItems((cart.items || []).map(normalizeCartItem))
+        if (!isMounted) return
+        const nextItems = (cart.items || []).map(normalizeCartItem)
+        const validIds = nextItems.map((item) => String(item.id))
+        const filteredSelectedIds = initialSelectedBoxIds.filter((boxId) => validIds.includes(String(boxId)))
+
+        setCartItems(nextItems)
+        setSelectedBoxIds(filteredSelectedIds.length > 0 ? filteredSelectedIds : validIds)
       })
       .catch((error) => {
         if (isMounted) setErrorMessage(error.message || 'Không thể tải sản phẩm thanh toán.')
@@ -64,11 +76,16 @@ export default function Checkout() {
     return () => {
       isMounted = false
     }
-  }, [navigate])
+  }, [initialSelectedBoxIds, navigate])
+
+  const selectedCartItems = useMemo(
+    () => cartItems.filter((item) => selectedBoxIds.includes(String(item.id))),
+    [cartItems, selectedBoxIds]
+  )
 
   const subtotal = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [cartItems]
+    () => selectedCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [selectedCartItems]
   )
 
   const selectedPlanData = SUBSCRIPTION_PLANS.find(p => p.months === selectedPlan) || SUBSCRIPTION_PLANS[0]
@@ -96,7 +113,11 @@ export default function Checkout() {
 
     try {
       const cart = await cartApi.removeItem(boxId)
-      setCartItems((cart.items || []).map(normalizeCartItem))
+      const nextItems = (cart.items || []).map(normalizeCartItem)
+      setCartItems(nextItems)
+      setSelectedBoxIds((current) => (
+        current.filter((id) => nextItems.some((item) => String(item.id) === String(id)))
+      ))
       toast.success('Đã xóa sản phẩm khỏi sản phẩm thanh toán.')
     } catch (error) {
       toast.error(error.message || 'Không thể xóa sản phẩm.')
@@ -105,8 +126,17 @@ export default function Checkout() {
     }
   }
 
+  const toggleSelectItem = (boxId) => {
+    const normalizedBoxId = String(boxId)
+    setSelectedBoxIds((current) => (
+      current.includes(normalizedBoxId)
+        ? current.filter((id) => id !== normalizedBoxId)
+        : [...current, normalizedBoxId]
+    ))
+  }
+
   const handleCheckout = async () => {
-    if (cartItems.length === 0) {
+    if (selectedCartItems.length === 0) {
       toast.error('Sản phẩm thanh toán đang trống.')
       return
     }
@@ -114,8 +144,12 @@ export default function Checkout() {
     setIsCheckingOut(true)
 
     try {
-      const order = await orderApi.createFromCart({ paymentMethod: 'bank_transfer' })
-      setCartItems([])
+      const order = await orderApi.createFromCart({
+        paymentMethod: 'bank_transfer',
+        boxIds: selectedBoxIds
+      })
+      setCartItems((current) => current.filter((item) => !selectedBoxIds.includes(String(item.id))))
+      setSelectedBoxIds([])
       navigate('/qr-payment', {
         state: {
           amount: order.totalAmount,
@@ -161,6 +195,13 @@ export default function Checkout() {
                   <div className="herdays-checkout-product-list">
                     {cartItems.map((item) => (
                       <div key={item.id} className="herdays-checkout-product-item">
+                        <label className="product-select" aria-label="Chon san pham thanh toan">
+                          <input
+                            type="checkbox"
+                            checked={selectedBoxIds.includes(String(item.id))}
+                            onChange={() => toggleSelectItem(item.id)}
+                          />
+                        </label>
                         <div className="product-image">
                           <img src={item.image} alt={item.name} />
                         </div>
@@ -259,7 +300,7 @@ export default function Checkout() {
                   <button
                     className="herdays-checkout-btn"
                     type="button"
-                    disabled={cartItems.length === 0 || isCheckingOut}
+                    disabled={selectedCartItems.length === 0 || isCheckingOut}
                     onClick={handleCheckout}
                   >
                     {isCheckingOut ? 'Đang tạo đơn...' : 'Xác nhận thanh toán'}

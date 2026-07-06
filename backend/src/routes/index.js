@@ -22,6 +22,7 @@ import orderRoute from './orderRoute.js';
 import productRoute from './productRoute.js';
 import adminOrderRoute from './adminOrderRoute.js';
 import adminUserRoute from './adminUserRoute.js';
+import marketplaceRoute from './marketplaceRoute.js';
 
 const router = express.Router();
 
@@ -44,6 +45,7 @@ router.use('/contacts', contactRoute);
 router.use('/quiz', quizRoute);
 router.use('/chat', chatRoute);
 router.use('/box', boxRoute);
+router.use('/marketplace', marketplaceRoute);
 router.use('/cart', cartRoute);
 router.use('/orders', orderRoute);
 router.use('/admin/products', productRoute);

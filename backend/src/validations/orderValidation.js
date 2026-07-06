@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
+import { ORDER_STATUSES } from '../constants/orderStatus.js';
 import HttpError from '../utils/httpError.js';
 
-const VALID_STATUSES = ['pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'Cancel'];
 const VALID_PAYMENT_METHODS = ['bank_transfer', 'qr_transfer', 'cod'];
 
 export const validateOrderId = (id) => {
@@ -22,8 +22,8 @@ export const validateOrderQuery = (query) => {
 
   if (query.status) {
     const status = String(query.status).trim();
-    if (!VALID_STATUSES.includes(status)) {
-      throw new HttpError(400, `status must be one of: ${VALID_STATUSES.join(', ')}`);
+    if (!ORDER_STATUSES.includes(status)) {
+      throw new HttpError(400, `status must be one of: ${ORDER_STATUSES.join(', ')}`);
     }
     result.status = status;
   }
@@ -34,8 +34,8 @@ export const validateOrderQuery = (query) => {
 export const validateOrderStatus = (status) => {
   if (!status) throw new HttpError(400, 'status is required');
   const trimmed = String(status).trim();
-  if (!VALID_STATUSES.includes(trimmed)) {
-    throw new HttpError(400, `status must be one of: ${VALID_STATUSES.join(', ')}`);
+  if (!ORDER_STATUSES.includes(trimmed)) {
+    throw new HttpError(400, `status must be one of: ${ORDER_STATUSES.join(', ')}`);
   }
   return trimmed;
 };
@@ -54,6 +54,18 @@ export const validateCreateOrder = (body) => {
 
   if (payload.lovelyMessage !== undefined && payload.lovelyMessage !== null) {
     result.lovelyMessage = String(payload.lovelyMessage).trim().slice(0, 500);
+  }
+
+  if (payload.boxIds !== undefined && payload.boxIds !== null) {
+    if (!Array.isArray(payload.boxIds)) throw new HttpError(400, 'boxIds must be an array');
+
+    result.boxIds = [...new Set(payload.boxIds.map((boxId) => String(boxId).trim()).filter(Boolean))];
+
+    if (result.boxIds.some((boxId) => !mongoose.isValidObjectId(boxId))) {
+      throw new HttpError(400, 'boxIds contains an invalid boxId');
+    }
+
+    if (result.boxIds.length === 0) throw new HttpError(400, 'boxIds must include at least one boxId');
   }
 
   return result;
