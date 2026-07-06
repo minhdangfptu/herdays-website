@@ -25,7 +25,7 @@ $border-color: #EEEEEE;
 }
 
 .herdays-checkout-container {
-  max-width: 1000px; // Ép form gọn lại cho đúng tỷ lệ bản thiết kế
+  max-width: 1100px;
   margin: 0 auto;
 }
 
@@ -93,20 +93,27 @@ $border-color: #EEEEEE;
   align-items: flex-start;
 
   @media (max-width: 850px) {
-    flex-direction: column; // Mobile rớt xuống thành 1 cột dọc
+    flex-direction: column;
   }
 }
 
 .herdays-checkout-left {
-  flex: 1.6; // Cho cột trái to hơn cột phải 1 xíu
+  flex: 1.6;
   width: 100%;
 }
 
 .herdays-checkout-right {
   flex: 1;
   width: 100%;
-  position: sticky; // Giữ form tóm tắt cố định khi cuộn màn hình
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: sticky;
   top: 20px;
+
+  @media (max-width: 850px) {
+    position: static;
+  }
 }
 
 // Base Card Trắng
@@ -265,8 +272,6 @@ $border-color: #EEEEEE;
   }
 
   .total-row {
-    margin-top: 4px;
-    margin-bottom: 8px;
 
     .summary-label {
       font-size: 18px;
@@ -278,6 +283,78 @@ $border-color: #EEEEEE;
       font-size: 22px;
       font-weight: 700;
       color: $text-dark;
+    }
+  }
+}
+
+// Subscription Card
+.herdays-checkout-subscription-card {
+  background: white;
+  border: 1.5px solid rgba($primary-pink, 0.2);
+
+  .herdays-checkout-card-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+}
+
+.subscription-savings {
+  margin: 12px 0 0;
+  font-size: 13px;
+  color: $green-success;
+  text-align: center;
+  font-weight: 500;
+
+  strong {
+    font-weight: 700;
+  }
+}
+
+// Subscription Plans
+.subscription-plans {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.subscription-plan-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 10px 4px;
+  border: 2px solid $border-color;
+  border-radius: 10px;
+  background: $white;
+  cursor: pointer;
+
+  .plan-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: $text-dark;
+  }
+
+  .plan-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: $white;
+    background-color: $green-success;
+    padding: 2px 6px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
+  &:hover {
+    border: 1px solid $primary-pink;
+  }
+
+  &.active {
+    border: 1px solid $primary-pink;
+    background-color: rgba($primary-pink, 0.05);
+
+    .plan-label {
+      color: $primary-pink;
     }
   }
 }
@@ -294,7 +371,6 @@ $border-color: #EEEEEE;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: 8px;
 
   &:hover {
     background-color: darken($primary-pink, 8%);
@@ -305,5 +381,4 @@ $border-color: #EEEEEE;
   text-align: center;
   font-size: 13px;
   color: $text-light-gray;
-  margin: 12px 0 0 0;
 }
