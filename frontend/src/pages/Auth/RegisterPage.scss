@@ -126,6 +126,80 @@ $desktop-content-scale: 0.88;
   box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
 }
 
+.form-field.is-error {
+  gap: 6px;
+}
+
+.form-field__error {
+  margin: 0;
+  padding-left: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #ef4444;
+}
+
+.reg-strength {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0 6px;
+}
+
+.reg-strength__bars {
+  display: flex;
+  gap: 4px;
+}
+
+.reg-strength__bar {
+  width: 36px;
+  height: 4px;
+  border-radius: 2px;
+}
+
+.reg-strength__label {
+  margin: 0;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.reg-rules {
+  list-style: none;
+  margin: 0 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.reg-rules__item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 16px;
+  color: #9ca3af;
+}
+
+.reg-rules__item.is-ok {
+  color: #16a34a;
+}
+
+.reg-rules__dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #9ca3af;
+  flex-shrink: 0;
+}
+
+.reg-rules__item.is-ok .reg-rules__dot {
+  background: #16a34a;
+}
+
 .field-icon,
 .password-toggle {
   position: absolute;

@@ -13,6 +13,7 @@ router.post('/forgot-password/email', authController.forgotPasswordByEmail);
 router.post('/forgot-password/phone-number', authController.forgotPasswordByPhoneNumber);
 router.post('/reset-password', authController.resetPassword);
 router.put('/change-password', authMiddleware, authController.changePassword);
+router.post('/verify-password', authMiddleware, authController.verifyPassword);
 router.post('/logout', authController.logout);
 router.post('/refresh-token', authController.refreshToken);
 router.post('/social-login', authController.socialLogin);

@@ -16,18 +16,13 @@ function PasswordToggleIcon({ isVisible }) {
 }
 
 const STRENGTH_RULES = [
-  { id: "length",    label: "Ít nhất 8 ký tự",               test: (v) => v.length >= 8 },
-  { id: "uppercase", label: "Ít nhất 1 chữ hoa (A-Z)",        test: (v) => /[A-Z]/.test(v) },
-  { id: "number",    label: "Ít nhất 1 chữ số (0-9)",         test: (v) => /\d/.test(v) },
-  { id: "special",   label: "Ít nhất 1 ký tự đặc biệt (!@#$…)", test: (v) => /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?~`]/.test(v) },
+  { id: "length", label: "Ít nhất 8 ký tự", test: (v) => v.length >= 8 },
 ];
 
 function getStrength(pw) {
   const passed = STRENGTH_RULES.filter((r) => r.test(pw)).length;
-  if (passed <= 1) return { level: 1, label: "Yếu",          color: "#ef4444" };
-  if (passed === 2) return { level: 2, label: "Trung bình",  color: "#f59e0b" };
-  if (passed === 3) return { level: 3, label: "Mạnh",        color: "#22c55e" };
-  return            { level: 4, label: "Rất mạnh", color: "#16a34a" };
+  if (passed === 0) return { level: 1, label: "Yếu",          color: "#ef4444" };
+  return              { level: 4, label: "Mạnh",              color: "#22c55e" };
 }
 
 export default function ChangePasswordPage() {
@@ -51,16 +46,26 @@ export default function ChangePasswordPage() {
   const hasError = (field) => {
     if (!touched[field]) return false;
     if (field === "new")     return !allPassed && newPassword.length > 0;
-    if (field === "confirm") return !matched;
+    if (field === "confirm") return !matched && confirmPassword.length > 0;
     return false;
   };
 
-  function handleVerifyOld(e) {
+  async function handleVerifyOld(e) {
     e.preventDefault();
     if (!oldPassword.trim()) return;
+
     setVerifying(true);
-    setIsVerified(true);
-    setVerifying(false);
+    setIsSubmitting(true);
+
+    try {
+      await authApi.verifyPassword({ password: oldPassword });
+      setIsVerified(true);
+    } catch (err) {
+      toast.error(err.message || 'Mật khẩu cũ không đúng. Vui lòng thử lại.');
+    } finally {
+      setVerifying(false);
+      setIsSubmitting(false);
+    }
   }
 
   async function handleSubmit(e) {
@@ -178,6 +183,9 @@ export default function ChangePasswordPage() {
                   <PasswordToggleIcon isVisible={showNew} />
                 </button>
               </div>
+              {hasError("new") && (
+                <p className="cp-field__error">Mật khẩu phải có ít nhất 8 ký tự</p>
+              )}
             </div>
 
             {/* Strength Meter */}

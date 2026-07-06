@@ -18,6 +18,16 @@ function PasswordToggleIcon({ isVisible }) {
   )
 }
 
+const STRENGTH_RULES = [
+  { id: 'length', label: 'Ít nhất 8 ký tự', test: (v) => v.length >= 8 },
+]
+
+function getStrength(pw) {
+  const passed = STRENGTH_RULES.filter((r) => r.test(pw)).length
+  if (passed === 0) return { level: 1, label: 'Yếu', color: '#ef4444' }
+  return              { level: 4, label: 'Mạnh', color: '#22c55e' }
+}
+
 function MoodCard() {
   return (
     <div className="mood-card" aria-hidden="true">
@@ -101,6 +111,23 @@ function RegisterForm() {
   const [isConfirmVisible, setIsConfirmVisible] = useState(false)
   const [isTermsAccepted, setIsTermsAccepted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [touched, setTouched] = useState({ password: false, confirm: false })
+
+  const strength     = getStrength(password)
+  const matched      = confirmPassword.length > 0 && password === confirmPassword
+  const allPassed    = STRENGTH_RULES.every((r) => r.test(password))
+  const emptyConfirm = confirmPassword.length === 0
+
+  const hasError = (field) => {
+    if (!touched[field]) return false
+    if (field === 'password') return !allPassed && password.length > 0
+    if (field === 'confirm')  return !matched && !emptyConfirm
+    return false
+  }
+
+  const isFormValid = allPassed && matched
 
   const navigateAfterSocialAuth = useCallback((result) => {
     const shouldCompleteQuiz = result.isNewUser || !result.user.targetStatus
@@ -132,11 +159,10 @@ function RegisterForm() {
   async function handleSubmit(event) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
-    const password = formData.get('password')
-    const confirmPassword = formData.get('confirmPassword')
 
-    if (password !== confirmPassword) {
-      toast.error('Mật khẩu xác nhận không khớp.')
+    if (!isFormValid) return
+    if (!isTermsAccepted) {
+      toast.error('Vui lòng đồng ý với Điều khoản sử dụng và Chính sách bảo mật.')
       return
     }
 
@@ -227,7 +253,8 @@ function RegisterForm() {
             </span>
           </label>
 
-          <label className="form-field">
+          {/* Password */}
+          <div className={`form-field${hasError('password') ? ' is-error' : ''}`}>
             <span style={{ fontWeight: '400' }}>Mật khẩu</span>
             <span className="input-shell">
               <span className="field-icon">
@@ -238,7 +265,9 @@ function RegisterForm() {
                 name="password"
                 autoComplete="new-password"
                 placeholder="Nhập mật khẩu của bạn"
-                required
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onBlur={() => setTouched((p) => ({ ...p, password: true }))}
               />
               <button
                 className="password-toggle"
@@ -250,9 +279,48 @@ function RegisterForm() {
                 <PasswordToggleIcon isVisible={isPasswordVisible} />
               </button>
             </span>
-          </label>
+            {hasError('password') && (
+              <span className="form-field__error">Mật khẩu phải có ít nhất 8 ký tự</span>
+            )}
+          </div>
 
-          <label className="form-field">
+          {/* Strength Meter */}
+          {password.length > 0 && (
+            <>
+              <div className="reg-strength">
+                <div className="reg-strength__bars">
+                  {[1, 2, 3, 4].map((n) => (
+                    <span
+                      key={n}
+                      className="reg-strength__bar"
+                      style={{
+                        background: n <= strength.level ? strength.color : '#e5e7eb',
+                        transition: 'background 300ms ease',
+                      }}
+                    />
+                  ))}
+                </div>
+                <p className="reg-strength__label" style={{ color: strength.color }}>
+                  {strength.label}
+                </p>
+              </div>
+
+              <ul className="reg-rules">
+                {STRENGTH_RULES.map((rule) => {
+                  const ok = rule.test(password)
+                  return (
+                    <li key={rule.id} className={`reg-rules__item${ok ? ' is-ok' : ''}`}>
+                      <span className="reg-rules__dot" />
+                      <span>{rule.label}</span>
+                    </li>
+                  )
+                })}
+              </ul>
+            </>
+          )}
+
+          {/* Confirm Password */}
+          <div className={`form-field${hasError('confirm') ? ' is-error' : ''}`}>
             <span style={{ fontWeight: '400' }}>Xác nhận mật khẩu</span>
             <span className="input-shell">
               <span className="field-icon">
@@ -263,7 +331,9 @@ function RegisterForm() {
                 name="confirmPassword"
                 autoComplete="new-password"
                 placeholder="Nhập lại mật khẩu của bạn"
-                required
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                onBlur={() => setTouched((p) => ({ ...p, confirm: true }))}
               />
               <button
                 className="password-toggle"
@@ -275,7 +345,10 @@ function RegisterForm() {
                 <PasswordToggleIcon isVisible={isConfirmVisible} />
               </button>
             </span>
-          </label>
+            {hasError('confirm') && (
+              <span className="form-field__error">Mật khẩu xác nhận không khớp</span>
+            )}
+          </div>
 
           <div className="form-options">
             <label className="remember-me">
@@ -303,7 +376,7 @@ function RegisterForm() {
           <button
             className="submit-button"
             type="submit"
-            disabled={isSubmitting || !isTermsAccepted}
+            disabled={isSubmitting || !isFormValid || !isTermsAccepted}
           >
             {isSubmitting ? 'Đang đăng ký...' : 'Đăng ký'}
           </button>

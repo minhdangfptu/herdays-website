@@ -112,6 +112,11 @@ export const validateResetPassword = (body) => {
   };
 };
 
+export const validateVerifyPassword = (body) => {
+  if (!body.password) throw new HttpError(400, 'password is required');
+  return { password: body.password };
+};
+
 export const validateChangePassword = (body) => {
   if (!body.currentPassword) throw new HttpError(400, 'currentPassword is required');
   validatePassword(body.newPassword, 'newPassword');

@@ -114,6 +114,9 @@ function LoginForm() {
 
   const completeLogin = useCallback((result) => {
     setAuthSession(result)
+    if (result.user.authProvider === 'google') {
+      toast('Tài khoản Google, vui lòng đăng nhập với Google')
+    }
     toast.success(`Đăng nhập thành công`)
     navigate(result.user.role === 'admin' ? '/admin/blog' : '/home')
   }, [navigate])
@@ -208,7 +211,7 @@ function LoginForm() {
               <input type="checkbox" name="remember" />
               <span>Ghi nhớ tôi</span>
             </label>
-            <a type="button" onClick={() => navigate('/forgot-password')}>Quên mật khẩu?</a>
+            <a style={{cursor: 'pointer'}} type="button" onClick={() => navigate('/choose-method')}>Quên mật khẩu?</a>
           </div>
 
           <button className="submit-button" type="submit" disabled={isSubmitting}>
