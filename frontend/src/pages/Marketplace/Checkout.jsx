@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { cartApi, hasAuthSession, orderApi } from '../../services/apiService.js'
+import { RefreshCw } from 'lucide-react'
 import './Checkout.scss'
 
 const formatCurrency = (value) =>
@@ -24,17 +25,25 @@ const normalizeCartItem = (item) => {
   }
 }
 
+const SUBSCRIPTION_PLANS = [
+  { months: 1, label: '1 tháng', discount: 0, badge: null },
+  { months: 3, label: '3 tháng', discount: 5, badge: 'Tiết kiệm 5%' },
+  { months: 6, label: '6 tháng', discount: 10, badge: 'Tiết kiệm 10%' },
+  { months: 12, label: '12 tháng', discount: 20, badge: 'Tốt nhất' },
+]
+
 export default function Checkout() {
   const [cartItems, setCartItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [updatingBoxId, setUpdatingBoxId] = useState('')
   const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [selectedPlan, setSelectedPlan] = useState(1)
   const navigate = useNavigate()
 
   useEffect(() => {
     if (!hasAuthSession()) {
-      toast.error('Vui lòng đăng nhập để xem giỏ hàng.')
+      toast.error('Vui lòng đăng nhập để xem sản phẩm thanh toán.')
       navigate('/login', { replace: true })
       return
     }
@@ -46,7 +55,7 @@ export default function Checkout() {
         if (isMounted) setCartItems((cart.items || []).map(normalizeCartItem))
       })
       .catch((error) => {
-        if (isMounted) setErrorMessage(error.message || 'Không thể tải giỏ hàng.')
+        if (isMounted) setErrorMessage(error.message || 'Không thể tải sản phẩm thanh toán.')
       })
       .finally(() => {
         if (isMounted) setLoading(false)
@@ -62,6 +71,11 @@ export default function Checkout() {
     [cartItems]
   )
 
+  const selectedPlanData = SUBSCRIPTION_PLANS.find(p => p.months === selectedPlan) || SUBSCRIPTION_PLANS[0]
+  const discountPercent = selectedPlanData.discount
+  const discountAmount = subtotal * discountPercent / 100
+  const orderTotal = subtotal - discountAmount
+
   const handleQuantityChange = async (boxId, quantity) => {
     if (quantity < 1) return
 
@@ -71,7 +85,7 @@ export default function Checkout() {
       const cart = await cartApi.updateItem({ boxId, quantity })
       setCartItems((cart.items || []).map(normalizeCartItem))
     } catch (error) {
-      toast.error(error.message || 'Không thể cập nhật giỏ hàng.')
+      toast.error(error.message || 'Không thể cập nhật sản phẩm thanh toán.')
     } finally {
       setUpdatingBoxId('')
     }
@@ -83,7 +97,7 @@ export default function Checkout() {
     try {
       const cart = await cartApi.removeItem(boxId)
       setCartItems((cart.items || []).map(normalizeCartItem))
-      toast.success('Đã xóa sản phẩm khỏi giỏ hàng.')
+      toast.success('Đã xóa sản phẩm khỏi sản phẩm thanh toán.')
     } catch (error) {
       toast.error(error.message || 'Không thể xóa sản phẩm.')
     } finally {
@@ -93,7 +107,7 @@ export default function Checkout() {
 
   const handleCheckout = async () => {
     if (cartItems.length === 0) {
-      toast.error('Giỏ hàng đang trống.')
+      toast.error('Sản phẩm thanh toán đang trống.')
       return
     }
 
@@ -130,7 +144,7 @@ export default function Checkout() {
           </p>
         </div>
 
-        {loading && <p className="herdays-checkout-status">Đang tải giỏ hàng...</p>}
+        {loading && <p className="herdays-checkout-status">Đang tải sản phẩm thanh toán...</p>}
         {errorMessage && <p className="herdays-checkout-status herdays-checkout-status--error">{errorMessage}</p>}
 
         {!loading && !errorMessage && (
@@ -142,7 +156,7 @@ export default function Checkout() {
                 </h2>
 
                 {cartItems.length === 0 ? (
-                  <p className="herdays-checkout-empty">Giỏ hàng của bạn đang trống.</p>
+                  <p className="herdays-checkout-empty">Sản phẩm thanh toán của bạn đang trống.</p>
                 ) : (
                   <div className="herdays-checkout-product-list">
                     {cartItems.map((item) => (
@@ -187,6 +201,33 @@ export default function Checkout() {
             </div>
 
             <div className="herdays-checkout-right">
+              <div className="herdays-checkout-subscription-card herdays-checkout-card">
+                <h2 className="herdays-checkout-card-title">
+                  <RefreshCw size={18} />
+                  Đăng ký định kỳ
+                </h2>
+                <div className="subscription-plans">
+                  {SUBSCRIPTION_PLANS.map((plan) => (
+                    <button
+                      key={plan.months}
+                      type="button"
+                      className={`subscription-plan-btn ${selectedPlan === plan.months ? 'active' : ''}`}
+                      onClick={() => setSelectedPlan(plan.months)}
+                    >
+                      <span className="plan-label">{plan.label}</span>
+                      {/* {plan.badge && (
+                        <span className="plan-badge">{plan.badge}</span>
+                      )} */}
+                    </button>
+                  ))}
+                </div>
+                {/* {discountPercent > 0 && (
+                  <p className="subscription-savings">
+                    Tiết kiệm <strong>{formatCurrency(discountAmount)}</strong> với gói {selectedPlanData.label}
+                  </p>
+                )} */}
+              </div>
+
               <div className="herdays-checkout-card">
                 <h2 className="herdays-checkout-card-title">Tóm tắt đơn hàng</h2>
 
@@ -195,6 +236,13 @@ export default function Checkout() {
                     <span className="summary-label">Tạm tính</span>
                     <span className="summary-value">{formatCurrency(subtotal)}</span>
                   </div>
+
+                  {discountPercent > 0 && (
+                    <div className="summary-row">
+                      <span className="summary-label">Giảm giá ({discountPercent}%)</span>
+                      <span className="summary-value text-green">-{formatCurrency(discountAmount)}</span>
+                    </div>
+                  )}
 
                   <div className="summary-row">
                     <span className="summary-label">Phí vận chuyển</span>
@@ -205,7 +253,7 @@ export default function Checkout() {
 
                   <div className="summary-row total-row">
                     <span className="summary-label">Tổng cộng</span>
-                    <span className="summary-value total-price">{formatCurrency(subtotal)}</span>
+                    <span className="summary-value total-price">{formatCurrency(orderTotal)}</span>
                   </div>
 
                   <button

@@ -1,0 +1,343 @@
+// Variables
+$primary-pink: #F176A9;
+$dark-pink: #D05E8E;
+$light-pink: #FFE8F3;
+$dark-text: #1A1A1A;
+$gray-text: #666666;
+$light-gray: #F5F5F5;
+$border-gray: #E8E8E8;
+$white: #FFFFFF;
+
+$font-primary: 'Roboto', sans-serif;
+
+// ============================================
+// Page Setup
+// ============================================
+.product-detail-page {
+  background-color: $white; // Đổi nền trắng theo figma
+  padding: 40px 20px;
+  font-family: $font-primary;
+  min-height: 100vh;
+}
+
+.product-detail-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  background-color: $white;
+}
+
+// ============================================
+// Breadcrumb
+// ============================================
+.product-detail-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: $gray-text;
+  margin-bottom: 40px;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+
+  a {
+    color: $gray-text;
+    text-decoration: none;
+    transition: color 0.2s;
+    &:hover { color: $primary-pink; }
+  }
+
+  svg { // Icon mũi tên
+    font-size: 16px;
+    color: #999;
+  }
+}
+
+.product-detail-breadcrumb-active {
+  color: $primary-pink;
+}
+
+// ============================================
+// Main Layout
+// ============================================
+.product-detail-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 80px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+}
+
+.product-detail-image-section {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  background-color: transparent; // Bỏ nền xám
+}
+
+.product-detail-main-image {
+  width: 100%;
+  max-width: 450px;
+  height: auto;
+  object-fit: contain;
+}
+
+// ============================================
+// Info Section
+// ============================================
+.product-detail-info-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.product-detail-title {
+  font-size: 36px;
+  font-weight: 800;
+  color: $primary-pink;
+  margin: 0;
+}
+
+// Rating
+.product-detail-rating {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.product-detail-stars {
+  display: flex;
+  gap: 4px;
+}
+.product-detail-star {
+  width: 18px;
+  height: 18px;
+  color: $border-gray;
+  fill: $border-gray; // Để ruột sao xám
+}
+.product-detail-star-filled {
+  color: #FFC107;
+  fill: #FFC107;
+}
+.product-detail-rating-text {
+  font-size: 14px;
+  color: $gray-text;
+}
+
+// Price
+.product-detail-price-section {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.product-detail-current-price {
+  font-size: 32px;
+  font-weight: 700;
+  color: $primary-pink;
+}
+.product-detail-original-price {
+  font-size: 20px;
+  color: #999;
+  text-decoration: line-through;
+  font-weight: 500;
+}
+.product-detail-discount {
+  background-color: $light-pink;
+  color: $primary-pink;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+// Divider
+.product-detail-divider {
+  border: none;
+  border-top: 1px solid $border-gray;
+  margin: 12px 0;
+}
+
+// Description
+.product-detail-description {
+  font-size: 14px;
+  color: $gray-text;
+  line-height: 1.6;
+  margin: 0;
+}
+
+// Subscription
+.product-detail-subscription {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+.product-detail-subscription-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: $gray-text;
+}
+.product-detail-subscription-options {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.product-detail-subscription-btn {
+  padding: 8px 20px;
+  border: 1px solid transparent;
+  background-color: $light-gray;
+  border-radius: 20px;
+  font-size: 14px;
+  color: $gray-text;
+  cursor: pointer;
+  transition: all 0.2s;
+  
+  &:hover { background-color: $border-gray; }
+  
+  &.product-detail-subscription-btn-active {
+    background-color: $primary-pink;
+    color: $white;
+  }
+}
+
+// Actions
+.product-detail-actions {
+  display: flex;
+  gap: 16px;
+  margin-top: 12px;
+}
+.product-detail-quantity {
+  display: flex;
+  align-items: center;
+  background-color: $light-gray;
+  border-radius: 24px; // Bo tròn chuẩn pill
+  padding: 0 4px;
+}
+.product-detail-quantity-btn {
+  background: none;
+  border: none;
+  padding: 12px;
+  cursor: pointer;
+  color: $dark-text;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+}
+.product-detail-quantity-input {
+  width: 40px;
+  border: none;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 600;
+  background: transparent;
+  outline: none;
+}
+.product-detail-add-to-cart {
+  flex: 1;
+  padding: 12px 24px;
+  background-color: $primary-pink;
+  color: $white;
+  border: none;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: 0.2s;
+
+  &:hover { background-color: $dark-pink; }
+}
+
+// ============================================
+// Related Products Section
+// ============================================
+.product-detail-related-section {
+  margin-top: 100px;
+}
+
+.product-detail-related-header {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-bottom: 1px solid $border-gray;
+  margin-bottom: 40px;
+}
+
+.product-detail-related-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: $primary-pink;
+  margin: 0;
+  padding-bottom: 16px;
+  border-bottom: 2px solid $primary-pink;
+  margin-bottom: -1px; // Để đè lên cái viền border-gray ở trên
+}
+
+.product-detail-related-customize {
+  position: absolute;
+  right: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: $dark-text;
+  background: none;
+  border: none;
+  cursor: pointer;
+  
+  &:hover { color: $primary-pink; }
+}
+
+.product-detail-related-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+
+  @media (max-width: 900px) {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.product-detail-related-card {
+  background-color: $white;
+  border: 1px solid $border-gray;
+  border-radius: 12px;
+  overflow: hidden;
+  transition: box-shadow 0.3s ease;
+  cursor: pointer;
+
+  &:hover { box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
+}
+
+.product-detail-related-image {
+  background-color: $light-pink; // Nền hồng nhạt sau box
+  padding: 30px;
+  display: flex;
+  justify-content: center;
+  
+  img {
+    width: 100%;
+    max-width: 150px;
+    object-fit: contain;
+  }
+}
+
+.product-detail-related-info {
+  padding: 16px;
+  text-align: left;
+}
+
+.product-detail-related-subtitle {
+  font-size: 12px;
+  color: #888;
+  margin: 0 0 4px 0;
+}
+
+.product-detail-related-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: $dark-text;
+  margin: 0;
+}

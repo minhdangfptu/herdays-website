@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { boxApi, cartApi, hasAuthSession } from '../../services/apiService.js'
+import heroBanner from '../../assets/marketplace/hero_banner.png'
+import subBoxBanner from '../../assets/marketplace/sub_box.png'
 import './Marketplace.scss'
 
 const formatCurrency = (value) =>
@@ -66,27 +68,37 @@ function Marketplace() {
 
   return (
     <main className="marketplace-page">
+      <section className="marketplace-hero-banner">
+        <img src={heroBanner} alt="HerDays Box Subscription" className="hero-banner-image" />
+        <div className="hero-banner-content">
+          <p className="hero-banner-eyebrow">HerDays Marketplace</p>
+          <h2 className="hero-banner-title">Box Subscription</h2>
+          <p className="hero-banner-subtitle">Item "must-have" cho hội chị em</p>
+          <Link to="/checkout" className="hero-banner-btn">Mua ngay</Link>
+        </div>
+      </section>
+
       <section className="marketplace-hero">
         <div>
-          <p className="marketplace-eyebrow">HerDays Marketplace</p>
           <h1>Chọn box chăm sóc phù hợp với hành trình của bạn</h1>
           <p>
             Các gói sản phẩm được cá nhân hóa để hỗ trợ theo dõi chu kỳ,
             chuẩn bị mang thai và chăm sóc sức khỏe nữ giới hằng ngày.
           </p>
         </div>
-        <Link className="marketplace-cart-link" to="/check-out">
+        {/* <Link className="marketplace-cart-link" to="/cart">
           Xem giỏ hàng
-        </Link>
-      </section>
-
-      {categories.length > 0 && (
-        <div className="marketplace-categories" aria-label="Danh mục sản phẩm">
+        </Link> */}
+        {categories.length > 0 && (
+        <div style={{color: '#fff', fontWeight: '600', fontSize: '16px', display: 'flex', gap: '10px', flexWrap: 'wrap', backgroundColor: '#F176A9', padding: '12px 22px', borderRadius: '25px' }} aria-label="Danh mục sản phẩm">
           {categories.map((category) => (
-            <span key={category}>{category}</span>
+            <span key={category}>Mục tiêu: {category}</span>
           ))}
         </div>
       )}
+      </section>
+
+      
 
       {loading && <p className="marketplace-status">Đang tải sản phẩm...</p>}
       {errorMessage && <p className="marketplace-status marketplace-status--error">{errorMessage}</p>}
@@ -124,6 +136,19 @@ function Marketplace() {
           )}
         </section>
       )}
+
+      <section className="marketplace-footer-banner">
+        <img src={subBoxBanner} alt="HerDays Subscription Box" className="footer-banner-image" />
+        <div className="footer-banner-content">
+          <h2 className="footer-banner-title">
+            <span className="footer-banner-title-herdays">HerDays</span> Subscription Box
+          </h2>
+          <p className="footer-banner-subtitle">
+            Các Subscription Box được cá nhân hóa dựa trên từng giai đoạn sức khỏe của người dùng.
+          </p>
+          <Link to="/box-customize/:boxId" className="footer-banner-btn">Tạo box cá nhân hoá</Link>
+        </div>
+      </section>
     </main>
   )
 }

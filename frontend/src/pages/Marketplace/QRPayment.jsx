@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
+import { Building2, CreditCard, User, Smartphone, QrCode, CheckCircle, Headphones } from 'lucide-react';
 import './QRPayment.scss';
 
 const formatCurrency = (value) =>
@@ -35,7 +36,6 @@ export default function QRPayment() {
           {/* CỘT TRÁI: THÔNG TIN THANH TOÁN */}
           <div className="herdays-qrpayment-left">
             <div className="herdays-qrpayment-header">
-              <div className="herdays-qrpayment-wallet-icon">👛</div>
               <h1 className="herdays-qrpayment-title">Thanh toán đơn hàng</h1>
               <p className="herdays-qrpayment-subtitle">Quét mã QR để thanh toán đơn hàng của bạn</p>
             </div>
@@ -51,32 +51,19 @@ export default function QRPayment() {
 
             <div className="herdays-qrpayment-details">
               <div className="herdays-qrpayment-detail-row">
-                <span className="icon">🏦</span>
+                <span className="icon"><Building2 size={16} /></span>
                 <span className="label">Ngân hàng</span>
                 <span className="value"><strong>TPBank</strong> - Ngân hàng Tiên Phong</span>
               </div>
               <div className="herdays-qrpayment-detail-row">
-                <span className="icon">💳</span>
+                <span className="icon"><CreditCard size={16} /></span>
                 <span className="label">Số tài khoản</span>
                 <span className="value"><strong>1903 8678 9999</strong></span>
               </div>
               <div className="herdays-qrpayment-detail-row">
-                <span className="icon">👤</span>
+                <span className="icon"><User size={16} /></span>
                 <span className="label">Chủ tài khoản</span>
                 <span className="value"><strong>CÔNG TY TNHH HERDAYS</strong></span>
-              </div>
-              <div className="herdays-qrpayment-detail-row">
-                <span className="icon">📝</span>
-                <span className="label">Nội dung CK</span>
-                <span className="value">{transferContent}</span>
-                <button
-                  className="herdays-qrpayment-copy-btn"
-                  type="button"
-                  title="Copy"
-                  onClick={handleCopyTransferContent}
-                >
-                  📄
-                </button>
               </div>
             </div>
           </div>
@@ -101,10 +88,6 @@ export default function QRPayment() {
                 <p>Mã QR sẽ hết hạn sau</p>
                 <div className="herdays-qrpayment-timer-countdown">09 : 58</div>
               </div>
-
-              <div className="herdays-qrpayment-manual-text">
-                Hoặc chuyển khoản thủ công
-              </div>
             </div>
           </div>
         </div>
@@ -117,7 +100,7 @@ export default function QRPayment() {
           
           <div className="herdays-qrpayment-steps">
             <div className="herdays-qrpayment-step-item">
-              <div className="step-icon">📱</div>
+              <div className="step-icon"><Smartphone size={20} /></div>
               <div className="step-text">
                 <strong>Bước 1</strong>
                 <p>Mở ứng dụng ngân hàng hoặc ví điện tử</p>
@@ -125,23 +108,23 @@ export default function QRPayment() {
             </div>
             
             <div className="herdays-qrpayment-step-item">
-              <div className="step-icon">🔳</div>
+              <div className="step-icon"><QrCode size={20} /></div>
               <div className="step-text">
                 <strong>Bước 2</strong>
-                <p>Quét mã QR hoặc chuyển khoản thủ công</p>
+                <p>Quét mã QR và nhập nội dung thanh toán trên màn hình</p>
               </div>
             </div>
             
             <div className="herdays-qrpayment-step-item">
-              <div className="step-icon">✅</div>
+              <div className="step-icon"><CheckCircle size={20} /></div>
               <div className="step-text">
                 <strong>Bước 3</strong>
-                <p>Xác nhận thanh toán và chờ xử lý đơn hàng</p>
+                <p>Xác nhận thanh toán và chờ hệ thống xử lý đơn hàng</p>
               </div>
             </div>
             
             <div className="herdays-qrpayment-step-item warning-step">
-              <div className="step-icon">🎧</div>
+              <div className="step-icon"><Headphones size={20} /></div>
               <div className="step-text">
                 <strong>Bạn chưa thanh toán?</strong>
                 <p>Đơn hàng sẽ được hủy tự động sau khi mã QR hết hạn.</p>

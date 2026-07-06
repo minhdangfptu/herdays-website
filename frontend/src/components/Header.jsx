@@ -143,7 +143,7 @@ const Header = () => {
           <div className="header-right">
             {isLoggedIn ? (
               <div className="header-user-actions">
-                <Link className="header-cart-btn" aria-label="Giỏ hàng" to="/check-out">
+                <Link className="header-cart-btn" aria-label="Giỏ hàng" to="/cart">
                   <ShoppingBag size={20} strokeWidth={2} />
                 </Link>
 

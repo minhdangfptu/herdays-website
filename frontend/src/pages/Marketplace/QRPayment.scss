@@ -129,8 +129,9 @@ $border-color: #EEEEEE;
 
     .icon {
       width: 30px;
+      display: flex;
+      align-items: center;
       color: $primary-pink;
-      font-size: 18px;
     }
 
     .label {
@@ -180,9 +181,8 @@ $border-color: #EEEEEE;
 .herdays-qrpayment-qr-card {
   background-color: $white;
   border-radius: 24px;
-  padding: 40px;
+  padding: 30px;
   text-align: center;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
   max-width: 400px;
   width: 100%;
 
@@ -207,7 +207,6 @@ $border-color: #EEEEEE;
   }
 
   .herdays-qrpayment-timer-section {
-    margin-bottom: 24px;
 
     p {
       font-size: 14px;
@@ -216,7 +215,7 @@ $border-color: #EEEEEE;
     }
 
     .herdays-qrpayment-timer-countdown {
-      font-size: 24px;
+      font-size: 40px;
       font-weight: 700;
       color: $primary-pink;
     }
@@ -267,9 +266,13 @@ $border-color: #EEEEEE;
     .step-icon {
       width: 40px;
       height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background-color: $bg-pink-light;
       color: $primary-pink;
       border-radius: 10px;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
