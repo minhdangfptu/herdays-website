@@ -30,6 +30,7 @@ import AdminUsersPage from "./pages/Admin/AdminUsersPage.jsx";
 import AdminUserDetailPage from "./pages/Admin/AdminUserDetailPage.jsx";
 import AdminContactsPage from "./pages/Admin/AdminContactsPage.jsx";
 import AdminProductsPage from "./pages/Admin/AdminProductsPage.jsx";
+import AdminOrdersPage from "./pages/Admin/AdminOrdersPage.jsx";
 import QuizPage from "./pages/QuizPage.jsx";
 import ChatWithAI from "./pages/AI/ChatWithAI.jsx";
 import AboutUs from "./pages/Common/AboutUs.jsx";
@@ -39,6 +40,9 @@ import Error404 from "./pages/Error/Error404.jsx";
 import Marketplace from "./pages/Marketplace/Marketplace.jsx";
 import Checkout from "./pages/Marketplace/Checkout.jsx";
 import QRPayment from "./pages/Marketplace/QRPayment.jsx";
+import Cart from "./pages/Marketplace/Cart.jsx";
+import BoxCustomize from "./pages/Marketplace/BoxCustomize.jsx";
+import ProductDetailPage from "./pages/Marketplace/ProductDetailPage.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -60,7 +64,10 @@ function AdminLayout() {
             <Route index element={<AdminHome />} />
             <Route path="blog" element={<AdminPostsPage />} />
             <Route path="posts" element={<Navigate to="/admin/blog" replace />} />
-            <Route path="shop" element={<AdminProductsPage />} />
+            <Route path="shop" element={<Navigate to="/admin/marketplace/products" replace />} />
+            <Route path="marketplace" element={<Navigate to="/admin/marketplace/products" replace />} />
+            <Route path="marketplace/products" element={<AdminProductsPage />} />
+            <Route path="marketplace/orders" element={<AdminOrdersPage />} />
             <Route path="herbotai" element={<div>HerbotAI Admin (coming soon)</div>} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="users/:userId" element={<AdminUserDetailPage />} />
@@ -128,6 +135,11 @@ function App() {
           <Route path="/marketplace" element={<Marketplace />} />
           <Route path="/check-out" element={<Checkout />} />
           <Route path="/qr-payment" element={<QRPayment />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/box-customize" element={<BoxCustomize />} />
+          <Route path="/box-customize/:boxId" element={<BoxCustomize />} />
+          <Route path="/product-detail/:type/:itemId" element={<ProductDetailPage />} />
+          <Route path="/product-detail/:productId" element={<ProductDetailPage />} />
           <Route element={<BlogShell />}>
             <Route path="/blog" element={<BlogTopicsPage />} />
             <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />

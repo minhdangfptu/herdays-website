@@ -84,9 +84,17 @@ $font-dancing: 'Dancing Script', cursive;
   &::before, &::after {
     display: none !important;
   }
-  @media (max-width: 1900px) {
+  @media (max-width: 1920px) {
     background-position: center 75%;
     min-height: 112vh;
+  }
+
+  @media (max-width: 1200px) {
+    min-height: 80vh;
+  }
+
+  @media (max-width: 1199px) {
+    min-height: 110vh;
   }
 
   @media (max-width: 768px) {
@@ -261,6 +269,10 @@ $font-dancing: 'Dancing Script', cursive;
   color: $primary-pink;
   margin: 0 0 $spacing-md 0;
 
+  @media (max-width: 1200px) {
+    font-size: 30px;
+  }
+
   @media (max-width: 768px) {
     font-size: 28px;
   }
@@ -344,6 +356,14 @@ $font-dancing: 'Dancing Script', cursive;
   border-radius: 12px;
   overflow: hidden;
   @include card-shadow;
+
+  @media (max-width: 1200px) {
+    min-width: 240px;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 220px;
+  }
 }
 
 .subscription-card-image {
@@ -460,7 +480,15 @@ $font-dancing: 'Dancing Script', cursive;
 
 .brand-name {
   font-family: "Dancing Script", cursive;
-  font-size: 48px;
+  font-size: 36px;
+
+  @media (max-width: 1200px) {
+    font-size: 32px;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 28px;
+  }
 }
 
 .experts-title {
@@ -469,8 +497,8 @@ $font-dancing: 'Dancing Script', cursive;
   color: $dark-gray;
   margin: 0;
 
-  .brand-name {
-    font-size: 48px;
+  @media (max-width: 1200px) {
+    font-size: 30px;
   }
 
   @media (max-width: 768px) {
@@ -520,6 +548,14 @@ $font-dancing: 'Dancing Script', cursive;
   border-radius: 12px;
   overflow: hidden;
   @include card-shadow;
+
+  @media (max-width: 1024px) {
+    min-width: 300px;
+  }
+
+  @media (max-width: 768px) {
+    min-width: 260px;
+  }
 }
 
 .expert-card-background {
@@ -667,6 +703,10 @@ $font-dancing: 'Dancing Script', cursive;
   margin: 0;
   line-height: 1.3;
 
+  @media (max-width: 1200px) {
+    font-size: 28px;
+  }
+
   @media (max-width: 768px) {
     font-size: 24px;
   }
@@ -737,6 +777,10 @@ $font-dancing: 'Dancing Script', cursive;
   font-weight: 700;
   color: $dark-gray;
   margin: 0;
+
+  @media (max-width: 1200px) {
+    font-size: 26px;
+  }
 
   @media (max-width: 768px) {
     font-size: 20px;

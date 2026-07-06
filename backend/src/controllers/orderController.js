@@ -1,5 +1,10 @@
 import * as orderService from '../services/orderService.js';
-import { validateOrderQuery, validateOrderId, validateOrderStatus } from '../validations/orderValidation.js';
+import {
+  validateCreateOrder,
+  validateOrderQuery,
+  validateOrderId,
+  validateOrderStatus
+} from '../validations/orderValidation.js';
 import { sendSuccess } from '../utils/response.js';
 
 export const getOrders = async (req, res, next) => {
@@ -15,6 +20,61 @@ export const getOrders = async (req, res, next) => {
         total: result.total,
         totalPages: result.totalPages
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMyOrders = async (req, res, next) => {
+  try {
+    const orders = await orderService.getOrdersByUser(req.user.id);
+    sendSuccess(res, {
+      message: 'Lấy danh sách đơn hàng của bạn thành công',
+      data: orders
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getMyOrder = async (req, res, next) => {
+  try {
+    const id = validateOrderId(req.params.id);
+    const order = await orderService.getOrderByIdForUser(id, req.user.id);
+    sendSuccess(res, {
+      message: 'Lấy chi tiết đơn hàng của bạn thành công',
+      data: order
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const createOrderFromCart = async (req, res, next) => {
+  try {
+    const order = await orderService.createOrderFromCart(
+      req.user.id,
+      validateCreateOrder(req.body)
+    );
+
+    sendSuccess(res, {
+      statusCode: 201,
+      message: 'Tạo đơn hàng thành công',
+      data: order
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const cancelMyOrder = async (req, res, next) => {
+  try {
+    const id = validateOrderId(req.params.id);
+    const order = await orderService.cancelOrderForUser(id, req.user.id);
+    sendSuccess(res, {
+      message: 'Hủy đơn hàng thành công',
+      data: order
     });
   } catch (error) {
     next(error);

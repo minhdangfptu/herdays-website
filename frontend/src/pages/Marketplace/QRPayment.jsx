@@ -1,6 +1,29 @@
-import { useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
+import {
+  Building2,
+  CheckCircle,
+  CreditCard,
+  Headphones,
+  QrCode,
+  Smartphone,
+  User,
+  XCircle
+} from 'lucide-react';
+import { orderApi } from '../../services/apiService.js';
 import './QRPayment.scss';
+
+const QR_EXPIRES_SECONDS = 10 * 60;
+const POLL_INTERVAL_MS = 4000;
+
+const BANK_CODE = 'TPB';
+const BANK_NAME = 'TPBank';
+const BANK_ACCOUNT_NUMBER = '00000116625';
+const BANK_ACCOUNT_DISPLAY = '0000 0116 625';
+const BANK_ACCOUNT_NAME = 'HOANG VINH GIANG';
+
+const SUCCESS_STATUSES = ['confirmed', 'delivered', 'deleted'];
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('vi-VN', {
@@ -9,33 +32,153 @@ const formatCurrency = (value) =>
     maximumFractionDigits: 0
   }).format(Number(value) || 0);
 
+const formatCountdown = (seconds) => {
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = seconds % 60;
+
+  return `${String(minutes).padStart(2, '0')} : ${String(remainingSeconds).padStart(2, '0')}`;
+};
+
 export default function QRPayment() {
   const { state } = useLocation();
+  const navigate = useNavigate();
+  const [secondsRemaining, setSecondsRemaining] = useState(QR_EXPIRES_SECONDS);
+  const [orderStatus, setOrderStatus] = useState('pending');
+  const [isCancelling, setIsCancelling] = useState(false);
+  const [statusError, setStatusError] = useState('');
+
   const amount = Number(state?.amount) || 0;
+  const orderId = state?.orderId || '';
   const orderCode = state?.orderCode || 'HD000000';
+  const isExpired = secondsRemaining <= 0;
+  const isPaymentSuccess = SUCCESS_STATUSES.includes(orderStatus);
+  const isCancelled = orderStatus === 'cancelled';
+
   const transferContent = useMemo(
     () => `${orderCode} - Thanh toán đơn hàng`,
     [orderCode]
   );
 
-  const handleCopyTransferContent = () => {
-    navigator.clipboard?.writeText(transferContent);
+  const qrImageUrl = useMemo(() => {
+    const searchParams = new URLSearchParams({
+      addInfo: transferContent,
+      accountName: BANK_ACCOUNT_NAME
+    });
+
+    if (amount > 0) searchParams.set('amount', String(Math.round(amount)));
+
+    return `https://img.vietqr.io/image/${BANK_CODE}-${BANK_ACCOUNT_NUMBER}-compact2.png?${searchParams.toString()}`;
+  }, [amount, transferContent]);
+
+  useEffect(() => {
+    if (isPaymentSuccess || isCancelled) return undefined;
+
+    const intervalId = window.setInterval(() => {
+      setSecondsRemaining((currentSeconds) => {
+        if (currentSeconds <= 1) {
+          window.clearInterval(intervalId);
+          return 0;
+        }
+
+        return currentSeconds - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [isCancelled, isPaymentSuccess]);
+
+  useEffect(() => {
+    if (!orderId || isPaymentSuccess || isCancelled) return undefined;
+
+    let isActive = true;
+
+    const fetchOrderStatus = async () => {
+      try {
+        const order = await orderApi.getById(orderId);
+        if (!isActive) return;
+        setOrderStatus(order.orderStatus || 'pending');
+        setStatusError('');
+      } catch (error) {
+        if (isActive) setStatusError(error.message || 'Không thể kiểm tra trạng thái đơn hàng.');
+      }
+    };
+
+    fetchOrderStatus();
+    const intervalId = window.setInterval(fetchOrderStatus, POLL_INTERVAL_MS);
+
+    return () => {
+      isActive = false;
+      window.clearInterval(intervalId);
+    };
+  }, [isCancelled, isPaymentSuccess, orderId]);
+
+  const handleBackToShop = () => {
+    navigate('/marketplace');
   };
 
+  const handleCancelOrder = async () => {
+    if (!orderId) {
+      navigate('/marketplace');
+      return;
+    }
+
+    if (!window.confirm('Bạn chắc chắn muốn hủy giao dịch này?')) return;
+
+    setIsCancelling(true);
+    try {
+      const order = await orderApi.cancel(orderId);
+      setOrderStatus(order.orderStatus || 'cancelled');
+      toast.success('Đã hủy giao dịch.');
+    } catch (error) {
+      const message = error.message === 'Only pending orders can be cancelled'
+        ? 'Chỉ có thể hủy đơn hàng đang chờ thanh toán.'
+        : error.message || 'Không thể hủy giao dịch.';
+      toast.error(message);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+
+  if (isPaymentSuccess) {
+    return (
+      <div className="herdays-qrpayment-wrapper">
+        <div className="herdays-qrpayment-result-card">
+          <div className="herdays-qrpayment-result-icon success">
+            <CheckCircle size={42} />
+          </div>
+          <h1>Thanh toán thành công</h1>
+          <p>Đơn hàng {orderCode} đã được duyệt. HerDays sẽ tiếp tục xử lý và giao hàng cho bạn.</p>
+          <button type="button" className="herdays-qrpayment-primary-btn" onClick={handleBackToShop}>
+            Về shop
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  if (isCancelled) {
+    return (
+      <div className="herdays-qrpayment-wrapper">
+        <div className="herdays-qrpayment-result-card">
+          <div className="herdays-qrpayment-result-icon cancelled">
+            <XCircle size={42} />
+          </div>
+          <h1>Giao dịch đã hủy</h1>
+          <p>Đơn hàng {orderCode} đã được chuyển sang trạng thái hủy. Các sản phẩm đã được hoàn lại vào kho.</p>
+          <button type="button" className="herdays-qrpayment-primary-btn" onClick={handleBackToShop}>
+            Về shop
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    // Thêm background-image chứa logo ngân hàng/ví điện tử của ông vào class này nhé
     <div className="herdays-qrpayment-wrapper">
       <div className="herdays-qrpayment-container">
-        
-        {/* ==========================================
-            KHU VỰC CHÍNH: CHIA 2 CỘT
-            ========================================== */}
         <div className="herdays-qrpayment-main">
-          
-          {/* CỘT TRÁI: THÔNG TIN THANH TOÁN */}
           <div className="herdays-qrpayment-left">
             <div className="herdays-qrpayment-header">
-              <div className="herdays-qrpayment-wallet-icon">👛</div>
               <h1 className="herdays-qrpayment-title">Thanh toán đơn hàng</h1>
               <p className="herdays-qrpayment-subtitle">Quét mã QR để thanh toán đơn hàng của bạn</p>
             </div>
@@ -51,100 +194,91 @@ export default function QRPayment() {
 
             <div className="herdays-qrpayment-details">
               <div className="herdays-qrpayment-detail-row">
-                <span className="icon">🏦</span>
+                <span className="icon"><Building2 size={16} /></span>
                 <span className="label">Ngân hàng</span>
-                <span className="value"><strong>TPBank</strong> - Ngân hàng Tiên Phong</span>
+                <span className="value"><strong>{BANK_NAME}</strong></span>
               </div>
               <div className="herdays-qrpayment-detail-row">
-                <span className="icon">💳</span>
+                <span className="icon"><CreditCard size={16} /></span>
                 <span className="label">Số tài khoản</span>
-                <span className="value"><strong>1903 8678 9999</strong></span>
+                <span className="value"><strong>{BANK_ACCOUNT_DISPLAY}</strong></span>
               </div>
               <div className="herdays-qrpayment-detail-row">
-                <span className="icon">👤</span>
+                <span className="icon"><User size={16} /></span>
                 <span className="label">Chủ tài khoản</span>
-                <span className="value"><strong>CÔNG TY TNHH HERDAYS</strong></span>
-              </div>
-              <div className="herdays-qrpayment-detail-row">
-                <span className="icon">📝</span>
-                <span className="label">Nội dung CK</span>
-                <span className="value">{transferContent}</span>
-                <button
-                  className="herdays-qrpayment-copy-btn"
-                  type="button"
-                  title="Copy"
-                  onClick={handleCopyTransferContent}
-                >
-                  📄
-                </button>
+                <span className="value"><strong>{BANK_ACCOUNT_NAME}</strong></span>
               </div>
             </div>
           </div>
 
-          {/* CỘT PHẢI: MÃ QR & COUNTDOWN */}
           <div className="herdays-qrpayment-right">
             <div className="herdays-qrpayment-qr-card">
               <p className="herdays-qrpayment-qr-instruction">
                 Quét mã QR bằng ứng dụng ngân hàng hoặc ví điện tử
               </p>
-              
+
               <div className="herdays-qrpayment-qr-image-wrapper">
-                {/* Thay ảnh mã QR thật của ông vào đây */}
-                <img 
-                  src="https://via.placeholder.com/200x200?text=QR+Code" 
-                  alt="QR Code" 
-                  className="herdays-qrpayment-qr-img" 
+                <img
+                  src={qrImageUrl}
+                  alt={`QR thanh toán ${BANK_NAME} ${BANK_ACCOUNT_DISPLAY}`}
+                  className="herdays-qrpayment-qr-img"
                 />
               </div>
 
-              <div className="herdays-qrpayment-timer-section">
-                <p>Mã QR sẽ hết hạn sau</p>
-                <div className="herdays-qrpayment-timer-countdown">09 : 58</div>
+              <div className={`herdays-qrpayment-timer-section ${isExpired ? 'is-expired' : ''}`}>
+                <p>{isExpired ? 'Mã QR đã hết hạn' : 'Mã QR sẽ hết hạn sau'}</p>
+                <div className="herdays-qrpayment-timer-countdown">
+                  {formatCountdown(secondsRemaining)}
+                </div>
               </div>
 
-              <div className="herdays-qrpayment-manual-text">
-                Hoặc chuyển khoản thủ công
-              </div>
+              {statusError && <p className="herdays-qrpayment-status-error">{statusError}</p>}
+
+              <button
+                type="button"
+                className="herdays-qrpayment-cancel-btn"
+                disabled={isCancelling}
+                onClick={handleCancelOrder}
+              >
+                {isCancelling ? 'Đang hủy...' : 'Hủy giao dịch'}
+              </button>
             </div>
           </div>
         </div>
 
-        {/* ==========================================
-            KHU VỰC DƯỚI: HƯỚNG DẪN THANH TOÁN
-            ========================================== */}
         <div className="herdays-qrpayment-instructions">
           <h3 className="herdays-qrpayment-inst-title">Hướng dẫn thanh toán</h3>
-          
+
           <div className="herdays-qrpayment-steps">
             <div className="herdays-qrpayment-step-item">
-              <div className="step-icon">📱</div>
+              <div className="step-icon"><Smartphone size={20} /></div>
               <div className="step-text">
                 <strong>Bước 1</strong>
                 <p>Mở ứng dụng ngân hàng hoặc ví điện tử</p>
               </div>
             </div>
-            
+
             <div className="herdays-qrpayment-step-item">
-              <div className="step-icon">🔳</div>
+              <div className="step-icon"><QrCode size={20} /></div>
               <div className="step-text">
                 <strong>Bước 2</strong>
-                <p>Quét mã QR hoặc chuyển khoản thủ công</p>
+                <p>Quét mã QR và kiểm tra nội dung thanh toán trên màn hình</p>
               </div>
             </div>
-            
+
             <div className="herdays-qrpayment-step-item">
-              <div className="step-icon">✅</div>
+              <div className="step-icon"><CheckCircle size={20} /></div>
               <div className="step-text">
                 <strong>Bước 3</strong>
-                <p>Xác nhận thanh toán và chờ xử lý đơn hàng</p>
+                <p>Chờ admin duyệt giao dịch, màn hình sẽ tự chuyển sang thanh toán thành công</p>
               </div>
             </div>
-            
+
             <div className="herdays-qrpayment-step-item warning-step">
-              <div className="step-icon">🎧</div>
+              <div className="step-icon"><Headphones size={20} /></div>
               <div className="step-text">
                 <strong>Bạn chưa thanh toán?</strong>
-                <p>Đơn hàng sẽ được hủy tự động sau khi mã QR hết hạn.</p>
+                <p>Bấm Hủy giao dịch để hủy đơn hàng đang chờ thanh toán.</p>
               </div>
             </div>
           </div>

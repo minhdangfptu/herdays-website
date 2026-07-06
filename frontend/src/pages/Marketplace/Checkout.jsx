@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { cartApi, hasAuthSession } from '../../services/apiService.js'
+import { cartApi, hasAuthSession, orderApi } from '../../services/apiService.js'
+import { RefreshCw } from 'lucide-react'
 import './Checkout.scss'
 
 const formatCurrency = (value) =>
@@ -24,16 +25,31 @@ const normalizeCartItem = (item) => {
   }
 }
 
+const SUBSCRIPTION_PLANS = [
+  { months: 1, label: '1 tháng', discount: 0, badge: null },
+  { months: 3, label: '3 tháng', discount: 5, badge: 'Tiết kiệm 5%' },
+  { months: 6, label: '6 tháng', discount: 10, badge: 'Tiết kiệm 10%' },
+  { months: 12, label: '12 tháng', discount: 20, badge: 'Tốt nhất' },
+]
+
 export default function Checkout() {
+  const location = useLocation()
+  const initialSelectedBoxIds = useMemo(
+    () => Array.isArray(location.state?.selectedBoxIds) ? location.state.selectedBoxIds.map(String) : [],
+    [location.state]
+  )
   const [cartItems, setCartItems] = useState([])
+  const [selectedBoxIds, setSelectedBoxIds] = useState(initialSelectedBoxIds)
   const [loading, setLoading] = useState(true)
   const [updatingBoxId, setUpdatingBoxId] = useState('')
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [selectedPlan, setSelectedPlan] = useState(1)
   const navigate = useNavigate()
 
   useEffect(() => {
     if (!hasAuthSession()) {
-      toast.error('Vui lòng đăng nhập để xem giỏ hàng.')
+      toast.error('Vui lòng đăng nhập để xem sản phẩm thanh toán.')
       navigate('/login', { replace: true })
       return
     }
@@ -42,10 +58,16 @@ export default function Checkout() {
 
     cartApi.getCart()
       .then((cart) => {
-        if (isMounted) setCartItems((cart.items || []).map(normalizeCartItem))
+        if (!isMounted) return
+        const nextItems = (cart.items || []).map(normalizeCartItem)
+        const validIds = nextItems.map((item) => String(item.id))
+        const filteredSelectedIds = initialSelectedBoxIds.filter((boxId) => validIds.includes(String(boxId)))
+
+        setCartItems(nextItems)
+        setSelectedBoxIds(filteredSelectedIds.length > 0 ? filteredSelectedIds : validIds)
       })
       .catch((error) => {
-        if (isMounted) setErrorMessage(error.message || 'Không thể tải giỏ hàng.')
+        if (isMounted) setErrorMessage(error.message || 'Không thể tải sản phẩm thanh toán.')
       })
       .finally(() => {
         if (isMounted) setLoading(false)
@@ -54,12 +76,22 @@ export default function Checkout() {
     return () => {
       isMounted = false
     }
-  }, [navigate])
+  }, [initialSelectedBoxIds, navigate])
+
+  const selectedCartItems = useMemo(
+    () => cartItems.filter((item) => selectedBoxIds.includes(String(item.id))),
+    [cartItems, selectedBoxIds]
+  )
 
   const subtotal = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
-    [cartItems]
+    () => selectedCartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [selectedCartItems]
   )
+
+  const selectedPlanData = SUBSCRIPTION_PLANS.find(p => p.months === selectedPlan) || SUBSCRIPTION_PLANS[0]
+  const discountPercent = selectedPlanData.discount
+  const discountAmount = subtotal * discountPercent / 100
+  const orderTotal = subtotal - discountAmount
 
   const handleQuantityChange = async (boxId, quantity) => {
     if (quantity < 1) return
@@ -70,7 +102,7 @@ export default function Checkout() {
       const cart = await cartApi.updateItem({ boxId, quantity })
       setCartItems((cart.items || []).map(normalizeCartItem))
     } catch (error) {
-      toast.error(error.message || 'Không thể cập nhật giỏ hàng.')
+      toast.error(error.message || 'Không thể cập nhật sản phẩm thanh toán.')
     } finally {
       setUpdatingBoxId('')
     }
@@ -81,8 +113,12 @@ export default function Checkout() {
 
     try {
       const cart = await cartApi.removeItem(boxId)
-      setCartItems((cart.items || []).map(normalizeCartItem))
-      toast.success('Đã xóa sản phẩm khỏi giỏ hàng.')
+      const nextItems = (cart.items || []).map(normalizeCartItem)
+      setCartItems(nextItems)
+      setSelectedBoxIds((current) => (
+        current.filter((id) => nextItems.some((item) => String(item.id) === String(id)))
+      ))
+      toast.success('Đã xóa sản phẩm khỏi sản phẩm thanh toán.')
     } catch (error) {
       toast.error(error.message || 'Không thể xóa sản phẩm.')
     } finally {
@@ -90,18 +126,42 @@ export default function Checkout() {
     }
   }
 
-  const handleCheckout = () => {
-    if (cartItems.length === 0) {
-      toast.error('Giỏ hàng đang trống.')
+  const toggleSelectItem = (boxId) => {
+    const normalizedBoxId = String(boxId)
+    setSelectedBoxIds((current) => (
+      current.includes(normalizedBoxId)
+        ? current.filter((id) => id !== normalizedBoxId)
+        : [...current, normalizedBoxId]
+    ))
+  }
+
+  const handleCheckout = async () => {
+    if (selectedCartItems.length === 0) {
+      toast.error('Sản phẩm thanh toán đang trống.')
       return
     }
 
-    navigate('/qr-payment', {
-      state: {
-        amount: subtotal,
-        orderCode: `HD${Date.now().toString().slice(-6)}`
-      }
-    })
+    setIsCheckingOut(true)
+
+    try {
+      const order = await orderApi.createFromCart({
+        paymentMethod: 'bank_transfer',
+        boxIds: selectedBoxIds
+      })
+      setCartItems((current) => current.filter((item) => !selectedBoxIds.includes(String(item.id))))
+      setSelectedBoxIds([])
+      navigate('/qr-payment', {
+        state: {
+          amount: order.totalAmount,
+          orderCode: order.id ? `HD${String(order.id).slice(-6).toUpperCase()}` : `HD${Date.now().toString().slice(-6)}`,
+          orderId: order.id
+        }
+      })
+    } catch (error) {
+      toast.error(error.message || 'KhÃ´ng thá»ƒ táº¡o Ä‘Æ¡n hÃ ng.')
+    } finally {
+      setIsCheckingOut(false)
+    }
   }
 
   return (
@@ -118,7 +178,7 @@ export default function Checkout() {
           </p>
         </div>
 
-        {loading && <p className="herdays-checkout-status">Đang tải giỏ hàng...</p>}
+        {loading && <p className="herdays-checkout-status">Đang tải sản phẩm thanh toán...</p>}
         {errorMessage && <p className="herdays-checkout-status herdays-checkout-status--error">{errorMessage}</p>}
 
         {!loading && !errorMessage && (
@@ -130,11 +190,18 @@ export default function Checkout() {
                 </h2>
 
                 {cartItems.length === 0 ? (
-                  <p className="herdays-checkout-empty">Giỏ hàng của bạn đang trống.</p>
+                  <p className="herdays-checkout-empty">Sản phẩm thanh toán của bạn đang trống.</p>
                 ) : (
                   <div className="herdays-checkout-product-list">
                     {cartItems.map((item) => (
                       <div key={item.id} className="herdays-checkout-product-item">
+                        <label className="product-select" aria-label="Chon san pham thanh toan">
+                          <input
+                            type="checkbox"
+                            checked={selectedBoxIds.includes(String(item.id))}
+                            onChange={() => toggleSelectItem(item.id)}
+                          />
+                        </label>
                         <div className="product-image">
                           <img src={item.image} alt={item.name} />
                         </div>
@@ -175,6 +242,33 @@ export default function Checkout() {
             </div>
 
             <div className="herdays-checkout-right">
+              <div className="herdays-checkout-subscription-card herdays-checkout-card">
+                <h2 className="herdays-checkout-card-title">
+                  <RefreshCw size={18} />
+                  Đăng ký định kỳ
+                </h2>
+                <div className="subscription-plans">
+                  {SUBSCRIPTION_PLANS.map((plan) => (
+                    <button
+                      key={plan.months}
+                      type="button"
+                      className={`subscription-plan-btn ${selectedPlan === plan.months ? 'active' : ''}`}
+                      onClick={() => setSelectedPlan(plan.months)}
+                    >
+                      <span className="plan-label">{plan.label}</span>
+                      {/* {plan.badge && (
+                        <span className="plan-badge">{plan.badge}</span>
+                      )} */}
+                    </button>
+                  ))}
+                </div>
+                {/* {discountPercent > 0 && (
+                  <p className="subscription-savings">
+                    Tiết kiệm <strong>{formatCurrency(discountAmount)}</strong> với gói {selectedPlanData.label}
+                  </p>
+                )} */}
+              </div>
+
               <div className="herdays-checkout-card">
                 <h2 className="herdays-checkout-card-title">Tóm tắt đơn hàng</h2>
 
@@ -183,6 +277,13 @@ export default function Checkout() {
                     <span className="summary-label">Tạm tính</span>
                     <span className="summary-value">{formatCurrency(subtotal)}</span>
                   </div>
+
+                  {discountPercent > 0 && (
+                    <div className="summary-row">
+                      <span className="summary-label">Giảm giá ({discountPercent}%)</span>
+                      <span className="summary-value text-green">-{formatCurrency(discountAmount)}</span>
+                    </div>
+                  )}
 
                   <div className="summary-row">
                     <span className="summary-label">Phí vận chuyển</span>
@@ -193,16 +294,16 @@ export default function Checkout() {
 
                   <div className="summary-row total-row">
                     <span className="summary-label">Tổng cộng</span>
-                    <span className="summary-value total-price">{formatCurrency(subtotal)}</span>
+                    <span className="summary-value total-price">{formatCurrency(orderTotal)}</span>
                   </div>
 
                   <button
                     className="herdays-checkout-btn"
                     type="button"
-                    disabled={cartItems.length === 0}
+                    disabled={selectedCartItems.length === 0 || isCheckingOut}
                     onClick={handleCheckout}
                   >
-                    Xác nhận thanh toán
+                    {isCheckingOut ? 'Đang tạo đơn...' : 'Xác nhận thanh toán'}
                   </button>
 
                   <p className="summary-note">

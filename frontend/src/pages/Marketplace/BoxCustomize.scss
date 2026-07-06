@@ -1,0 +1,295 @@
+// Variables
+$primary-pink: #F176A9;
+$light-pink: #FFE8F3;
+$white: #FFFFFF;
+$dark-text: #1A1A1A;
+$gray-text: #666666;
+$border-color: #f3b1ce;
+
+$font-primary: 'Roboto', sans-serif;
+
+// ============================================
+// Page Setup
+// ============================================
+.box-customize-page {
+  background-color: $white;
+  font-family: $font-primary;
+  min-height: 100vh;
+  // ⚠️ QUAN TRỌNG: Đệm đáy 120px để list sản phẩm không bị thanh bottom bar che lấp
+  padding-bottom: 120px; 
+}
+
+.box-customize-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 30px 20px;
+}
+
+// ============================================
+// Breadcrumb & Header
+// ============================================
+.box-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 13px;
+  color: $gray-text;
+  margin-bottom: 30px;
+
+  a {
+    color: $gray-text;
+    text-decoration: none;
+    transition: color 0.2s;
+    &:hover { color: $primary-pink; }
+  }
+
+  svg { font-size: 16px; color: #999; }
+}
+
+.box-breadcrumb-active {
+  color: $dark-text;
+  font-weight: 500;
+}
+
+.box-header {
+  margin-bottom: 40px;
+  
+  .box-title {
+    font-size: 32px;
+    font-weight: 700;
+    color: $dark-text;
+    margin: 0 0 8px 0;
+  }
+  
+  .box-subtitle {
+    font-size: 16px;
+    color: $gray-text;
+    margin: 0;
+  }
+}
+
+.box-customize-status {
+  margin: 24px 0;
+  color: $gray-text;
+  font-weight: 700;
+}
+
+.box-customize-status--error {
+  color: #c63561;
+}
+
+// ============================================
+// Selection Card
+// ============================================
+.box-selection-card {
+  border-radius: 12px;
+  background-color: $white;
+  overflow: hidden;
+}
+
+.selection-card-header {
+  
+  h2 {
+    font-size: 24px;
+    font-weight: 700;
+    color: $dark-text;
+    margin: 0 0 10px 0;
+  }
+  
+  p {
+    font-size: 14px;
+    color: $gray-text;
+    margin: 0;
+  }
+}
+
+.selection-card-body {
+  padding: 0 30px 40px;
+}
+
+// Divider "Phân khúc"
+.category-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 30px 0;
+  
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid $border-color;
+  }
+  
+  span {
+    padding: 0 16px;
+    color: $primary-pink;
+    font-size: 14px;
+    font-weight: 600;
+  }
+}
+
+// ============================================
+// Product Grid
+// ============================================
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  
+  @media (max-width: 992px) { grid-template-columns: repeat(3, 1fr); }
+  @media (max-width: 768px) { grid-template-columns: repeat(2, 1fr); }
+  @media (max-width: 480px) { grid-template-columns: 1fr; }
+}
+
+.product-card {
+  display: block;
+  width: 100%;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  overflow: hidden;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  
+  // Hiệu ứng khi user click chọn sản phẩm
+  &.selected {
+    border-color: $primary-pink;
+    box-shadow: 0 0 0 2px rgba($primary-pink, 0.3);
+  }
+  
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+}
+
+.product-image {
+  background-color: $white;
+  padding: 16px;
+  display: flex;
+  justify-content: center;
+  border: 1px solid #f0f0f0;
+  border-bottom: none;
+  border-radius: 8px 8px 0 0;
+  
+  img {
+    width: 100%;
+    max-width: 140px;
+    aspect-ratio: 1/1;
+    object-fit: contain;
+  }
+}
+
+.product-info {
+  background-color: $light-pink;
+  padding: 12px;
+  border-radius: 0 0 8px 8px;
+  
+  .product-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: $dark-text;
+    margin: 0 0 8px 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  
+  .product-meta {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+  }
+
+  .product-tag {
+    font-size: 12px;
+    color: $primary-pink;
+    font-weight: 600;
+  }
+}
+
+// ============================================
+// Sticky Bottom Bar (Linh hồn của task này)
+// ============================================
+.sticky-bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background-color: $primary-pink;
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  padding: 20px 0;
+}
+
+.bar-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 16px;
+  }
+}
+
+.bar-left {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  
+  .bar-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: $white;
+  }
+  
+  .bar-price {
+    font-size: 24px;
+    font-weight: 700;
+    color: $white;
+  }
+}
+
+.bar-right {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  
+  .bar-count {
+    font-size: 15px;
+    font-weight: 500;
+    color: $white;
+  }
+  
+  .bar-checkout-btn {
+    background-color: $white;
+    color: $primary-pink;
+    border: none;
+    padding: 12px 32px;
+    border-radius: 24px;
+    font-size: 16px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s;
+    
+    &:hover {
+      transform: scale(1.05);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.65;
+      transform: none;
+    }
+  }
+}

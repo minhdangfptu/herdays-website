@@ -16,6 +16,19 @@ export const getQuestions = async (req, res, next) => {
   }
 };
 
+export const getLatestAnswer = async (req, res, next) => {
+  try {
+    const result = await quizService.getLatestQuizAnswer(req.user.id);
+
+    sendSuccess(res, {
+      message: 'Lấy câu trả lời quiz mới nhất thành công',
+      data: result
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const submitAnswers = async (req, res, next) => {
   try {
     const result = await quizService.submitQuizAnswers(

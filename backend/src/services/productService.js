@@ -10,19 +10,60 @@ const mapProduct = (p) => ({
   quantity: p.quantity,
   description: p.description,
   category: p.category,
-  type: 'product'
+  type: 'product',
+  createdAt: p.createdAt,
+  updatedAt: p.updatedAt
 });
+
+const mapBoxProduct = (item) => {
+  const product = item.productId;
+  const productId = product?._id || product;
+
+  return {
+    productId,
+    quantity: item.quantity,
+    productName: product?.productName,
+    category: product?.category,
+    thumbnail: product?.thumbnail,
+    price: product?.price
+  };
+};
 
 const mapBox = (b) => ({
   id: b._id,
   productName: b.boxName,
+  boxName: b.boxName,
   thumbnail: b.thumbnail,
   price: b.price,
   quantity: b.quantity,
   description: b.description,
   category: b.category,
-  type: 'box'
+  productCategories: b.productCategories || [],
+  products: (b.products || []).map(mapBoxProduct),
+  type: 'box',
+  createdAt: b.createdAt,
+  updatedAt: b.updatedAt
 });
+
+const buildBoxPayload = async (data) => {
+  if (!data.products) return data;
+
+  const productIds = [...new Set(data.products.map((item) => item.productId.toString()))];
+  const products = await Product.find({ _id: { $in: productIds } }).select('category');
+  if (products.length !== productIds.length) {
+    throw new HttpError(404, 'Some products were not found');
+  }
+
+  const productCategories = [
+    ...new Set(products.map((product) => product.category).filter(Boolean))
+  ];
+
+  return {
+    ...data,
+    productCategories,
+    category: data.category ?? productCategories[0] ?? null
+  };
+};
 
 // ─── READ ─────────────────────────────────────────────────────────────────────
 
@@ -93,7 +134,7 @@ export const listBoxes = async ({ search, category, sort = '-createdAt', page = 
 
   const skip = (page - 1) * limit;
   const [boxes, total] = await Promise.all([
-    Box.find(filter).sort(sort).skip(skip).limit(limit),
+    Box.find(filter).sort(sort).skip(skip).limit(limit).populate('products.productId'),
     Box.countDocuments(filter)
   ]);
 
@@ -132,19 +173,21 @@ export const deleteProduct = async (id) => {
 // ─── BOX CRUD ────────────────────────────────────────────────────────────────
 
 export const createBox = async (data) => {
-  const box = new Box(data);
+  const box = new Box(await buildBoxPayload(data));
   await box.save();
+  await box.populate('products.productId');
   return mapBox(box);
 };
 
 export const getBoxById = async (id) => {
-  const box = await Box.findById(id);
+  const box = await Box.findById(id).populate('products.productId');
   if (!box) throw new HttpError(404, 'Box not found');
   return mapBox(box);
 };
 
 export const updateBox = async (id, data) => {
-  const box = await Box.findByIdAndUpdate(id, data, { new: true, runValidators: true });
+  const box = await Box.findByIdAndUpdate(id, await buildBoxPayload(data), { new: true, runValidators: true })
+    .populate('products.productId');
   if (!box) throw new HttpError(404, 'Box not found');
   return mapBox(box);
 };

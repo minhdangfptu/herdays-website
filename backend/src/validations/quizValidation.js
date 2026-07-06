@@ -1,6 +1,11 @@
 import { QUIZ_TAGS } from '../models/quizQuestionModel.js';
 import HttpError from '../utils/httpError.js';
 
+const QUIZ_FINAL_ROLES = [
+  ...QUIZ_TAGS.filter((tag) => tag !== 'general'),
+  'partner'
+];
+
 export const validateQuizTag = (tag) => {
   if (!QUIZ_TAGS.includes(tag)) {
     throw new HttpError(400, 'Dữ liệu đầu vào không hợp lệ', [
@@ -30,6 +35,14 @@ const isValidAnswer = (answer) => (
 export const validateSubmitQuiz = (body) => {
   const payload = body && typeof body === 'object' && !Array.isArray(body) ? body : {};
   const errors = [];
+  const finalRole = typeof payload.finalRole === 'string' ? payload.finalRole.trim() : '';
+
+  if (finalRole && !QUIZ_FINAL_ROLES.includes(finalRole)) {
+    errors.push({
+      field: 'finalRole',
+      message: `finalRole must be one of: ${QUIZ_FINAL_ROLES.join(', ')}`
+    });
+  }
 
   if (!Array.isArray(payload.questionAnswerContent) || payload.questionAnswerContent.length === 0) {
     errors.push({
@@ -69,6 +82,7 @@ export const validateSubmitQuiz = (body) => {
   }
 
   return {
+    finalRole: finalRole || null,
     questionAnswerContent
   };
 };

@@ -129,8 +129,9 @@ $border-color: #EEEEEE;
 
     .icon {
       width: 30px;
+      display: flex;
+      align-items: center;
       color: $primary-pink;
-      font-size: 18px;
     }
 
     .label {
@@ -180,9 +181,8 @@ $border-color: #EEEEEE;
 .herdays-qrpayment-qr-card {
   background-color: $white;
   border-radius: 24px;
-  padding: 40px;
+  padding: 30px;
   text-align: center;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.05);
   max-width: 400px;
   width: 100%;
 
@@ -207,7 +207,6 @@ $border-color: #EEEEEE;
   }
 
   .herdays-qrpayment-timer-section {
-    margin-bottom: 24px;
 
     p {
       font-size: 14px;
@@ -216,9 +215,48 @@ $border-color: #EEEEEE;
     }
 
     .herdays-qrpayment-timer-countdown {
-      font-size: 24px;
+      font-size: 40px;
       font-weight: 700;
       color: $primary-pink;
+    }
+
+    &.is-expired {
+      p,
+      .herdays-qrpayment-timer-countdown {
+        color: #E74C3C;
+      }
+    }
+  }
+
+  .herdays-qrpayment-status-error {
+    color: #E74C3C;
+    font-size: 13px;
+    font-weight: 600;
+    margin: 12px 0 0;
+  }
+
+  .herdays-qrpayment-cancel-btn {
+    width: 100%;
+    min-height: 42px;
+    margin-top: 18px;
+    border: 1px solid #F2A7A7;
+    border-radius: 10px;
+    background: #FFF5F5;
+    color: #D64545;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 700;
+    transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+
+    &:hover:not(:disabled) {
+      background: #FFE8E8;
+      border-color: #E74C3C;
+      transform: translateY(-1px);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
     }
   }
 
@@ -267,9 +305,13 @@ $border-color: #EEEEEE;
     .step-icon {
       width: 40px;
       height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       background-color: $bg-pink-light;
       color: $primary-pink;
       border-radius: 10px;
+      flex-shrink: 0;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -302,5 +344,66 @@ $border-color: #EEEEEE;
         color: #E74C3C;
       }
     }
+  }
+}
+
+.herdays-qrpayment-result-card {
+  align-self: center;
+  background: $white;
+  border-radius: 20px;
+  box-shadow: 0 16px 42px rgba(0, 0, 0, 0.08);
+  max-width: 460px;
+  padding: 36px;
+  text-align: center;
+  width: 100%;
+
+  h1 {
+    color: $text-main;
+    font-size: 28px;
+    margin: 16px 0 10px;
+  }
+
+  p {
+    color: $text-light;
+    font-size: 15px;
+    line-height: 1.6;
+    margin: 0 0 24px;
+  }
+}
+
+.herdays-qrpayment-result-icon {
+  align-items: center;
+  border-radius: 999px;
+  display: inline-flex;
+  height: 76px;
+  justify-content: center;
+  width: 76px;
+
+  &.success {
+    background: #ECFDF3;
+    color: #16A34A;
+  }
+
+  &.cancelled {
+    background: #FFF5F5;
+    color: #D64545;
+  }
+}
+
+.herdays-qrpayment-primary-btn {
+  min-height: 44px;
+  border: none;
+  border-radius: 10px;
+  background: $primary-pink;
+  color: $white;
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 700;
+  padding: 0 28px;
+  transition: background-color 0.2s, transform 0.2s;
+
+  &:hover {
+    background: $dark-pink;
+    transform: translateY(-1px);
   }
 }

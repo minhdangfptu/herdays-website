@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import { ORDER_STATUSES, ORDER_STATUS } from '../constants/orderStatus.js';
 
 const orderItemSchema = new mongoose.Schema(
   {
@@ -50,8 +51,8 @@ const orderSchema = new mongoose.Schema(
     },
     orderStatus: {
       type: String,
-      enum: ['pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'Cancel'],
-      default: 'pending'
+      enum: ORDER_STATUSES,
+      default: ORDER_STATUS.PENDING
     },
     lovelyMessage: {
       type: String,
@@ -62,6 +63,10 @@ const orderSchema = new mongoose.Schema(
       default: null
     },
     endDate: {
+      type: Date,
+      default: null
+    },
+    deleteAt: {
       type: Date,
       default: null
     }
@@ -80,6 +85,7 @@ const orderSchema = new mongoose.Schema(
 orderSchema.index({ userId: 1 });
 orderSchema.index({ orderStatus: 1 });
 orderSchema.index({ createdAt: -1 });
+orderSchema.index({ deleteAt: 1 }, { expireAfterSeconds: 0 });
 
 const Order = mongoose.model('Order', orderSchema);
 

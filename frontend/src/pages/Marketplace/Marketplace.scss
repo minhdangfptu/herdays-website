@@ -1,25 +1,127 @@
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
+
+$font-dancing: 'Dancing Script', cursive;
+
 .marketplace-page {
   min-height: 100vh;
-  padding: 48px 24px 80px;
   background: #fff7fa;
   color: #333;
   font-family: 'Roboto', sans-serif;
 }
 
+// Hero Banner
+.marketplace-hero-banner {
+  position: relative;
+  width: 100%;
+  margin-bottom: 28px;
+  overflow: hidden;
+
+  .hero-banner-image {
+    display: block;
+    width: 100%;
+    height: 92vh;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  .hero-banner-content {
+    position: absolute;
+    top: 50%;
+    left: calc((100vw - 1100px) / 2 + 24px);
+    transform: translateY(-50%);
+    text-align: left;
+    max-width: 400px;
+
+    @media (max-width: 1100px) {
+      left: 40px;
+    }
+  }
+
+  .hero-banner-eyebrow {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #ed77a5;
+    margin: 0 0 6px;
+  }
+
+  .hero-banner-title {
+    margin: 0 0 10px;
+    font-size: clamp(30px, 3vw, 56px);
+    font-weight: 800;
+    color: #F176A9;
+    line-height: 1.15;
+  }
+
+  .hero-banner-subtitle {
+    margin: 0 0 20px;
+    font-size: 0.95rem;
+    color: #68717c;
+    line-height: 1.5;
+  }
+
+  .hero-banner-btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 999px;
+    background: #ed77a5;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: #d4628e;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .hero-banner-image {
+      height: 200px;
+    }
+
+    .hero-banner-content {
+      left: 20px;
+      max-width: 220px;
+    }
+
+    .hero-banner-title {
+      font-size: 20px;
+    }
+
+    .hero-banner-subtitle {
+      font-size: 0.85rem;
+    }
+
+    .hero-banner-btn {
+      padding: 10px 20px;
+      font-size: 0.85rem;
+    }
+  }
+}
+
 .marketplace-hero {
   display: flex;
-  max-width: 1120px;
-  margin: 0 auto 28px;
+  max-width: 1100px;
+  margin: 28px auto 28px;
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
+  padding: 0 24px;
+
+  @media (max-width: 720px) {
+    padding: 0 16px;
+  }
 
   h1 {
     max-width: 680px;
     margin: 8px 0 12px;
     color: #ed77a5;
-    font-size: clamp(32px, 5vw, 52px);
+    font-size: clamp(32px, 5vw, 48px);
     line-height: 1.05;
+    font-weight: 600;
   }
 
   p {
@@ -27,6 +129,37 @@
     margin: 0;
     color: #5f6670;
     line-height: 1.6;
+  }
+}
+
+.marketplace-hero__goals {
+  display: flex;
+  max-width: 460px;
+  flex: 0 0 420px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.marketplace-hero__goal {
+  display: inline-flex;
+  min-height: 38px;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(237, 119, 165, 0.26);
+  border-radius: 999px;
+  background: #fff;
+  color: #9b4a69;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.25;
+  padding: 8px 14px;
+  white-space: nowrap;
+
+  span {
+    color: #ed77a5;
+    font-size: 0.78rem;
+    text-transform: uppercase;
   }
 }
 
@@ -53,10 +186,11 @@
 
 .marketplace-categories {
   display: flex;
-  max-width: 1120px;
+  max-width: 1100px;
   margin: 0 auto 28px;
   flex-wrap: wrap;
   gap: 10px;
+  padding: 0 24px;
 
   span {
     border: 1px solid rgba(237, 119, 165, 0.26);
@@ -70,7 +204,7 @@
 }
 
 .marketplace-status {
-  max-width: 1120px;
+  max-width: 1100px;
   margin: 28px auto;
   color: #5f6670;
   font-weight: 600;
@@ -80,12 +214,40 @@
   color: #c63561;
 }
 
+.marketplace-section {
+  max-width: 1100px;
+  margin: 0 auto 34px;
+}
+
+.marketplace-section__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 24px 18px;
+
+  h2 {
+    margin: 0;
+    color: #2f343a;
+    font-size: 1.35rem;
+    font-weight: 800;
+  }
+
+  a {
+    color: #ed77a5;
+    font-size: 0.92rem;
+    font-weight: 700;
+    text-decoration: none;
+  }
+}
+
 .marketplace-grid {
   display: grid;
-  max-width: 1120px;
+  max-width: 1100px;
   margin: 0 auto;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 22px;
+  padding: 0 24px;
 }
 
 .marketplace-product {
@@ -142,6 +304,19 @@
   }
 }
 
+.marketplace-product__button-link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  padding: 11px 14px;
+  background: #fff0f6;
+  color: #ed77a5;
+  font-weight: 700;
+  text-decoration: none;
+}
+
 .marketplace-product__category {
   margin: 0 0 8px;
   color: #9b4a69;
@@ -176,13 +351,111 @@
   }
 }
 
-@media (max-width: 720px) {
-  .marketplace-page {
-    padding: 32px 16px 64px;
+// Footer Banner
+.marketplace-footer-banner {
+  position: relative;
+  width: 100%;
+  margin-top: 48px;
+  overflow: hidden;
+
+  .footer-banner-image {
+    display: block;
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+    object-position: center;
   }
+
+  .footer-banner-content {
+    position: absolute;
+    top: 50%;
+    left: calc((100vw - 1100px) / 2 + 24px);
+    transform: translateY(-50%);
+    text-align: left;
+    max-width: 480px;
+
+    @media (max-width: 1100px) {
+      left: 40px;
+    }
+  }
+
+  .footer-banner-title {
+    margin: 0 0 12px;
+    font-size: clamp(24px, 3.5vw, 36px);
+    font-weight: 800;
+    color: #2f343a;
+    line-height: 1.2;
+
+    .footer-banner-title-herdays {
+      font-family: $font-dancing;
+      font-weight: 700;
+      color: #ed77a5;
+    }
+  }
+
+  .footer-banner-subtitle {
+    margin: 0 0 20px;
+    font-size: 0.95rem;
+    color: #68717c;
+    line-height: 1.6;
+  }
+
+  .footer-banner-btn {
+    display: inline-block;
+    padding: 12px 28px;
+    border-radius: 999px;
+    background: #ed77a5;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: background 0.2s ease;
+
+    &:hover {
+      background: #d4628e;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .footer-banner-image {
+      height: 200px;
+    }
+
+    .footer-banner-content {
+      left: 20px;
+      max-width: 260px;
+    }
+
+    .footer-banner-title {
+      font-size: 22px;
+    }
+
+    .footer-banner-subtitle {
+      font-size: 0.85rem;
+    }
+
+    .footer-banner-btn {
+      padding: 10px 20px;
+      font-size: 0.85rem;
+    }
+  }
+}
+
+@media (max-width: 720px) {
 
   .marketplace-hero {
     display: block;
+  }
+
+  .marketplace-hero__goals {
+    max-width: none;
+    margin-top: 18px;
+    justify-content: flex-start;
+  }
+
+  .marketplace-hero__goal {
+    max-width: 100%;
+    white-space: normal;
   }
 
   .marketplace-cart-link {
