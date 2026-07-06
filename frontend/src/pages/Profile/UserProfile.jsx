@@ -6,6 +6,7 @@ import { Phone, Mail, Calendar, Briefcase, MapPin, Heart } from "lucide-react";
 import DeleteAccountModal from "../../components/DeleteAccountModal";
 import toast from "react-hot-toast";
 import { profileApi } from "../../services/apiService.js";
+import avatarDefault from "../../assets/avatar_default.png";
 import "./UserProfile.scss";
 
 const targetStatusLabels = {
@@ -63,16 +64,6 @@ const mapProfileToForm = (profile) => ({
   joinDate: "",
 });
 
-const getInitials = (name, email) => {
-  const source = name || email || "Herdays";
-  const words = source
-    .replace(/@.*/, "")
-    .split(/\s+/)
-    .filter(Boolean);
-
-  if (words.length >= 2) return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase();
-  return source.slice(0, 2).toUpperCase();
-};
 
 export default function UserProfile() {
   const navigate = useNavigate();
@@ -187,6 +178,7 @@ export default function UserProfile() {
       icon: Mail,
       readValue: formData.email,
       readOnly: true,
+      placeholder: "Chưa cập nhật",
     },
     {
       label: "Số điện thoại",
@@ -194,7 +186,7 @@ export default function UserProfile() {
       icon: Phone,
       readValue: formData.phone,
       inputMode: "tel",
-      placeholder: "Ví dụ: 0912345678",
+      placeholder: "Chưa cập nhật",
     },
     {
       label: "Ngày sinh",
@@ -202,6 +194,7 @@ export default function UserProfile() {
       icon: Calendar,
       readValue: formData.dateOfBirth,
       readOnly: true,
+      placeholder: "Chưa cập nhật",
     },
     {
       label: "Hạng tài khoản",
@@ -209,6 +202,7 @@ export default function UserProfile() {
       icon: Briefcase,
       readValue: formData.accountType,
       readOnly: true,
+      placeholder: "Chưa cập nhật",
     },
     {
       label: "Mục tiêu",
@@ -216,6 +210,7 @@ export default function UserProfile() {
       icon: Heart,
       readValue: formData.goal,
       readOnly: true,
+      placeholder: "Chưa cập nhật",
       changeGoalText: "Thay đổi mục tiêu",
     },
     {
@@ -224,12 +219,14 @@ export default function UserProfile() {
       icon: Calendar,
       readValue: formData.joinDate,
       readOnly: true,
+      placeholder: "Chưa cập nhật",
     },
     {
       label: "Địa chỉ",
       field: "address",
       icon: MapPin,
       readValue: formData.address,
+      placeholder: "Chưa cập nhật",
     },
   ];
 
@@ -289,13 +286,13 @@ export default function UserProfile() {
                   <FiEdit2 size={16} />
                   Chỉnh sửa
                 </button>
-                <button
+                {/* <button
                   className="user-profile-btn user-profile-btn--quiz"
                   onClick={handleRetakeQuiz}
                 >
                   <Heart size={16} />
                   Trả lời quiz lại
-                </button>
+                </button> */}
                 <button
                   className="user-profile-btn user-profile-btn--delete"
                   onClick={() => setShowDeleteModal(true)}
@@ -311,12 +308,11 @@ export default function UserProfile() {
         <div className="grid md:grid-cols-[1fr_2fr] gap-6 lg:gap-10">
           <div className="user-profile-card">
             <div className="user-profile-avatar-section">
-              <div className="user-profile-avatar user-profile-avatar--fallback" aria-hidden="true">
-                {getInitials(userData.displayName, userData.email)}
-              </div>
-              <div className="user-profile-avatar-edit">
-                <FiEdit2 size={14} />
-              </div>
+              <img
+                src={avatarDefault}
+                alt="Avatar"
+                className="user-profile-avatar"
+              />
             </div>
 
             <h2 className="user-profile-name">{userData.displayName}</h2>
@@ -336,11 +332,15 @@ export default function UserProfile() {
             <div className="user-profile-details-mini">
               <div className="user-profile-detail-item">
                 <span className="user-profile-detail-label">Số điện thoại</span>
-                <span className="user-profile-detail-value">{formData.phone}</span>
+                <span className={formData.phone ? "user-profile-detail-value" : "user-profile-detail-value user-profile-detail-value--empty"}>
+                  {formData.phone || "Chưa cập nhật"}
+                </span>
               </div>
               <div className="user-profile-detail-item">
                 <span className="user-profile-detail-label">Mục tiêu</span>
-                <span className="user-profile-detail-value">{formData.goal}</span>
+                <span className={formData.goal ? "user-profile-detail-value" : "user-profile-detail-value user-profile-detail-value--empty"}>
+                  {formData.goal || "Chưa cập nhật"}
+                </span>
               </div>
             </div>
           </div>
@@ -373,7 +373,9 @@ export default function UserProfile() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <span className="user-profile-detail-value">{readValue}</span>
+                      <span className={readValue ? "user-profile-detail-value" : "user-profile-detail-value user-profile-detail-value--empty"}>
+                        {readValue || placeholder || "Chưa cập nhật"}
+                      </span>
                       {changeGoalText && (
                         <button className="user-profile-goal-link" type="button" onClick={handleRetakeQuiz}>{changeGoalText}</button>
                       )}

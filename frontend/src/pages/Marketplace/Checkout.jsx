@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { cartApi, hasAuthSession } from '../../services/apiService.js'
+import { cartApi, hasAuthSession, orderApi } from '../../services/apiService.js'
 import './Checkout.scss'
 
 const formatCurrency = (value) =>
@@ -28,6 +28,7 @@ export default function Checkout() {
   const [cartItems, setCartItems] = useState([])
   const [loading, setLoading] = useState(true)
   const [updatingBoxId, setUpdatingBoxId] = useState('')
+  const [isCheckingOut, setIsCheckingOut] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const navigate = useNavigate()
 
@@ -90,18 +91,29 @@ export default function Checkout() {
     }
   }
 
-  const handleCheckout = () => {
+  const handleCheckout = async () => {
     if (cartItems.length === 0) {
       toast.error('Giỏ hàng đang trống.')
       return
     }
 
-    navigate('/qr-payment', {
-      state: {
-        amount: subtotal,
-        orderCode: `HD${Date.now().toString().slice(-6)}`
-      }
-    })
+    setIsCheckingOut(true)
+
+    try {
+      const order = await orderApi.createFromCart({ paymentMethod: 'bank_transfer' })
+      setCartItems([])
+      navigate('/qr-payment', {
+        state: {
+          amount: order.totalAmount,
+          orderCode: order.id ? `HD${String(order.id).slice(-6).toUpperCase()}` : `HD${Date.now().toString().slice(-6)}`,
+          orderId: order.id
+        }
+      })
+    } catch (error) {
+      toast.error(error.message || 'KhÃ´ng thá»ƒ táº¡o Ä‘Æ¡n hÃ ng.')
+    } finally {
+      setIsCheckingOut(false)
+    }
   }
 
   return (
@@ -199,10 +211,10 @@ export default function Checkout() {
                   <button
                     className="herdays-checkout-btn"
                     type="button"
-                    disabled={cartItems.length === 0}
+                    disabled={cartItems.length === 0 || isCheckingOut}
                     onClick={handleCheckout}
                   >
-                    Xác nhận thanh toán
+                    {isCheckingOut ? 'Đang tạo đơn...' : 'Xác nhận thanh toán'}
                   </button>
 
                   <p className="summary-note">

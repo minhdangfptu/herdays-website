@@ -95,6 +95,8 @@ export const submitQuizAnswers = async (userId, payload) => {
     : [audienceAnswerItem?.answer];
   const rawAudienceAnswer = audienceAnswerValues.length === 1 ? audienceAnswerValues[0] : null;
 
+  const toLower = (v) => (v || '').toLowerCase().trim();
+
   const roleQuestion = await QuizQuestion.findOne({
     tag: 'general',
     index: ROLE_QUESTION_INDEX,
@@ -103,9 +105,9 @@ export const submitQuizAnswers = async (userId, payload) => {
 
   let finalRole = payload.finalRole;
 
-  if (!finalRole && rawAudienceAnswer === PARTNER_AUDIENCE_ANSWER) {
+  if (!finalRole && toLower(rawAudienceAnswer) === toLower(PARTNER_AUDIENCE_ANSWER)) {
     finalRole = PARTNER_ROLE;
-  } else if (!finalRole && rawAudienceAnswer === APP_USER_AUDIENCE_ANSWER) {
+  } else if (!finalRole && toLower(rawAudienceAnswer) === toLower(APP_USER_AUDIENCE_ANSWER)) {
     const roleAnswerItem = payload.questionAnswerContent.find(
       ({ question }) => question === roleQuestion?.content
     );
@@ -113,7 +115,9 @@ export const submitQuizAnswers = async (userId, payload) => {
       ? roleAnswerItem.answer
       : [roleAnswerItem?.answer];
     const rawRoleAnswer = roleAnswerValues.length === 1 ? roleAnswerValues[0] : null;
-    finalRole = ROLE_BY_GENERAL_ANSWER[rawRoleAnswer];
+    finalRole = ROLE_BY_GENERAL_ANSWER[rawRoleAnswer] || Object.entries(ROLE_BY_GENERAL_ANSWER).find(
+      ([, v]) => toLower(v) === toLower(rawRoleAnswer)
+    )?.[0];
   }
 
   if (!finalRole) {

@@ -1,7 +1,9 @@
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import toast from 'react-hot-toast'
 import herdaysLogo from '../../assets/herdays-logo.png'
 import { authApi, setAuthSession } from '../../services/apiService.js'
+import { translateError } from '../../utils/translateError.js'
 import FacebookAuthButton from './FacebookAuthButton.jsx'
 import GoogleAuthButton from './GoogleAuthButton.jsx'
 import './LoginPage.scss'
@@ -10,7 +12,6 @@ function FieldIcon({ type }) {
   if (type === 'email') {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
-        <circle cx="12" cy="12" r="8.5" />
         <path d="M15.8 15.6c-1.2 0-1.8-.7-1.8-1.7v-4.1m0 0a3.2 3.2 0 1 0 0 4.4m0-4.4v4.1c0 1 .6 1.7 1.8 1.7 2.1 0 3.7-1.8 3.7-4.3A7.6 7.6 0 1 0 16.6 17" />
       </svg>
     )
@@ -109,16 +110,17 @@ function CycleChart() {
 function LoginForm() {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
   const navigate = useNavigate()
 
   const completeLogin = useCallback((result) => {
     setAuthSession(result)
+    toast.success(`Đăng nhập thành công`)
     navigate(result.user.role === 'admin' ? '/admin/blog' : '/home')
   }, [navigate])
 
   const completeSocialLogin = useCallback((result) => {
     setAuthSession(result)
+    toast.success(`Đăng nhập thành công`)
     const shouldCompleteQuiz = result.isNewUser || !result.user.targetStatus
     if (result.user.role === 'admin') {
       navigate('/admin/blog')
@@ -128,18 +130,17 @@ function LoginForm() {
   }, [navigate])
 
   const handleGoogleError = useCallback((message) => {
-    setErrorMessage(message || 'Không thể đăng nhập bằng Google. Vui lòng thử lại.')
+    toast.error(message || 'Không thể đăng nhập bằng Google. Vui lòng thử lại.')
   }, [])
 
   const handleFacebookError = useCallback((message) => {
-    setErrorMessage(message || 'Không thể đăng nhập bằng Facebook. Vui lòng thử lại.')
+    toast.error(message || 'Không thể đăng nhập bằng Facebook. Vui lòng thử lại.')
   }, [])
 
   async function handleSubmit(event) {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
     setIsSubmitting(true)
-    setErrorMessage('')
 
     try {
       const result = await authApi.login({
@@ -148,7 +149,7 @@ function LoginForm() {
       })
       completeLogin(result)
     } catch (error) {
-      setErrorMessage(error.message)
+      toast.error(translateError(error.message))
     } finally {
       setIsSubmitting(false)
     }
@@ -157,7 +158,7 @@ function LoginForm() {
   return (
     <section className="login-form-panel" aria-labelledby="login-title">
       <div className="login-form-panel__content">
-        <img className="brand-logo" src={herdaysLogo} alt="Herdays" />
+        <img style={{marginTop: '40px'}} className="brand-logo" src={herdaysLogo} alt="Herdays" />
 
         <div className="login-copy">
           <h1 id="login-title">Đăng nhập</h1>
@@ -207,10 +208,9 @@ function LoginForm() {
               <input type="checkbox" name="remember" />
               <span>Ghi nhớ tôi</span>
             </label>
-            <a href="#forgot-password">Quên mật khẩu?</a>
+            <a type="button" onClick={() => navigate('/forgot-password')}>Quên mật khẩu?</a>
           </div>
 
-          {errorMessage && <p className="login-error" role="alert">{errorMessage}</p>}
           <button className="submit-button" type="submit" disabled={isSubmitting}>
             {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
           </button>

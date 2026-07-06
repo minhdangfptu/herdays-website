@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 import HttpError from '../utils/httpError.js';
 
 const VALID_STATUSES = ['pending', 'confirmed', 'preparing', 'delivering', 'delivered', 'Cancel'];
+const VALID_PAYMENT_METHODS = ['bank_transfer', 'qr_transfer', 'cod'];
 
 export const validateOrderId = (id) => {
   if (!mongoose.isValidObjectId(id)) throw new HttpError(400, 'orderId is invalid');
@@ -37,4 +38,23 @@ export const validateOrderStatus = (status) => {
     throw new HttpError(400, `status must be one of: ${VALID_STATUSES.join(', ')}`);
   }
   return trimmed;
+};
+
+export const validateCreateOrder = (body) => {
+  const payload = body && typeof body === 'object' && !Array.isArray(body) ? body : {};
+  const result = {};
+
+  if (payload.paymentMethod !== undefined && payload.paymentMethod !== null && payload.paymentMethod !== '') {
+    const paymentMethod = String(payload.paymentMethod).trim();
+    if (!VALID_PAYMENT_METHODS.includes(paymentMethod)) {
+      throw new HttpError(400, `paymentMethod must be one of: ${VALID_PAYMENT_METHODS.join(', ')}`);
+    }
+    result.paymentMethod = paymentMethod;
+  }
+
+  if (payload.lovelyMessage !== undefined && payload.lovelyMessage !== null) {
+    result.lovelyMessage = String(payload.lovelyMessage).trim().slice(0, 500);
+  }
+
+  return result;
 };

@@ -46,6 +46,27 @@ const validateCategory = (category) => {
   return trimmed;
 };
 
+const validateBoxProducts = (products) => {
+  if (products === undefined || products === null) return [];
+  if (!Array.isArray(products)) throw new HttpError(400, 'products must be an array');
+
+  return products
+    .filter(Boolean)
+    .map((item, index) => {
+      const productId = item.productId || item.id;
+      if (!mongoose.isValidObjectId(productId)) {
+        throw new HttpError(400, `products.${index}.productId is invalid`);
+      }
+
+      const quantity = Number(item.quantity ?? 1);
+      if (!Number.isInteger(quantity) || quantity < 1) {
+        throw new HttpError(400, `products.${index}.quantity must be an integer >= 1`);
+      }
+
+      return { productId, quantity };
+    });
+};
+
 export const validateBoxId = (id) => validateObjectId(id, 'boxId');
 
 export const validateCreateBox = (body) => ({
@@ -54,11 +75,12 @@ export const validateCreateBox = (body) => ({
   price: validatePrice(body.price),
   quantity: validateQuantity(body.quantity),
   description: body.description !== undefined ? String(body.description).trim() : null,
-  category: validateCategory(body.category)
+  category: validateCategory(body.category),
+  products: validateBoxProducts(body.products)
 });
 
 export const validateUpdateBox = (body) => {
-  const allowedFields = ['boxName', 'thumbnail', 'price', 'quantity', 'description', 'category'];
+  const allowedFields = ['boxName', 'thumbnail', 'price', 'quantity', 'description', 'category', 'products'];
   const hasUpdate = allowedFields.some((field) => body[field] !== undefined);
   if (!hasUpdate) throw new HttpError(400, 'At least one box field is required');
 
@@ -69,5 +91,6 @@ export const validateUpdateBox = (body) => {
   if (body.quantity !== undefined) update.quantity = validateQuantity(body.quantity);
   if (body.description !== undefined) update.description = String(body.description).trim();
   if (body.category !== undefined) update.category = validateCategory(body.category);
+  if (body.products !== undefined) update.products = validateBoxProducts(body.products);
   return update;
 };

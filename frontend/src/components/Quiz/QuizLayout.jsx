@@ -1,7 +1,7 @@
 import quizBg from '../../assets/quiz_bg.png';
-const QuizLayout = ({ children, onBack, onNext, isLastStep, isNextDisabled = false, isSubmitting = false }) => {
+const QuizLayout = ({ children, onBack, onNext, isLastStep, isNextDisabled = false, isSubmitting = false, isPersonalizing = false }) => {
   return (
-    <div 
+    <div
       className="min-h-screen flex flex-col items-center justify-center bg-cover bg-center bg-[#fdf2f8]"
       style={{ backgroundImage: `url(${quizBg})` }}
     >
@@ -16,7 +16,8 @@ const QuizLayout = ({ children, onBack, onNext, isLastStep, isNextDisabled = fal
             <button
               type="button"
               onClick={onBack}
-              className="min-w-[140px] rounded-full border border-[#F176A9] bg-white px-8 py-3 font-semibold text-[#F176A9] transition-all hover:bg-[#FFF0F5] active:scale-95"
+              disabled={isPersonalizing}
+              className="min-w-[140px] rounded-full border border-[#F176A9] bg-white px-8 py-3 font-semibold text-[#F176A9] transition-all hover:bg-[#FFF0F5] active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
             >
               Quay lại
             </button>
@@ -25,10 +26,10 @@ const QuizLayout = ({ children, onBack, onNext, isLastStep, isNextDisabled = fal
             type="button"
             style={{ fontWeight: '600' }}
             onClick={onNext}
-            disabled={isNextDisabled || isSubmitting}
+            disabled={isNextDisabled || isSubmitting || isPersonalizing}
             className="min-w-[200px] rounded-full bg-[#F176A9] px-16 py-3 font-bold text-white shadow-md transition-all hover:bg-[#D96593] active:scale-95 disabled:cursor-not-allowed disabled:opacity-60"
           >
-            {isSubmitting ? "Đang lưu..." : isLastStep ? "Hoàn thành" : "Tiếp tục"}
+            {isPersonalizing ? 'Đang cá nhân hoá...' : isSubmitting ? 'Đang lưu...' : isLastStep ? 'Hoàn thành' : 'Tiếp tục'}
           </button>
         </div>
 

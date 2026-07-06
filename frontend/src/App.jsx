@@ -30,6 +30,7 @@ import AdminUsersPage from "./pages/Admin/AdminUsersPage.jsx";
 import AdminUserDetailPage from "./pages/Admin/AdminUserDetailPage.jsx";
 import AdminContactsPage from "./pages/Admin/AdminContactsPage.jsx";
 import AdminProductsPage from "./pages/Admin/AdminProductsPage.jsx";
+import AdminOrdersPage from "./pages/Admin/AdminOrdersPage.jsx";
 import QuizPage from "./pages/QuizPage.jsx";
 import ChatWithAI from "./pages/AI/ChatWithAI.jsx";
 import AboutUs from "./pages/Common/AboutUs.jsx";
@@ -60,7 +61,10 @@ function AdminLayout() {
             <Route index element={<AdminHome />} />
             <Route path="blog" element={<AdminPostsPage />} />
             <Route path="posts" element={<Navigate to="/admin/blog" replace />} />
-            <Route path="shop" element={<AdminProductsPage />} />
+            <Route path="shop" element={<Navigate to="/admin/marketplace/products" replace />} />
+            <Route path="marketplace" element={<Navigate to="/admin/marketplace/products" replace />} />
+            <Route path="marketplace/products" element={<AdminProductsPage />} />
+            <Route path="marketplace/orders" element={<AdminOrdersPage />} />
             <Route path="herbotai" element={<div>HerbotAI Admin (coming soon)</div>} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="users/:userId" element={<AdminUserDetailPage />} />

@@ -111,6 +111,7 @@ function QuizPage() {
   const [selectedRoleTag, setSelectedRoleTag] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPersonalizing, setIsPersonalizing] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
 
   useEffect(() => {
@@ -191,12 +192,20 @@ function QuizPage() {
     setErrorMessage('');
     try {
       const result = await quizApi.submitAnswers(questionAnswerContent, finalRole);
-      toast.success(result.message || 'Đã lưu câu trả lời quiz.');
+      setIsPersonalizing(true);
+      const loadingToastId = toast.loading('Đang cá nhân hoá trải nghiệm cho bạn ...');
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+      toast.success(result.message || 'Chào mừng bạn đến với Herdays', {
+        icon: '💖',
+        id: loadingToastId,
+        duration: 5000
+      });
       navigate(returnTo, { replace: true });
     } catch (error) {
       setErrorMessage(getApiErrorMessage(error, 'Không thể lưu câu trả lời quiz.'));
     } finally {
       setIsSubmitting(false);
+      setIsPersonalizing(false);
     }
   };
 
@@ -243,7 +252,10 @@ function QuizPage() {
   };
 
   const handleBack = currentIndex > 0
-    ? () => setCurrentIndex((value) => Math.max(0, value - 1))
+    ? () => {
+        setCurrentIndex((value) => Math.max(0, value - 1));
+        setIsPersonalizing(false);
+      }
     : null;
 
   const renderInteractiveArea = () => {
@@ -304,6 +316,7 @@ function QuizPage() {
       isLastStep={isSubmitStep}
       isNextDisabled={isNextDisabled || isLoading}
       isSubmitting={isSubmitting}
+      isPersonalizing={isPersonalizing}
     >
       {renderInteractiveArea()}
     </QuizLayout>

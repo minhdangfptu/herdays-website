@@ -228,6 +228,7 @@ $font-dancing: 'Dancing Script', cursive;
   font-size: 14px;
   font-weight: 600;
   transition: opacity 0.3s ease;
+  cursor: pointer;
 
   &:hover {
     opacity: 0.8;
@@ -348,12 +349,12 @@ $font-dancing: 'Dancing Script', cursive;
   width: 100%;
   aspect-ratio: 1;
   overflow: hidden;
-  background-color: #f0f0f0;
+  background-color: #f7f7f7;
 
   img {
     width: 100%;
     height: 100%;
-    object-fit: cover;
+    object-fit: fit;
   }
 }
 
@@ -420,6 +421,7 @@ $font-dancing: 'Dancing Script', cursive;
     font-size: 14px;
     font-weight: 600;
     transition: text-decoration 0.3s ease;
+    cursor: pointer;
 
     &:hover {
       text-decoration: underline;
@@ -617,6 +619,7 @@ $font-dancing: 'Dancing Script', cursive;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
+  gap: 32px;
   align-items: center;
   position: relative;
   z-index: 1;
@@ -629,34 +632,13 @@ $font-dancing: 'Dancing Script', cursive;
 
 .herbot-image {
   margin: 0;
-  padding: 0;
   line-height: 0;
 
   img {
-    width: calc(100% + $spacing-lg);
+    width: 100%;
     height: auto;
     object-fit: contain;
     display: block;
-  }
-
-  @media (min-width: 769px) and (max-width: 1200px) {
-    margin-left: calc(-1 * $spacing-lg);
-  }
-
-  @media (max-width: 768px) {
-    margin-left: calc(-1 * $spacing-md);
-    img {
-      width: calc(100% + $spacing-md);
-    }
-  }
-
-  @media (min-width: 1201px) {
-    margin-left: calc((1260px - 100vw) / 2 - $spacing-lg);
-    margin-right: 0px;
-    padding-right: 0px;
-    img {
-      width: calc(100% + ((1200px - 100vw) / 2 - $spacing-lg));
-    }
   }
 }
 
@@ -709,6 +691,7 @@ $font-dancing: 'Dancing Script', cursive;
   border-bottom: 2px solid $primary-pink;
   transition: opacity 0.3s ease;
   width: fit-content;
+  cursor: pointer;
 
   &:hover {
     opacity: 0.8;

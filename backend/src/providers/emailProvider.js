@@ -9,13 +9,14 @@ const createTransporter = () => {
   }
 
   return nodemailer.createTransport({
-    host: env.smtp.host,
-    port: env.smtp.port,
-    secure: env.smtp.secure,
+    service: 'gmail',
     auth: {
       user: env.smtp.user,
       pass: env.smtp.password
-    }
+    },
+    family: 4, // Ép Nodemailer chỉ sử dụng IPv4, từ chối IPv6
+    connectionTimeout: 15000, // Quá 15s không connect được thì văng lỗi luôn
+    greetingTimeout: 15000
   });
 };
 
