@@ -407,3 +407,98 @@ $border-color: #EEEEEE;
     transform: translateY(-1px);
   }
 }
+
+.herdays-qrpayment-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  background: rgba(24, 24, 27, 0.46);
+}
+
+.herdays-qrpayment-cancel-modal {
+  width: min(420px, 100%);
+  border-radius: 18px;
+  background: $white;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.18);
+  padding: 28px;
+  text-align: center;
+
+  h2 {
+    margin: 14px 0 10px;
+    color: $text-main;
+    font-size: 24px;
+    font-weight: 800;
+  }
+
+  p {
+    margin: 0;
+    color: $text-light;
+    font-size: 15px;
+    line-height: 1.55;
+  }
+}
+
+.herdays-qrpayment-cancel-modal__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  background: #FFF5F5;
+  color: #D64545;
+}
+
+.herdays-qrpayment-cancel-modal__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+
+  @media (max-width: 420px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.herdays-qrpayment-cancel-modal__btn {
+  min-height: 44px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 800;
+  transition: background-color 0.2s, border-color 0.2s, transform 0.2s;
+
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.65;
+  }
+
+  &:hover:not(:disabled) {
+    transform: translateY(-1px);
+  }
+}
+
+.herdays-qrpayment-cancel-modal__btn--secondary {
+  border: 1px solid $border-color;
+  background: $white;
+  color: $text-main;
+
+  &:hover:not(:disabled) {
+    background: #F8F8F8;
+  }
+}
+
+.herdays-qrpayment-cancel-modal__btn--danger {
+  border: 1px solid #E74C3C;
+  background: #E74C3C;
+  color: $white;
+
+  &:hover:not(:disabled) {
+    background: #D64545;
+    border-color: #D64545;
+  }
+}

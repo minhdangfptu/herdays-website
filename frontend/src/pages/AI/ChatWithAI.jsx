@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import {
   FiBookOpen,
   FiExternalLink,
+  FiShoppingBag,
   FiSearch,
   FiSettings,
   FiSmile,
@@ -47,6 +48,14 @@ const formatHistoryTime = (value) => {
   if (!value) return '';
   return new Date(value).toLocaleDateString('vi-VN');
 };
+
+const formatCurrency = (value, currency = 'VND') => (
+  new Intl.NumberFormat('vi-VN', {
+    style: 'currency',
+    currency,
+    maximumFractionDigits: 0
+  }).format(Number(value) || 0)
+);
 
 const normalizeText = (value = '') => (
   value
@@ -100,13 +109,41 @@ const mapBlogCitations = (citations = []) => {
     .slice(0, BLOG_SUGGESTION_LIMIT);
 };
 
-const mapApiMessage = (message) => ({
-  id: message.id,
-  type: message.role === 'assistant' ? 'ai' : 'user',
-  text: message.content,
-  time: formatMessageTime(message.createdAt),
-  blogSuggestions: mapBlogCitations(message.citations),
-});
+const mapRecommendedBoxes = (products = []) => {
+  const seen = new Set();
+
+  return products
+    .filter((product) => product?.productId && product?.title)
+    .map((product) => ({
+      id: product.productId,
+      title: product.title,
+      reason: product.reason || '',
+      benefits: product.benefits || [],
+      price: product.price,
+      currency: product.currency || 'VND',
+      thumbnail: product.thumbnail || '',
+      detailHref: product.detailUrl || `/product-detail/box/${product.productId}`,
+      customizeHref: product.customizeUrl || `/box-customize/${product.productId}`
+    }))
+    .filter((item) => {
+      if (seen.has(item.id)) return false;
+      seen.add(item.id);
+      return true;
+    });
+};
+
+const mapApiMessage = (message) => {
+  const recommendedBoxes = mapRecommendedBoxes(message.recommendedProducts);
+
+  return {
+    id: message.id,
+    type: message.role === 'assistant' ? 'ai' : 'user',
+    text: message.content,
+    time: formatMessageTime(message.createdAt),
+    blogSuggestions: recommendedBoxes.length > 0 ? [] : mapBlogCitations(message.citations),
+    recommendedBoxes,
+  };
+};
 
 export default function ChatWithAI() {
   const [messages, setMessages] = useState([]);
@@ -239,7 +276,10 @@ export default function ChatWithAI() {
       const result = await chatApi.sendMessage(nextConversationId, userMessage);
       upsertConversation(result.conversation);
       const assistantMessage = mapApiMessage(result.assistantMessage);
-      if (assistantMessage.blogSuggestions.length === 0) {
+      if (
+        assistantMessage.recommendedBoxes.length === 0
+        && assistantMessage.blogSuggestions.length === 0
+      ) {
         assistantMessage.blogSuggestions = await getFallbackBlogSuggestions(userMessage);
       }
       setMessages((items) => [
@@ -385,6 +425,48 @@ export default function ChatWithAI() {
                               <FiExternalLink />
                             </span>
                           </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {message.type === 'ai' && message.recommendedBoxes?.length > 0 && (
+                    <div className="chat-ai-product-suggestions">
+                      <div className="chat-ai-product-suggestions__header">
+                        <FiShoppingBag />
+                        <span>Box HERDAYs phu hop</span>
+                      </div>
+                      <div className="chat-ai-product-suggestions__list">
+                        {message.recommendedBoxes.map((box) => (
+                          <div key={box.id} className="chat-ai-product-card">
+                            <a className="chat-ai-product-card__main" href={box.detailHref}>
+                              <div className="chat-ai-product-card__image">
+                                {box.thumbnail ? (
+                                  <img src={box.thumbnail} alt={box.title} />
+                                ) : (
+                                  <FiShoppingBag />
+                                )}
+                              </div>
+                              <div className="chat-ai-product-card__content">
+                                <span className="chat-ai-product-card__title">{box.title}</span>
+                                {box.reason && (
+                                  <span className="chat-ai-product-card__reason">{box.reason}</span>
+                                )}
+                                {box.price !== null && box.price !== undefined && (
+                                  <strong className="chat-ai-product-card__price">
+                                    {formatCurrency(box.price, box.currency)}
+                                  </strong>
+                                )}
+                              </div>
+                            </a>
+                            <div className="chat-ai-product-card__actions">
+                              <a href={box.detailHref}>
+                                Xem box
+                                <FiExternalLink />
+                              </a>
+                              <a href={box.customizeHref}>Tuy chinh box</a>
+                            </div>
+                          </div>
                         ))}
                       </div>
                     </div>

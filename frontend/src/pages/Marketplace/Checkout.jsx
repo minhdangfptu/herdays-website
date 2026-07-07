@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { cartApi, hasAuthSession, orderApi } from '../../services/apiService.js'
+import { cartApi, hasAuthSession, notifyCartChanged, orderApi } from '../../services/apiService.js'
 import { RefreshCw } from 'lucide-react'
 import './Checkout.scss'
 
@@ -15,11 +15,15 @@ const formatCurrency = (value) =>
 const normalizeCartItem = (item) => {
   const box = item.boxId || {}
   const boxId = box._id || box.id || item.boxId
+  const stock = Number(box.quantity) || 0
+  const quantity = item.quantity || 1
 
   return {
-    id: boxId,
+    id: String(boxId),
     name: box.boxName || 'HerDays Box',
-    quantity: item.quantity || 1,
+    quantity,
+    stock,
+    remainingStock: Math.max(stock - quantity, 0),
     price: Number(box.price) || 0,
     image: box.thumbnail || `https://placehold.co/160x160/f8c4d8/ffffff?text=${encodeURIComponent(box.boxName || 'Box')}`
   }
@@ -93,9 +97,14 @@ export default function Checkout() {
   const discountAmount = subtotal * discountPercent / 100
   const orderTotal = subtotal - discountAmount
 
-  const handleQuantityChange = async (boxId, quantity) => {
+  const handleQuantityChange = async (item, quantity) => {
     if (quantity < 1) return
+    if (quantity > item.stock) {
+      toast.error('So luong vuot qua ton kho hien co.')
+      return
+    }
 
+    const boxId = item.id
     setUpdatingBoxId(boxId)
 
     try {
@@ -148,7 +157,9 @@ export default function Checkout() {
         paymentMethod: 'bank_transfer',
         boxIds: selectedBoxIds
       })
-      setCartItems((current) => current.filter((item) => !selectedBoxIds.includes(String(item.id))))
+      const nextItems = cartItems.filter((item) => !selectedBoxIds.includes(String(item.id)))
+      setCartItems(nextItems)
+      notifyCartChanged({ items: nextItems })
       setSelectedBoxIds([])
       navigate('/qr-payment', {
         state: {
@@ -207,19 +218,22 @@ export default function Checkout() {
                         </div>
                         <div className="product-info">
                           <h3 className="product-name">{item.name}</h3>
+                          <p className="product-stock-note">
+                            Ton kho: {item.stock} - Con lai sau khi them: {item.remainingStock}
+                          </p>
                           <div className="product-quantity-control">
                             <button
                               type="button"
                               disabled={updatingBoxId === item.id || item.quantity <= 1}
-                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                              onClick={() => handleQuantityChange(item, item.quantity - 1)}
                             >
                               -
                             </button>
                             <span>{item.quantity}</span>
                             <button
                               type="button"
-                              disabled={updatingBoxId === item.id}
-                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              disabled={updatingBoxId === item.id || item.quantity >= item.stock}
+                              onClick={() => handleQuantityChange(item, item.quantity + 1)}
                             >
                               +
                             </button>

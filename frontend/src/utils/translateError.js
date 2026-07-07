@@ -49,6 +49,12 @@ const TRANSLATIONS = {
   'E12000': 'Email đã được sử dụng cho tài khoản khác.',
   'P12000': 'Số điện thoại đã được sử dụng cho tài khoản khác.',
   'Invalid Vietnamese phone format': 'Số điện thoại Việt Nam phải có 10 chữ số và bắt đầu bằng 0.',
+
+  // Cart
+  'Box is out of stock': 'Box nay da het hang.',
+  'Requested quantity exceeds available stock': 'So luong vuot qua ton kho hien co.',
+  'Quantity must be an integer': 'So luong phai la so nguyen.',
+  'Quantity must be at least 1': 'So luong phai lon hon hoac bang 1.',
 }
 
 /**

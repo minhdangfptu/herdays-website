@@ -132,6 +132,7 @@ $text-dark: #333333;
   }
 
   .header-cart-btn {
+    position: relative;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -146,6 +147,26 @@ $text-dark: #333333;
     &:hover {
       background-color: rgba(255, 255, 255, 0.35);
     }
+  }
+
+  .header-cart-badge {
+    position: absolute;
+    top: 2px;
+    right: 1px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 17px;
+    height: 17px;
+    border: 2px solid $primary-color;
+    border-radius: 999px;
+    padding: 0 4px;
+    background: $secondary-color;
+    color: $primary-color;
+    font-size: 0.65rem;
+    font-weight: 800;
+    line-height: 1;
+    box-shadow: 0 3px 8px rgba(120, 38, 76, 0.2);
   }
 
   .header-avatar-btn {

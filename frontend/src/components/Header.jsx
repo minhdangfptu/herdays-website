@@ -4,12 +4,20 @@ import { CircleUserRound, Lock, LogOut, ShoppingBag, UserRound } from "lucide-re
 import toast from "react-hot-toast";
 import "./Header.scss";
 import logoTrang from "../assets/home/logo_trang.png";
-import { authApi, clearAuthSession, hasAuthSession } from "../services/apiService.js";
+import {
+  CART_STATE_CHANGE_EVENT,
+  authApi,
+  cartApi,
+  clearAuthSession,
+  getCartItemCount,
+  hasAuthSession
+} from "../services/apiService.js";
 import LogoutModal from "./LogoutModal.jsx";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(hasAuthSession());
+  const [cartItemCount, setCartItemCount] = useState(0);
   const [isProfileMenuOpen, setIsProfileMenuOpen] = useState(false);
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const profileMenuRef = useRef(null);
@@ -23,12 +31,57 @@ const Header = () => {
   };
 
   useEffect(() => {
-    const handleAuthChanged = () => setIsLoggedIn(hasAuthSession());
+    let isMounted = true;
+
+    const loadCartItemCount = async () => {
+      if (!hasAuthSession()) {
+        if (isMounted) setCartItemCount(0);
+        return;
+      }
+
+      try {
+        const cart = await cartApi.getCart();
+        if (isMounted) setCartItemCount(getCartItemCount(cart));
+      } catch {
+        if (isMounted) setCartItemCount(0);
+      }
+    };
+
+    const handleAuthChanged = () => {
+      const nextIsLoggedIn = hasAuthSession();
+      setIsLoggedIn(nextIsLoggedIn);
+
+      if (nextIsLoggedIn) {
+        loadCartItemCount();
+      } else {
+        setCartItemCount(0);
+      }
+    };
+
+    const handleCartChanged = (event) => {
+      if (!hasAuthSession()) {
+        setCartItemCount(0);
+        return;
+      }
+
+      const nextItemCount = event.detail?.itemCount;
+      if (Number.isFinite(nextItemCount)) {
+        setCartItemCount(nextItemCount);
+        return;
+      }
+
+      loadCartItemCount();
+    };
+
+    handleAuthChanged();
     window.addEventListener("auth-state-change", handleAuthChanged);
     window.addEventListener("storage", handleAuthChanged);
+    window.addEventListener(CART_STATE_CHANGE_EVENT, handleCartChanged);
     return () => {
+      isMounted = false;
       window.removeEventListener("auth-state-change", handleAuthChanged);
       window.removeEventListener("storage", handleAuthChanged);
+      window.removeEventListener(CART_STATE_CHANGE_EVENT, handleCartChanged);
     };
   }, []);
 
@@ -143,8 +196,18 @@ const Header = () => {
           <div className="header-right">
             {isLoggedIn ? (
               <div className="header-user-actions">
-                <Link className="header-cart-btn" aria-label="Giỏ hàng" to="/cart">
+                <Link
+                  className="header-cart-btn"
+                  aria-label={cartItemCount > 0 ? `Giỏ hàng có ${cartItemCount} mặt hàng` : "Giỏ hàng"}
+                  to="/cart"
+                  data-cart-target
+                >
                   <ShoppingBag size={20} strokeWidth={2} />
+                  {cartItemCount > 0 && (
+                    <span className="header-cart-badge">
+                      {cartItemCount > 99 ? "99+" : cartItemCount}
+                    </span>
+                  )}
                 </Link>
 
                 <div className="header-profile-menu" ref={profileMenuRef}>

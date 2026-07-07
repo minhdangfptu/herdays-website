@@ -15,14 +15,17 @@ const formatCurrency = (value) =>
 const normalizeCartItem = (item) => {
   const box = item.boxId || {};
   const boxId = box._id || box.id || item.boxId;
+  const stock = Number(box.quantity) || 0;
+  const quantity = item.quantity || 1;
 
   return {
     id: String(boxId),
     name: box.boxName || 'HerDays Box',
     category: box.category || 'Subscription Box',
     image: box.thumbnail || `https://placehold.co/160x160/f8c4d8/ffffff?text=${encodeURIComponent(box.boxName || 'Box')}`,
-    stock: Number(box.quantity) || 0,
-    quantity: item.quantity || 1,
+    stock,
+    quantity,
+    remainingStock: Math.max(stock - quantity, 0),
     price: Number(box.price) || 0
   };
 };
@@ -89,9 +92,14 @@ export default function Cart() {
     ));
   };
 
-  const updateQuantity = async (boxId, quantity) => {
+  const updateQuantity = async (item, quantity) => {
     if (quantity < 1) return;
+    if (quantity > item.stock) {
+      toast.error('So luong vuot qua ton kho hien co.');
+      return;
+    }
 
+    const boxId = item.id;
     setUpdatingBoxId(boxId);
 
     try {
@@ -186,7 +194,10 @@ export default function Cart() {
                           <div className="cart-col-price">
                             <span className="cart-stock-status">
                               <span className="cart-stock-dot"></span>
-                              Con hang ({item.stock})
+                              Ton kho: {item.stock}
+                            </span>
+                            <span className="cart-stock-remaining">
+                              Con lai sau khi them: {item.remainingStock}
                             </span>
                             <span className="cart-price">{formatCurrency(item.price)}</span>
                           </div>
@@ -196,7 +207,7 @@ export default function Cart() {
                               <button
                                 type="button"
                                 disabled={updatingBoxId === item.id || item.quantity <= 1}
-                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                onClick={() => updateQuantity(item, item.quantity - 1)}
                                 className="cart-quantity-btn"
                               >
                                 <FiMinus />
@@ -204,8 +215,8 @@ export default function Cart() {
                               <input type="number" value={item.quantity} readOnly className="cart-quantity-input" />
                               <button
                                 type="button"
-                                disabled={updatingBoxId === item.id}
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                disabled={updatingBoxId === item.id || item.quantity >= item.stock}
+                                onClick={() => updateQuantity(item, item.quantity + 1)}
                                 className="cart-quantity-btn"
                               >
                                 <FiPlus />

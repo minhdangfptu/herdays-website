@@ -506,6 +506,140 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
   }
 }
 
+.chat-ai-product-suggestions {
+  width: 100%;
+  margin-top: 8px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(241, 118, 169, 0.18);
+}
+
+.chat-ai-product-suggestions__header {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+  color: $chat-ai-primary-pink;
+  font-size: 12px;
+  font-weight: 700;
+
+  svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+.chat-ai-product-suggestions__list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chat-ai-product-card {
+  border: 1px solid rgba(241, 118, 169, 0.2);
+  border-radius: 10px;
+  background: $chat-ai-white;
+  overflow: hidden;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    border-color: rgba(241, 118, 169, 0.45);
+    box-shadow: 0 8px 20px rgba(241, 118, 169, 0.12);
+    transform: translateY(-1px);
+  }
+}
+
+.chat-ai-product-card__main {
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  gap: 10px;
+  padding: 10px;
+  color: inherit;
+  text-decoration: none;
+}
+
+.chat-ai-product-card__image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 72px;
+  aspect-ratio: 1;
+  border-radius: 8px;
+  background: $chat-ai-light-pink;
+  color: $chat-ai-primary-pink;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+.chat-ai-product-card__content {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.chat-ai-product-card__title {
+  color: $chat-ai-dark-text;
+  font-size: 13px;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.chat-ai-product-card__reason {
+  display: -webkit-box;
+  color: $chat-ai-gray-text;
+  font-size: 12px;
+  line-height: 1.45;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+.chat-ai-product-card__price {
+  color: $chat-ai-primary-pink;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.chat-ai-product-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 8px 10px 10px;
+  border-top: 1px solid rgba(241, 118, 169, 0.12);
+
+  a {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: $chat-ai-primary-pink;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  @media (max-width: 480px) {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
 .chat-ai-message.user .chat-ai-message-body p {
   color: $chat-ai-white;
 }

@@ -509,6 +509,17 @@ $font-primary: 'Roboto', sans-serif;
   color: $dark-text;
 }
 
+.cart-stock-remaining {
+  display: inline-flex;
+  width: fit-content;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: $very-light-pink;
+  color: $primary-pink;
+  font-size: 12px;
+  font-weight: 700;
+}
+
 .cart-stock-dot {
   display: inline-block;
   width: 6px;

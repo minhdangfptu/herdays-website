@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { cartApi, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
 import heroBanner from '../../assets/marketplace/hero_banner.png'
 import subBoxBanner from '../../assets/marketplace/sub_box.png'
 import './Marketplace.scss'
@@ -27,6 +28,8 @@ function Marketplace() {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [addingBoxId, setAddingBoxId] = useState('')
+  const [cartBoxQuantities, setCartBoxQuantities] = useState({})
+  const boxImageRefs = useRef({})
   const navigate = useNavigate()
 
   useEffect(() => {
@@ -37,10 +40,16 @@ function Marketplace() {
       setErrorMessage('')
 
       try {
-        const boxResult = await marketplaceApi.listBoxes({ limit: 12 })
+        const [boxResult, cartResult] = await Promise.all([
+          marketplaceApi.listBoxes({ limit: 12 }),
+          hasAuthSession()
+            ? cartApi.getCart().catch(() => null)
+            : Promise.resolve(null)
+        ])
 
         if (!isMounted) return
         setBoxes(boxResult.items || [])
+        setCartBoxQuantities(getCartBoxQuantities(cartResult))
       } catch (error) {
         if (isMounted) setErrorMessage(error.message || 'Khong the tai marketplace.')
       } finally {
@@ -62,17 +71,36 @@ function Marketplace() {
 
   const firstBoxId = boxes[0]?.id
 
-  const handleAddToCart = async (boxId) => {
+  const getAvailableBoxQuantity = (box) => (
+    Math.max((Number(box.quantity) || 0) - (cartBoxQuantities[String(box.id)] || 0), 0)
+  )
+
+  const handleAddToCart = async (box) => {
     if (!hasAuthSession()) {
       toast.error('Vui long dang nhap de them san pham vao gio hang.')
       navigate('/login')
       return
     }
 
+    const boxId = box.id
+    if (getAvailableBoxQuantity(box) <= 0) {
+      toast.error('Box nay da dat toi so luong co the them.')
+      return
+    }
+
     setAddingBoxId(boxId)
+    const flySourceRect = getFlyToCartSourceRect(boxImageRefs.current[boxId])
 
     try {
-      await cartApi.addItem({ boxId, quantity: 1 })
+      const cart = await cartApi.addItem({ boxId, quantity: 1 })
+      const flyAnimation = flyToCart({
+        sourceRect: flySourceRect,
+        targetElement: getCartTargetElement(),
+        imageUrl: getItemImage(box),
+        label: getItemName(box)
+      })
+      setCartBoxQuantities(getCartBoxQuantities(cart))
+      await flyAnimation
       toast.success('Da them box vao gio hang.')
     } catch (error) {
       toast.error(error.message || 'Khong the them box vao gio hang.')
@@ -83,11 +111,18 @@ function Marketplace() {
 
   const renderBoxCard = (box) => {
     const detailPath = `/product-detail/box/${box.id}`
+    const availableQuantity = getAvailableBoxQuantity(box)
 
     return (
       <article className="marketplace-product" key={`box-${box.id}`}>
         <Link className="marketplace-product__image" to={detailPath}>
-          <img src={getItemImage(box)} alt={getItemName(box)} />
+          <img
+            ref={(node) => {
+              if (node) boxImageRefs.current[box.id] = node
+            }}
+            src={getItemImage(box)}
+            alt={getItemName(box)}
+          />
         </Link>
         <div className="marketplace-product__content">
           <p className="marketplace-product__category">
@@ -99,12 +134,12 @@ function Marketplace() {
           </p>
           <div className="marketplace-product__meta">
             <strong>{formatCurrency(box.price)}</strong>
-            <span>{box.quantity > 0 ? `Con ${box.quantity}` : 'Het hang'}</span>
+            <span>{availableQuantity > 0 ? `Con ${availableQuantity}` : 'Het hang'}</span>
           </div>
           <button
             type="button"
-            disabled={addingBoxId === box.id || box.quantity <= 0}
-            onClick={() => handleAddToCart(box.id)}
+            disabled={addingBoxId === box.id || availableQuantity <= 0}
+            onClick={() => handleAddToCart(box)}
           >
             {addingBoxId === box.id ? 'Dang them...' : 'Them vao gio'}
           </button>

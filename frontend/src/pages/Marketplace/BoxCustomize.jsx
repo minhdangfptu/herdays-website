@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { MdKeyboardArrowRight } from 'react-icons/md'
-import { cartApi, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
 import './BoxCustomize.scss'
 
 const formatCurrency = (value) =>
@@ -14,6 +15,11 @@ const formatCurrency = (value) =>
 
 const getProductImage = (product) =>
   product.thumbnail || `https://placehold.co/280x280/f8c4d8/ffffff?text=${encodeURIComponent(product.productName || 'HerDays')}`
+
+const getBoxName = (box) => box?.boxName || 'HerDays Box cua ban'
+
+const getBoxImage = (box) =>
+  box?.thumbnail || `https://placehold.co/360x360/f8c4d8/ffffff?text=${encodeURIComponent(getBoxName(box))}`
 
 const normalizeBoxProduct = (item) => ({
   id: String(item.productId),
@@ -32,6 +38,8 @@ export default function BoxCustomize() {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [isAdding, setIsAdding] = useState(false)
+  const [cartBoxQuantities, setCartBoxQuantities] = useState({})
+  const checkoutButtonRef = useRef(null)
 
   useEffect(() => {
     let isMounted = true
@@ -41,9 +49,12 @@ export default function BoxCustomize() {
       setErrorMessage('')
 
       try {
-        const [productResult, boxResult] = await Promise.all([
+        const [productResult, boxResult, cartResult] = await Promise.all([
           marketplaceApi.listProducts({ limit: 100 }),
-          boxId ? marketplaceApi.getBox(boxId) : Promise.resolve(null)
+          boxId ? marketplaceApi.getBox(boxId) : Promise.resolve(null),
+          hasAuthSession()
+            ? cartApi.getCart().catch(() => null)
+            : Promise.resolve(null)
         ])
 
         if (!isMounted) return
@@ -54,6 +65,7 @@ export default function BoxCustomize() {
         setProducts(nextProducts)
         setBox(boxResult)
         setSelectedItems(initialProducts)
+        setCartBoxQuantities(getCartBoxQuantities(cartResult))
       } catch (error) {
         if (isMounted) setErrorMessage(error.message || 'Khong the tai du lieu customize box.')
       } finally {
@@ -98,9 +110,18 @@ export default function BoxCustomize() {
     ])
   }
 
+  const availableBoxQuantity = box
+    ? Math.max((Number(box.quantity) || 0) - (cartBoxQuantities[String(box.id)] || 0), 0)
+    : 0
+
   const handleBuyNow = async () => {
     if (!box?.id) {
       toast.error('Vui long chon mot box truoc khi mua.')
+      return
+    }
+
+    if (availableBoxQuantity <= 0) {
+      toast.error('Box nay da het hang.')
       return
     }
 
@@ -111,9 +132,18 @@ export default function BoxCustomize() {
     }
 
     setIsAdding(true)
+    const flySourceRect = getFlyToCartSourceRect(checkoutButtonRef.current)
 
     try {
-      await cartApi.addItem({ boxId: box.id, quantity: 1 })
+      const cart = await cartApi.addItem({ boxId: box.id, quantity: 1 })
+      const flyAnimation = flyToCart({
+        sourceRect: flySourceRect,
+        targetElement: getCartTargetElement(),
+        imageUrl: getBoxImage(box),
+        label: getBoxName(box)
+      })
+      setCartBoxQuantities(getCartBoxQuantities(cart))
+      await flyAnimation
       toast.success('Da them box vao gio hang.')
       navigate('/check-out')
     } catch (error) {
@@ -196,10 +226,12 @@ export default function BoxCustomize() {
 
           <div className="bar-right">
             <span className="bar-count">Da chon {selectedItems.length} san pham</span>
+            <span className="bar-stock">{availableBoxQuantity > 0 ? `Con ${availableBoxQuantity}` : 'Het hang'}</span>
             <button
+              ref={checkoutButtonRef}
               className="bar-checkout-btn"
               type="button"
-              disabled={isAdding || !box?.id}
+              disabled={isAdding || !box?.id || availableBoxQuantity <= 0}
               onClick={handleBuyNow}
             >
               {isAdding ? 'Dang them...' : 'Mua ngay'}

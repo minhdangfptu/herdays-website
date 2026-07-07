@@ -31,6 +31,32 @@ export const clearAuthSession = () => {
 
 export const hasAuthSession = () => Boolean(localStorage.getItem('refreshToken'))
 
+export const CART_STATE_CHANGE_EVENT = 'cart-state-change'
+
+export const getCartItemCount = (cart) => (
+  (cart?.items || []).reduce((total, item) => total + (Number(item.quantity) || 0), 0)
+)
+
+export const getCartBoxQuantities = (cart) => (
+  (cart?.items || []).reduce((acc, item) => {
+    const box = item.boxId || {}
+    const boxId = box._id || box.id || item.boxId
+    if (boxId) acc[String(boxId)] = Number(item.quantity) || 0
+    return acc
+  }, {})
+)
+
+export const notifyCartChanged = (cart) => {
+  if (typeof window === 'undefined') return
+
+  window.dispatchEvent(new CustomEvent(CART_STATE_CHANGE_EVENT, {
+    detail: {
+      cart,
+      itemCount: getCartItemCount(cart)
+    }
+  }))
+}
+
 const buildQuery = (params = {}) => {
   const searchParams = new URLSearchParams()
   Object.entries(params).forEach(([key, value]) => {
@@ -359,6 +385,7 @@ export const cartApi = {
       body: { boxId, quantity },
       isAuthenticated: true
     })
+    notifyCartChanged(response.data)
     return response.data
   },
   updateItem: async ({ boxId, quantity }) => {
@@ -367,6 +394,7 @@ export const cartApi = {
       body: { boxId, quantity },
       isAuthenticated: true
     })
+    notifyCartChanged(response.data)
     return response.data
   },
   removeItem: async (boxId) => {
@@ -374,6 +402,7 @@ export const cartApi = {
       method: 'DELETE',
       isAuthenticated: true
     })
+    notifyCartChanged(response.data)
     return response.data
   },
   clear: async () => {
@@ -381,6 +410,7 @@ export const cartApi = {
       method: 'DELETE',
       isAuthenticated: true
     })
+    notifyCartChanged(response.data)
     return response.data
   }
 }
