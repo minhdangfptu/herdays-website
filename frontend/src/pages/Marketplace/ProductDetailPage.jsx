@@ -7,7 +7,7 @@ import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi } from '.
 import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
 import './ProductDetailPage.scss'
 
-const SUBSCRIPTIONS = ['1 thang', '3 thang', '6 thang', '12 thang']
+const SUBSCRIPTIONS = ['1 tháng', '3 tháng', '6 tháng', '12 tháng']
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat('vi-VN', {
@@ -69,7 +69,7 @@ export default function ProductDetailPage() {
         setItemType(nextType || result?.type || '')
         setCartBoxQuantities(getCartBoxQuantities(cartResult))
       } catch (error) {
-        if (isMounted) setErrorMessage(error.message || 'Khong the tai chi tiet san pham.')
+        if (isMounted) setErrorMessage(error.message || 'Không thể tải chi tiết sản phẩm.')
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -85,7 +85,7 @@ export default function ProductDetailPage() {
   const relatedProducts = useMemo(() => (
     (item?.products || []).map((product) => ({
       id: product.productId,
-      name: product.productName || 'San pham trong box',
+      name: product.productName || 'Sản phẩm trong box',
       subtitle: product.category || item?.category || 'HerDays',
       image: product.thumbnail,
       price: product.price,
@@ -105,12 +105,12 @@ export default function ProductDetailPage() {
 
   const handleAddToCart = async () => {
     if (itemType !== 'box') {
-      toast.error('Gio hang hien chi ho tro them box.')
+      toast.error('Giỏ hàng hiện chỉ hỗ trợ thêm box.')
       return
     }
 
     if (!hasAuthSession()) {
-      toast.error('Vui long dang nhap de them box vao gio hang.')
+      toast.error('Vui lòng đăng nhập để thêm box vào giỏ hàng.')
       navigate('/login')
       return
     }
@@ -118,12 +118,12 @@ export default function ProductDetailPage() {
     const currentCartQuantity = cartBoxQuantities[String(item.id)] || 0
     const availableQuantity = Math.max((Number(item.quantity) || 0) - currentCartQuantity, 0)
     if (availableQuantity <= 0) {
-      toast.error('Box nay da dat toi so luong co the them.')
+      toast.error('Box này đã đạt tới số lượng có thể thêm.')
       return
     }
 
     if (quantity > availableQuantity) {
-      toast.error('So luong vuot qua ton kho hien co.')
+      toast.error('Số lượng vượt quá tồn kho hiện có.')
       setQuantity(Math.max(availableQuantity, 1))
       return
     }
@@ -144,22 +144,22 @@ export default function ProductDetailPage() {
       setCartBoxQuantities(nextCartBoxQuantities)
       setQuantity(nextAvailableQuantity > 0 ? Math.min(quantity, nextAvailableQuantity) : 1)
       await flyAnimation
-      toast.success('Da them box vao gio hang.')
+      toast.success('Đã thêm box vào giỏ hàng.')
     } catch (error) {
-      toast.error(error.message || 'Khong the them box vao gio hang.')
+      toast.error(error.message || 'Không thể thêm box vào giỏ hàng.')
     } finally {
       setIsAdding(false)
     }
   }
 
   if (loading) {
-    return <div className="product-detail-page"><p className="product-detail-status">Dang tai chi tiet...</p></div>
+    return <div className="product-detail-page"><p className="product-detail-status">Đang tải chi tiết...</p></div>
   }
 
   if (errorMessage || !item) {
     return (
       <div className="product-detail-page">
-        <p className="product-detail-status product-detail-status--error">{errorMessage || 'Khong tim thay san pham.'}</p>
+        <p className="product-detail-status product-detail-status--error">{errorMessage || 'Không tìm thấy sản phẩm.'}</p>
       </div>
     )
   }
@@ -173,9 +173,9 @@ export default function ProductDetailPage() {
   return (
     <div className="product-detail-page">
       <div className="product-detail-breadcrumb">
-        <Link to="/">Home</Link>
+        <Link to="/">Trang chủ</Link>
         <MdKeyboardArrowRight />
-        <Link to="/marketplace">Marketplace</Link>
+        <Link to="/marketplace">Cửa hàng</Link>
         <MdKeyboardArrowRight />
         <span className="product-detail-breadcrumb-active">{getItemName(item)}</span>
       </div>
@@ -210,7 +210,7 @@ export default function ProductDetailPage() {
               <span className="product-detail-current-price">{formatCurrency(item.price)}</span>
               {isBox && (
                 <span className="product-detail-discount">
-                  {availableQuantity > 0 ? `Con ${availableQuantity}` : 'Het hang'}
+                  {availableQuantity > 0 ? `Còn ${availableQuantity}` : 'Hết hàng'}
                 </span>
               )}
             </div>
@@ -218,12 +218,12 @@ export default function ProductDetailPage() {
             <hr className="product-detail-divider" />
 
             <p className="product-detail-description">
-              {item.description || 'San pham HerDays duoc dong bo truc tiep tu backend marketplace.'}
+              {item.description || 'Sản phẩm HerDays được đồng bộ trực tiếp từ backend marketplace.'}
             </p>
 
             {isBox && (
               <div className="product-detail-subscription">
-                <label className="product-detail-subscription-label">Dang ky dinh ky</label>
+                <label className="product-detail-subscription-label">Đăng ký định kỳ</label>
                 <div className="product-detail-subscription-options">
                   {SUBSCRIPTIONS.map((sub) => (
                     <button
@@ -272,7 +272,7 @@ export default function ProductDetailPage() {
                 disabled={!isBox || isAdding || availableQuantity <= 0}
                 onClick={handleAddToCart}
               >
-                {isAdding ? 'Dang them...' : isBox ? 'Them vao gio hang' : 'San pham le'}
+                {isAdding ? 'Đang thêm...' : isBox ? 'Thêm vào giỏ hàng' : 'Sản phẩm lẻ'}
               </button>
             </div>
           </div>
@@ -281,15 +281,15 @@ export default function ProductDetailPage() {
         {isBox && (
           <div className="product-detail-related-section">
             <div className="product-detail-related-header">
-              <h2 className="product-detail-related-title">San pham co trong Box</h2>
+              <h2 className="product-detail-related-title">Sản phẩm có trong Box</h2>
               <Link to={`/box-customize/${item.id}`} className="product-detail-related-customize">
-                Tuy chinh
+                Tùy chỉnh
               </Link>
             </div>
 
             <div className="product-detail-related-grid">
               {relatedProducts.length === 0 ? (
-                <p className="product-detail-status">Box nay chua co san pham con.</p>
+                <p className="product-detail-status">Box này chưa có sản phẩm con.</p>
               ) : (
                 relatedProducts.map((relatedProduct) => (
                   <div key={relatedProduct.id} className="product-detail-related-card">

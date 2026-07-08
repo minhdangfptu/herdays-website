@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { cartApi, hasAuthSession, notifyCartChanged, orderApi } from '../../services/apiService.js'
 import { RefreshCw } from 'lucide-react'
+import { cartApi, hasAuthSession, notifyCartChanged, orderApi } from '../../services/apiService.js'
 import './Checkout.scss'
 
 const formatCurrency = (value) =>
@@ -55,7 +55,7 @@ export default function Checkout() {
     if (!hasAuthSession()) {
       toast.error('Vui lòng đăng nhập để xem sản phẩm thanh toán.')
       navigate('/login', { replace: true })
-      return
+      return undefined
     }
 
     let isMounted = true
@@ -92,7 +92,7 @@ export default function Checkout() {
     [selectedCartItems]
   )
 
-  const selectedPlanData = SUBSCRIPTION_PLANS.find(p => p.months === selectedPlan) || SUBSCRIPTION_PLANS[0]
+  const selectedPlanData = SUBSCRIPTION_PLANS.find((plan) => plan.months === selectedPlan) || SUBSCRIPTION_PLANS[0]
   const discountPercent = selectedPlanData.discount
   const discountAmount = subtotal * discountPercent / 100
   const orderTotal = subtotal - discountAmount
@@ -100,7 +100,7 @@ export default function Checkout() {
   const handleQuantityChange = async (item, quantity) => {
     if (quantity < 1) return
     if (quantity > item.stock) {
-      toast.error('So luong vuot qua ton kho hien co.')
+      toast.error('Số lượng vượt quá tồn kho hiện có.')
       return
     }
 
@@ -127,7 +127,7 @@ export default function Checkout() {
       setSelectedBoxIds((current) => (
         current.filter((id) => nextItems.some((item) => String(item.id) === String(id)))
       ))
-      toast.success('Đã xóa sản phẩm khỏi sản phẩm thanh toán.')
+      toast.success('Đã xóa sản phẩm khỏi danh sách thanh toán.')
     } catch (error) {
       toast.error(error.message || 'Không thể xóa sản phẩm.')
     } finally {
@@ -169,7 +169,7 @@ export default function Checkout() {
         }
       })
     } catch (error) {
-      toast.error(error.message || 'KhÃ´ng thá»ƒ táº¡o Ä‘Æ¡n hÃ ng.')
+      toast.error(error.message || 'Không thể tạo đơn hàng.')
     } finally {
       setIsCheckingOut(false)
     }
@@ -206,7 +206,7 @@ export default function Checkout() {
                   <div className="herdays-checkout-product-list">
                     {cartItems.map((item) => (
                       <div key={item.id} className="herdays-checkout-product-item">
-                        <label className="product-select" aria-label="Chon san pham thanh toan">
+                        <label className="product-select" aria-label="Chọn sản phẩm thanh toán">
                           <input
                             type="checkbox"
                             checked={selectedBoxIds.includes(String(item.id))}
@@ -219,7 +219,7 @@ export default function Checkout() {
                         <div className="product-info">
                           <h3 className="product-name">{item.name}</h3>
                           <p className="product-stock-note">
-                            Ton kho: {item.stock} - Con lai sau khi them: {item.remainingStock}
+                            Tồn kho: {item.stock} - Còn lại sau khi thêm: {item.remainingStock}
                           </p>
                           <div className="product-quantity-control">
                             <button
@@ -270,17 +270,9 @@ export default function Checkout() {
                       onClick={() => setSelectedPlan(plan.months)}
                     >
                       <span className="plan-label">{plan.label}</span>
-                      {/* {plan.badge && (
-                        <span className="plan-badge">{plan.badge}</span>
-                      )} */}
                     </button>
                   ))}
                 </div>
-                {/* {discountPercent > 0 && (
-                  <p className="subscription-savings">
-                    Tiết kiệm <strong>{formatCurrency(discountAmount)}</strong> với gói {selectedPlanData.label}
-                  </p>
-                )} */}
               </div>
 
               <div className="herdays-checkout-card">
