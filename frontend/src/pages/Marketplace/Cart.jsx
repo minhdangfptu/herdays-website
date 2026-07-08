@@ -15,14 +15,17 @@ const formatCurrency = (value) =>
 const normalizeCartItem = (item) => {
   const box = item.boxId || {};
   const boxId = box._id || box.id || item.boxId;
+  const stock = Number(box.quantity) || 0;
+  const quantity = item.quantity || 1;
 
   return {
     id: String(boxId),
     name: box.boxName || 'HerDays Box',
     category: box.category || 'Subscription Box',
     image: box.thumbnail || `https://placehold.co/160x160/f8c4d8/ffffff?text=${encodeURIComponent(box.boxName || 'Box')}`,
-    stock: Number(box.quantity) || 0,
-    quantity: item.quantity || 1,
+    stock,
+    quantity,
+    remainingStock: Math.max(stock - quantity, 0),
     price: Number(box.price) || 0
   };
 };
@@ -37,7 +40,7 @@ export default function Cart() {
 
   useEffect(() => {
     if (!hasAuthSession()) {
-      toast.error('Vui long dang nhap de xem gio hang.');
+      toast.error('Vui lòng đăng nhập để xem giỏ hàng.');
       navigate('/login', { replace: true });
       return undefined;
     }
@@ -52,7 +55,7 @@ export default function Cart() {
         setSelectedBoxIds(nextItems.map((item) => item.id));
       })
       .catch((error) => {
-        if (isMounted) setErrorMessage(error.message || 'Khong the tai gio hang.');
+        if (isMounted) setErrorMessage(error.message || 'Không thể tải giỏ hàng.');
       })
       .finally(() => {
         if (isMounted) setLoading(false);
@@ -89,16 +92,21 @@ export default function Cart() {
     ));
   };
 
-  const updateQuantity = async (boxId, quantity) => {
+  const updateQuantity = async (item, quantity) => {
     if (quantity < 1) return;
+    if (quantity > item.stock) {
+      toast.error('Số lượng vượt quá tồn kho hiện có.');
+      return;
+    }
 
+    const boxId = item.id;
     setUpdatingBoxId(boxId);
 
     try {
       const cart = await cartApi.updateItem({ boxId, quantity });
       syncCartState(cart);
     } catch (error) {
-      toast.error(error.message || 'Khong the cap nhat so luong.');
+      toast.error(error.message || 'Không thể cập nhật số lượng.');
     } finally {
       setUpdatingBoxId('');
     }
@@ -110,9 +118,9 @@ export default function Cart() {
     try {
       const cart = await cartApi.removeItem(boxId);
       syncCartState(cart);
-      toast.success('Da xoa san pham khoi gio hang.');
+      toast.success('Đã xóa sản phẩm khỏi giỏ hàng.');
     } catch (error) {
-      toast.error(error.message || 'Khong the xoa san pham.');
+      toast.error(error.message || 'Không thể xóa sản phẩm.');
     } finally {
       setUpdatingBoxId('');
     }
@@ -120,7 +128,7 @@ export default function Cart() {
 
   const handleCheckout = () => {
     if (selectedBoxIds.length === 0) {
-      toast.error('Vui long tick chon san pham muon thanh toan.');
+      toast.error('Vui lòng tick chọn sản phẩm muốn thanh toán.');
       return;
     }
 
@@ -130,9 +138,9 @@ export default function Cart() {
   return (
     <div className="cart-page">
       <div className="cart-container">
-        <h1 className="cart-title">Gio hang</h1>
+        <h1 className="cart-title">Giỏ hàng</h1>
 
-        {loading && <p className="cart-status">Dang tai gio hang...</p>}
+        {loading && <p className="cart-status">Đang tải giỏ hàng...</p>}
         {errorMessage && <p className="cart-status cart-status--error">{errorMessage}</p>}
 
         {!loading && !errorMessage && (
@@ -141,12 +149,12 @@ export default function Cart() {
               <div className="cart-items-section">
                 <div className="cart-items-header">
                   <p className="cart-items-count">
-                    Ban dang co {cartItems.length} san pham trong gio hang, da chon {selectedItems.length}
+                    Bạn đang có {cartItems.length} sản phẩm trong giỏ hàng, đã chọn {selectedItems.length}
                   </p>
                 </div>
 
                 {cartItems.length === 0 ? (
-                  <p className="cart-status">Gio hang dang trong.</p>
+                  <p className="cart-status">Giỏ hàng đang trống.</p>
                 ) : (
                   <div className="cart-table">
                     <div className="cart-table-header">
@@ -156,11 +164,11 @@ export default function Cart() {
                           checked={isAllSelected}
                           onChange={toggleSelectAll}
                         />
-                        <span>San pham</span>
+                        <span>Sản phẩm</span>
                       </label>
-                      <div className="cart-col-price">Don gia</div>
-                      <div className="cart-col-quantity">So luong</div>
-                      <div className="cart-col-total">Tong tien</div>
+                      <div className="cart-col-price">Đơn giá</div>
+                      <div className="cart-col-quantity">Số lượng</div>
+                      <div className="cart-col-total">Tổng tiền</div>
                     </div>
 
                     <div className="cart-table-body">
@@ -177,7 +185,7 @@ export default function Cart() {
                                 <img src={item.image} alt={item.name} className="cart-product-image" />
                                 <span className="cart-product-details">
                                   <span className="cart-product-name">{item.name}</span>
-                                  <span className="cart-product-attr">Danh muc: <span>{item.category}</span></span>
+                                  <span className="cart-product-attr">Danh mục: <span>{item.category}</span></span>
                                 </span>
                               </span>
                             </label>
@@ -186,7 +194,10 @@ export default function Cart() {
                           <div className="cart-col-price">
                             <span className="cart-stock-status">
                               <span className="cart-stock-dot"></span>
-                              Con hang ({item.stock})
+                              Tồn kho: {item.stock}
+                            </span>
+                            <span className="cart-stock-remaining">
+                              Còn lại sau khi thêm: {item.remainingStock}
                             </span>
                             <span className="cart-price">{formatCurrency(item.price)}</span>
                           </div>
@@ -196,7 +207,7 @@ export default function Cart() {
                               <button
                                 type="button"
                                 disabled={updatingBoxId === item.id || item.quantity <= 1}
-                                onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                onClick={() => updateQuantity(item, item.quantity - 1)}
                                 className="cart-quantity-btn"
                               >
                                 <FiMinus />
@@ -204,8 +215,8 @@ export default function Cart() {
                               <input type="number" value={item.quantity} readOnly className="cart-quantity-input" />
                               <button
                                 type="button"
-                                disabled={updatingBoxId === item.id}
-                                onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                disabled={updatingBoxId === item.id || item.quantity >= item.stock}
+                                onClick={() => updateQuantity(item, item.quantity + 1)}
                                 className="cart-quantity-btn"
                               >
                                 <FiPlus />
@@ -219,7 +230,7 @@ export default function Cart() {
                               type="button"
                               onClick={() => removeItem(item.id)}
                               className="cart-remove-btn"
-                              title="Xoa san pham"
+                              title="Xóa sản phẩm"
                               disabled={updatingBoxId === item.id}
                             >
                               <FiTrash2 />
@@ -236,20 +247,20 @@ export default function Cart() {
             <div className="cart-checkout-section">
               <div className="cart-subtotal-box">
                 <div className="cart-subtotal-row">
-                  <span>Tam tinh cac san pham da chon</span>
+                  <span>Tạm tính các sản phẩm đã chọn</span>
                   <span className="cart-subtotal-amount">{formatCurrency(subtotal)}</span>
                 </div>
               </div>
 
               <div className="cart-action-buttons">
-                <Link className="cart-btn-continue" to="/marketplace">Tiep tuc mua sam</Link>
+                <Link className="cart-btn-continue" to="/marketplace">Tiếp tục mua sắm</Link>
                 <button
                   type="button"
                   onClick={handleCheckout}
                   className="cart-btn-checkout"
                   disabled={selectedBoxIds.length === 0}
                 >
-                  Thanh toan
+                  Thanh toán
                 </button>
               </div>
             </div>

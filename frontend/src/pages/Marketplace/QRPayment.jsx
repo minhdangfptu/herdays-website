@@ -17,11 +17,11 @@ import './QRPayment.scss';
 const QR_EXPIRES_SECONDS = 10 * 60;
 const POLL_INTERVAL_MS = 4000;
 
-const BANK_CODE = 'TPB';
-const BANK_NAME = 'TPBank';
-const BANK_ACCOUNT_NUMBER = '00000116625';
-const BANK_ACCOUNT_DISPLAY = '0000 0116 625';
-const BANK_ACCOUNT_NAME = 'HOANG VINH GIANG';
+const BANK_CODE = 'MB';
+const BANK_NAME = 'MB Bank';
+const BANK_ACCOUNT_NUMBER = '1886925122004';
+const BANK_ACCOUNT_DISPLAY = '1886 9251 22004';
+const BANK_ACCOUNT_NAME = 'NGUYEN QUY HOANG';
 
 const SUCCESS_STATUSES = ['confirmed', 'delivered', 'deleted'];
 
@@ -45,6 +45,7 @@ export default function QRPayment() {
   const [secondsRemaining, setSecondsRemaining] = useState(QR_EXPIRES_SECONDS);
   const [orderStatus, setOrderStatus] = useState('pending');
   const [isCancelling, setIsCancelling] = useState(false);
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [statusError, setStatusError] = useState('');
 
   const amount = Number(state?.amount) || 0;
@@ -116,18 +117,26 @@ export default function QRPayment() {
     navigate('/marketplace');
   };
 
-  const handleCancelOrder = async () => {
+  const handleCancelOrder = () => {
     if (!orderId) {
       navigate('/marketplace');
       return;
     }
 
-    if (!window.confirm('Bạn chắc chắn muốn hủy giao dịch này?')) return;
+    setIsCancelModalOpen(true);
+  };
 
+  const handleCloseCancelModal = () => {
+    if (isCancelling) return;
+    setIsCancelModalOpen(false);
+  };
+
+  const handleConfirmCancelOrder = async () => {
     setIsCancelling(true);
     try {
       const order = await orderApi.cancel(orderId);
       setOrderStatus(order.orderStatus || 'cancelled');
+      setIsCancelModalOpen(false);
       toast.success('Đã hủy giao dịch.');
     } catch (error) {
       const message = error.message === 'Only pending orders can be cancelled'
@@ -285,6 +294,45 @@ export default function QRPayment() {
         </div>
 
       </div>
+
+      {isCancelModalOpen && (
+        <div className="herdays-qrpayment-modal-overlay" onClick={handleCloseCancelModal}>
+          <div
+            className="herdays-qrpayment-cancel-modal"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="qrpayment-cancel-modal-title"
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="herdays-qrpayment-cancel-modal__icon">
+              <XCircle size={32} />
+            </div>
+            <h2 id="qrpayment-cancel-modal-title">Hủy giao dịch?</h2>
+            <p>
+              Bạn có chắc muốn hủy giao dịch cho đơn hàng <strong>{orderCode}</strong> không?
+              Đơn hàng đang chờ thanh toán sẽ được chuyển sang trạng thái hủy.
+            </p>
+            <div className="herdays-qrpayment-cancel-modal__actions">
+              <button
+                type="button"
+                className="herdays-qrpayment-cancel-modal__btn herdays-qrpayment-cancel-modal__btn--secondary"
+                disabled={isCancelling}
+                onClick={handleCloseCancelModal}
+              >
+                Không
+              </button>
+              <button
+                type="button"
+                className="herdays-qrpayment-cancel-modal__btn herdays-qrpayment-cancel-modal__btn--danger"
+                disabled={isCancelling}
+                onClick={handleConfirmCancelOrder}
+              >
+                {isCancelling ? 'Đang hủy...' : 'Có, hủy giao dịch'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

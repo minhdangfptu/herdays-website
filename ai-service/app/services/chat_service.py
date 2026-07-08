@@ -82,15 +82,26 @@ class ChatService:
                 logger.warning("OpenAI text generation failed; using fallback answer.", exc_info=exc)
                 model_result = None
 
-        answer = (
-            model_result.text
-            if model_result and model_result.text
-            else build_fallback_answer(request, citations, safety.level)
-        )
-
         recommendations = []
-        if should_recommend_products(safety.level, intent):
-            recommendations = recommend_products(request)
+        is_product_request = should_recommend_products(safety.level, intent)
+        is_caremode_list_request = wants_caremode_box_list(request.user_message)
+        if is_product_request:
+            recommendations = recommend_products(
+                request,
+                include_all_matching=is_caremode_list_request,
+            )
+
+        answer = (
+            build_product_recommendation_answer(recommendations)
+            if recommendations
+            else build_empty_box_answer(request, is_caremode_list_request)
+            if is_product_request
+            else (
+                model_result.text
+                if model_result and model_result.text
+                else build_fallback_answer(request, citations, safety.level)
+            )
+        )
 
         return ChatResponse(
             answer=answer,
@@ -197,7 +208,138 @@ def build_fallback_answer(
     )
 
 
-def recommend_products(request: ChatRequest) -> list[ProductRecommendation]:
+def clean_product_benefit(value: str) -> str:
+    benefit = value.strip()
+    if benefit.lower().startswith("category:"):
+        return f"nhóm {benefit.split(':', 1)[1].strip()}"
+    if benefit.lower().startswith("includes:"):
+        return f"có {benefit.split(':', 1)[1].strip()}"
+    return benefit
+
+
+TARGET_STATUS_ALIASES: dict[str, tuple[str, ...]] = {
+    "periodTracking": (
+        "periodtracking",
+        "period",
+        "chu ky",
+        "kinh nguyet",
+        "ngay dau",
+        "ky kinh",
+        "cham soc ky kinh",
+        "giam dau",
+        "ve sinh ca nhan",
+    ),
+    "pregnant": (
+        "pregnant",
+        "pregnancy",
+        "mang thai",
+        "thai ky",
+        "bau",
+    ),
+    "tryingToConceive": (
+        "tryingtoconceive",
+        "fertility",
+        "thu thai",
+        "co thai",
+        "sinh san",
+    ),
+    "ivf": ("ivf",),
+    "partner": ("partner", "nguoi than", "ban doi"),
+    "relatives": ("relatives", "nguoi than", "ban doi"),
+}
+
+
+def wants_caremode_box_list(message: str) -> bool:
+    normalized = normalize_text(message)
+    has_list_signal = any(
+        pattern in normalized
+        for pattern in (
+            "tat ca",
+            "danh sach",
+            "liet ke",
+            "xem cac",
+            "xem tat ca",
+            "co nhung box",
+            "cac box",
+        )
+    )
+    has_caremode_signal = any(
+        pattern in normalized
+        for pattern in ("caremode", "care mode", "mode cua toi", "phu hop voi toi")
+    )
+    return has_list_signal and (has_caremode_signal or "box" in normalized)
+
+
+def candidate_search_text(product: ProductCandidate) -> str:
+    return " ".join(
+        [
+            product.name,
+            *product.target_statuses,
+            *product.recommendation_tags,
+            *product.benefits,
+        ]
+    )
+
+
+def matches_target_status(product: ProductCandidate, target_status: str | None) -> bool:
+    if not target_status:
+        return True
+
+    aliases = TARGET_STATUS_ALIASES.get(target_status, (target_status,))
+    normalized_text = normalize_text(candidate_search_text(product))
+    return any(normalize_text(alias) in normalized_text for alias in aliases)
+
+
+def build_empty_box_answer(request: ChatRequest, is_caremode_list_request: bool) -> str:
+    available_count = sum(
+        1
+        for product in request.product_candidates
+        if product.is_active and product.in_stock and product.is_customizable and product.customize_url
+    )
+
+    if available_count == 0:
+        return "Hiện chưa có box nào trong hệ thống."
+
+    if is_caremode_list_request:
+        return "Hiện chưa có box nào trong caremode của bạn trong hệ thống."
+
+    return "Hiện chưa có box phù hợp với nhu cầu này trong hệ thống."
+
+
+def build_product_recommendation_answer(
+    recommendations: list[ProductRecommendation],
+) -> str:
+    primary = recommendations[0]
+    benefit_items = [
+        clean_product_benefit(benefit)
+        for benefit in primary.benefits
+        if benefit and benefit.strip()
+    ][:3]
+    benefit_sentence = (
+        f" Box này hỗ trợ {', '.join(benefit_items)}."
+        if benefit_items and "hỗ trợ" not in primary.reason.lower()
+        else ""
+    )
+
+    if len(recommendations) == 1:
+        return (
+            f"Mình gợi ý {primary.title} cho nhu cầu của bạn. "
+            f"{primary.reason}{benefit_sentence} "
+            "Bạn có thể bấm Xem box để xem chi tiết hoặc Tùy chỉnh box để chỉnh lại theo nhu cầu."
+        )
+
+    other_titles = ", ".join(item.title for item in recommendations[1:])
+    return (
+        f"Mình tìm thấy {len(recommendations)} box phù hợp. "
+        f"Ưu tiên đầu tiên là {primary.title}: {primary.reason}{benefit_sentence} "
+        f"Các lựa chọn khác gồm {other_titles}; bạn có thể so sánh trong các thẻ bên dưới."
+    )
+
+
+def recommend_products(
+    request: ChatRequest,
+    include_all_matching: bool = False,
+) -> list[ProductRecommendation]:
     scored_products: list[tuple[float, ProductCandidate, str]] = []
     normalized_message = normalize_text(request.user_message)
     normalized_target = normalize_text(request.user_context.target_status or "")
@@ -207,14 +349,15 @@ def recommend_products(request: ChatRequest) -> list[ProductRecommendation]:
             continue
         if not product.is_customizable or not product.customize_url:
             continue
+        if include_all_matching and not matches_target_status(product, request.user_context.target_status):
+            continue
 
-        score = 0.2
+        score = 0.35
         reasons: list[str] = []
-        product_targets = [normalize_text(item) for item in product.target_statuses]
 
-        if normalized_target and normalized_target in product_targets:
+        if normalized_target and matches_target_status(product, request.user_context.target_status):
             score += 0.4
-            reasons.append("phù hợp với hành trình hiện tại")
+            reasons.append("phù hợp với caremode hiện tại của bạn")
 
         tag_hits = [
             tag
@@ -236,10 +379,23 @@ def recommend_products(request: ChatRequest) -> list[ProductRecommendation]:
         if score < 0.3:
             continue
 
-        reason = "Box này " + " và ".join(reasons) if reasons else "Box này có thể phù hợp."
+        if reasons:
+            reason = "Box này " + " và ".join(reasons) + "."
+        else:
+            support_items = [
+                clean_product_benefit(benefit)
+                for benefit in product.benefits
+                if benefit and benefit.strip()
+            ][:2]
+            reason = (
+                f"Box này hỗ trợ {', '.join(support_items)}."
+                if support_items
+                else "Box này là lựa chọn phù hợp để bạn xem thêm."
+            )
         scored_products.append((min(score, 1), product, reason))
 
     scored_products.sort(key=lambda item: item[0], reverse=True)
+    limit = len(scored_products) if include_all_matching else 3
 
     return [
         ProductRecommendation(
@@ -247,10 +403,14 @@ def recommend_products(request: ChatRequest) -> list[ProductRecommendation]:
             title=product.name,
             reason=reason,
             benefits=product.benefits[:4],
+            price=product.price,
+            currency=product.currency,
+            thumbnail=product.thumbnail,
+            detail_url=product.detail_url,
             customize_url=product.customize_url,
             confidence=score,
         )
-        for score, product, reason in scored_products[:3]
+        for score, product, reason in scored_products[:limit]
     ]
 
 

@@ -23,6 +23,25 @@ def test_intent_detects_product_discovery() -> None:
     assert intent.name == UserIntent.product_discovery
 
 
+def test_intent_detects_shopping_language() -> None:
+    messages = [
+        "minh muon mua do cham soc chu ky",
+        "mua qua cho ban gai",
+        "dat box phu hop",
+    ]
+
+    for message in messages:
+        intent = IntentService().assess(message)
+
+        assert intent.name == UserIntent.product_discovery
+
+
+def test_intent_detects_caremode_box_list() -> None:
+    intent = IntentService().assess("xem tat ca box trong caremode cua toi")
+
+    assert intent.name == UserIntent.product_discovery
+
+
 def test_intent_drives_app_cta() -> None:
     request = ChatRequest(userMessage="nhac lich cho minh")
     intent = IntentService().assess(request.user_message)

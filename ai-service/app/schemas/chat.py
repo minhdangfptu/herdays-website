@@ -70,6 +70,8 @@ class ProductCandidate(CamelModel):
     is_active: bool = True
     is_customizable: bool = False
     in_stock: bool = True
+    thumbnail: str | None = Field(default=None, max_length=400)
+    detail_url: str | None = Field(default=None, max_length=400)
     customize_url: str | None = Field(default=None, max_length=400)
 
 
@@ -104,6 +106,10 @@ class ProductRecommendation(CamelModel):
     title: str
     reason: str
     benefits: list[str] = Field(default_factory=list)
+    price: float | None = Field(default=None, ge=0)
+    currency: str = Field(default="VND", max_length=8)
+    thumbnail: str | None = Field(default=None, max_length=400)
+    detail_url: str | None = Field(default=None, max_length=400)
     customize_url: str | None = None
     confidence: float = Field(ge=0, le=1)
 

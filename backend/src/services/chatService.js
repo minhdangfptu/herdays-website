@@ -3,6 +3,7 @@ import sanitizeHtml from 'sanitize-html';
 
 import env from '../config/environment.js';
 import BlogPost from '../models/blogPostModel.js';
+import Box from '../models/boxModel.js';
 import ChatConversation from '../models/chatConversationModel.js';
 import ChatMessage from '../models/chatMessageModel.js';
 import { requestChatResponse } from '../providers/aiServiceProvider.js';
@@ -18,6 +19,7 @@ const GUEST_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const MEMBER_HISTORY_LIMIT = 50;
 const BLOG_CITATION_LIMIT = 3;
 const BLOG_SEARCH_LIMIT = 80;
+const SHOP_BOX_CANDIDATE_LIMIT = 20;
 const BLOG_STOP_WORDS = new Set([
   'ban',
   'bai',
@@ -75,11 +77,96 @@ const buildBlogPostUrl = (post) => {
   return `${frontendUrl}/blog/${topicId}/posts/${post._id.toString()}`;
 };
 
+const buildBoxDetailUrl = (boxId) => `/product-detail/box/${boxId}`;
+
+const buildBoxCustomizeUrl = (boxId) => `/box-customize/${boxId}`;
+
 const hasBlogCitation = (citations = []) => citations.some((citation) => citation?.sourceType === 'blog');
 
 const getTokenHitCount = (queryTokens, text) => {
   const textTokens = new Set(tokenize(text));
   return queryTokens.reduce((total, token) => total + (textTokens.has(token) ? 1 : 0), 0);
+};
+
+const hasShopIntent = (value = '') => {
+  const normalized = normalizeText(value);
+  return [
+    'box',
+    'san pham',
+    'mua do',
+    'mua hang',
+    'muon mua',
+    'mua qua',
+    'dat box',
+    'xem shop',
+    'vao shop',
+    'shop',
+    'goi y',
+    'nen mua',
+    'caremode',
+    'care mode'
+  ].some((pattern) => normalized.includes(pattern));
+};
+
+const uniqueNonEmpty = (items = []) => [
+  ...new Set(items
+    .map((item) => (item || '').toString().trim())
+    .filter(Boolean))
+];
+
+const mapBoxToProductCandidate = (box) => {
+  const boxId = box._id.toString();
+  const products = box.products || [];
+  const productNames = products.map((item) => item.productId?.productName);
+  const productCategories = [
+    ...(box.productCategories || []),
+    ...products.map((item) => item.productId?.category)
+  ];
+
+  const targetStatuses = uniqueNonEmpty([
+    box.category,
+    ...productCategories
+  ]).slice(0, 12);
+
+  const recommendationTags = uniqueNonEmpty([
+    box.boxName,
+    box.category,
+    box.description,
+    ...productCategories,
+    ...productNames
+  ]).slice(0, 30);
+
+  const benefits = uniqueNonEmpty([
+    box.description,
+    ...productCategories.map((category) => `Category: ${category}`),
+    ...productNames.map((name) => `Includes: ${name}`)
+  ]).slice(0, 12);
+
+  return {
+    productId: boxId,
+    name: box.boxName,
+    targetStatuses,
+    recommendationTags,
+    benefits,
+    price: box.price,
+    currency: 'VND',
+    isActive: true,
+    isCustomizable: true,
+    inStock: box.quantity > 0,
+    customizeUrl: buildBoxCustomizeUrl(boxId),
+    thumbnail: box.thumbnail,
+    detailUrl: buildBoxDetailUrl(boxId)
+  };
+};
+
+const getAvailableBoxCandidates = async () => {
+  const boxes = await Box.find({ quantity: { $gt: 0 } })
+    .sort({ createdAt: -1 })
+    .limit(SHOP_BOX_CANDIDATE_LIMIT)
+    .populate('products.productId', 'productName category')
+    .lean();
+
+  return boxes.map(mapBoxToProductCandidate);
 };
 
 const buildFallbackBlogCitations = async (userMessage, citations = []) => {
@@ -130,7 +217,13 @@ const hydrateMessagesWithFallbackBlogCitations = async (messages) => {
       continue;
     }
 
-    if (message.role !== 'assistant' || !previousUserMessage || hasBlogCitation(message.citations)) {
+    if (
+      message.role !== 'assistant'
+      || !previousUserMessage
+      || hasBlogCitation(message.citations)
+      || (message.recommendedProducts || []).length > 0
+      || hasShopIntent(previousUserMessage)
+    ) {
       continue;
     }
 
@@ -216,7 +309,7 @@ const findOwnedConversation = async ({ conversationId, userId, sessionId }) => {
   return conversation;
 };
 
-const buildAiPayload = ({ conversation, userMessage, history, memory }) => ({
+const buildAiPayload = ({ conversation, userMessage, history, memory, productCandidates }) => ({
   conversationId: conversation._id.toString(),
   userMessage,
   language: 'vi',
@@ -237,7 +330,7 @@ const buildAiPayload = ({ conversation, userMessage, history, memory }) => ({
     tags: [],
     limit: 5
   },
-  productCandidates: []
+  productCandidates
 });
 
 const buildConversationContext = async ({ userId, payload }) => {
@@ -324,6 +417,7 @@ export const sendMessage = async ({ conversationId, userId, sessionId, payload }
     .limit(12);
   const orderedHistory = history.reverse();
   const memory = await getChatMemory(conversation._id.toString());
+  const productCandidates = await getAvailableBoxCandidates();
 
   const userMessage = await ChatMessage.create({
     conversation: conversation._id,
@@ -344,10 +438,15 @@ export const sendMessage = async ({ conversationId, userId, sessionId, payload }
       conversation,
       userMessage: payload.userMessage,
       history: orderedHistory,
-      memory
+      memory,
+      productCandidates
     })
   );
-  aiResponse.citations = await buildFallbackBlogCitations(payload.userMessage, aiResponse.citations || []);
+  if ((aiResponse.recommendedProducts || []).length > 0 || hasShopIntent(payload.userMessage)) {
+    aiResponse.citations = [];
+  } else {
+    aiResponse.citations = await buildFallbackBlogCitations(payload.userMessage, aiResponse.citations || []);
+  }
 
   const assistantMessage = await ChatMessage.create({
     conversation: conversation._id,

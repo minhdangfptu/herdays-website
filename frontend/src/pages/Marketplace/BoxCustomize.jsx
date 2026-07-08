@@ -1,8 +1,9 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { MdKeyboardArrowRight } from 'react-icons/md'
-import { cartApi, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
 import './BoxCustomize.scss'
 
 const formatCurrency = (value) =>
@@ -15,9 +16,14 @@ const formatCurrency = (value) =>
 const getProductImage = (product) =>
   product.thumbnail || `https://placehold.co/280x280/f8c4d8/ffffff?text=${encodeURIComponent(product.productName || 'HerDays')}`
 
+const getBoxName = (box) => box?.boxName || 'HerDays Box của bạn'
+
+const getBoxImage = (box) =>
+  box?.thumbnail || `https://placehold.co/360x360/f8c4d8/ffffff?text=${encodeURIComponent(getBoxName(box))}`
+
 const normalizeBoxProduct = (item) => ({
   id: String(item.productId),
-  productName: item.productName || 'San pham trong box',
+  productName: item.productName || 'Sản phẩm trong box',
   category: item.category || 'Trong box',
   thumbnail: item.thumbnail,
   quantity: item.quantity || 1
@@ -32,6 +38,8 @@ export default function BoxCustomize() {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [isAdding, setIsAdding] = useState(false)
+  const [cartBoxQuantities, setCartBoxQuantities] = useState({})
+  const checkoutButtonRef = useRef(null)
 
   useEffect(() => {
     let isMounted = true
@@ -41,9 +49,12 @@ export default function BoxCustomize() {
       setErrorMessage('')
 
       try {
-        const [productResult, boxResult] = await Promise.all([
+        const [productResult, boxResult, cartResult] = await Promise.all([
           marketplaceApi.listProducts({ limit: 100 }),
-          boxId ? marketplaceApi.getBox(boxId) : Promise.resolve(null)
+          boxId ? marketplaceApi.getBox(boxId) : Promise.resolve(null),
+          hasAuthSession()
+            ? cartApi.getCart().catch(() => null)
+            : Promise.resolve(null)
         ])
 
         if (!isMounted) return
@@ -54,8 +65,9 @@ export default function BoxCustomize() {
         setProducts(nextProducts)
         setBox(boxResult)
         setSelectedItems(initialProducts)
+        setCartBoxQuantities(getCartBoxQuantities(cartResult))
       } catch (error) {
-        if (isMounted) setErrorMessage(error.message || 'Khong the tai du lieu customize box.')
+        if (isMounted) setErrorMessage(error.message || 'Không thể tải dữ liệu tùy chỉnh box.')
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -70,7 +82,7 @@ export default function BoxCustomize() {
 
   const groupedProducts = useMemo(() => (
     products.reduce((acc, product) => {
-      const category = product.category || 'San pham khac'
+      const category = product.category || 'Sản phẩm khác'
       if (!acc[category]) acc[category] = []
       acc[category].push(product)
       return acc
@@ -98,26 +110,44 @@ export default function BoxCustomize() {
     ])
   }
 
+  const availableBoxQuantity = box
+    ? Math.max((Number(box.quantity) || 0) - (cartBoxQuantities[String(box.id)] || 0), 0)
+    : 0
+
   const handleBuyNow = async () => {
     if (!box?.id) {
-      toast.error('Vui long chon mot box truoc khi mua.')
+      toast.error('Vui lòng chọn một box trước khi mua.')
+      return
+    }
+
+    if (availableBoxQuantity <= 0) {
+      toast.error('Box này đã hết hàng.')
       return
     }
 
     if (!hasAuthSession()) {
-      toast.error('Vui long dang nhap de them box vao gio hang.')
+      toast.error('Vui lòng đăng nhập để thêm box vào giỏ hàng.')
       navigate('/login')
       return
     }
 
     setIsAdding(true)
+    const flySourceRect = getFlyToCartSourceRect(checkoutButtonRef.current)
 
     try {
-      await cartApi.addItem({ boxId: box.id, quantity: 1 })
-      toast.success('Da them box vao gio hang.')
+      const cart = await cartApi.addItem({ boxId: box.id, quantity: 1 })
+      const flyAnimation = flyToCart({
+        sourceRect: flySourceRect,
+        targetElement: getCartTargetElement(),
+        imageUrl: getBoxImage(box),
+        label: getBoxName(box)
+      })
+      setCartBoxQuantities(getCartBoxQuantities(cart))
+      await flyAnimation
+      toast.success('Đã thêm box vào giỏ hàng.')
       navigate('/check-out')
     } catch (error) {
-      toast.error(error.message || 'Khong the them box vao gio hang.')
+      toast.error(error.message || 'Không thể thêm box vào giỏ hàng.')
     } finally {
       setIsAdding(false)
     }
@@ -127,28 +157,28 @@ export default function BoxCustomize() {
     <div className="box-customize-page">
       <div className="box-customize-container">
         <div className="box-breadcrumb">
-          <Link to="/">Trang chu</Link>
+          <Link to="/">Trang chủ</Link>
           <MdKeyboardArrowRight />
-          <Link to="/marketplace">Cua hang</Link>
+          <Link to="/marketplace">Cửa hàng</Link>
           <MdKeyboardArrowRight />
-          <span className="box-breadcrumb-active">{box?.boxName || 'HerDays Box cua ban'}</span>
+          <span className="box-breadcrumb-active">{box?.boxName || 'HerDays Box của bạn'}</span>
         </div>
 
         <div className="box-header">
-          <h1 className="box-title">{box?.boxName || 'HerDays Box cua ban'}</h1>
+          <h1 className="box-title">{box?.boxName || 'HerDays Box của bạn'}</h1>
           <p className="box-subtitle">
-            {box?.description || 'Chon san pham tu marketplace de xem cau hinh box ca nhan hoa.'}
+            {box?.description || 'Chọn sản phẩm từ marketplace để xem cấu hình box cá nhân hóa.'}
           </p>
         </div>
 
-        {loading && <p className="box-customize-status">Dang tai san pham...</p>}
+        {loading && <p className="box-customize-status">Đang tải sản phẩm...</p>}
         {errorMessage && <p className="box-customize-status box-customize-status--error">{errorMessage}</p>}
 
         {!loading && !errorMessage && (
           <div className="box-selection-card">
             <div className="selection-card-body">
               {Object.keys(groupedProducts).length === 0 ? (
-                <p className="box-customize-status">Chua co san pham nao de tuy chinh box.</p>
+                <p className="box-customize-status">Chưa có sản phẩm nào để tùy chỉnh box.</p>
               ) : (
                 Object.entries(groupedProducts).map(([category, categoryProducts]) => (
                   <div key={category} className="category-section">
@@ -172,7 +202,7 @@ export default function BoxCustomize() {
                             <div className="product-info">
                               <h3 className="product-name">{product.productName}</h3>
                               <div className="product-meta">
-                                <span className="product-tag">{product.quantity > 0 ? `Con ${product.quantity}` : 'Het hang'}</span>
+                                <span className="product-tag">{product.quantity > 0 ? `Còn ${product.quantity}` : 'Hết hàng'}</span>
                               </div>
                             </div>
                           </button>
@@ -190,19 +220,21 @@ export default function BoxCustomize() {
       <div className="sticky-bottom-bar">
         <div className="bar-content">
           <div className="bar-left">
-            <span className="bar-title">{box?.boxName || 'Box ca nhan hoa'}</span>
+            <span className="bar-title">{box?.boxName || 'Box cá nhân hóa'}</span>
             <span className="bar-price">{formatCurrency(box?.price || 0)}</span>
           </div>
 
           <div className="bar-right">
-            <span className="bar-count">Da chon {selectedItems.length} san pham</span>
+            <span className="bar-count">Đã chọn {selectedItems.length} sản phẩm</span>
+            <span className="bar-stock">{availableBoxQuantity > 0 ? `Còn ${availableBoxQuantity}` : 'Hết hàng'}</span>
             <button
+              ref={checkoutButtonRef}
               className="bar-checkout-btn"
               type="button"
-              disabled={isAdding || !box?.id}
+              disabled={isAdding || !box?.id || availableBoxQuantity <= 0}
               onClick={handleBuyNow}
             >
-              {isAdding ? 'Dang them...' : 'Mua ngay'}
+              {isAdding ? 'Đang thêm...' : 'Mua ngay'}
             </button>
           </div>
         </div>

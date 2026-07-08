@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { cartApi, hasAuthSession, orderApi } from '../../services/apiService.js'
 import { RefreshCw } from 'lucide-react'
+import { cartApi, hasAuthSession, notifyCartChanged, orderApi } from '../../services/apiService.js'
 import './Checkout.scss'
 
 const formatCurrency = (value) =>
@@ -15,11 +15,15 @@ const formatCurrency = (value) =>
 const normalizeCartItem = (item) => {
   const box = item.boxId || {}
   const boxId = box._id || box.id || item.boxId
+  const stock = Number(box.quantity) || 0
+  const quantity = item.quantity || 1
 
   return {
-    id: boxId,
+    id: String(boxId),
     name: box.boxName || 'HerDays Box',
-    quantity: item.quantity || 1,
+    quantity,
+    stock,
+    remainingStock: Math.max(stock - quantity, 0),
     price: Number(box.price) || 0,
     image: box.thumbnail || `https://placehold.co/160x160/f8c4d8/ffffff?text=${encodeURIComponent(box.boxName || 'Box')}`
   }
@@ -51,7 +55,7 @@ export default function Checkout() {
     if (!hasAuthSession()) {
       toast.error('Vui lòng đăng nhập để xem sản phẩm thanh toán.')
       navigate('/login', { replace: true })
-      return
+      return undefined
     }
 
     let isMounted = true
@@ -88,14 +92,19 @@ export default function Checkout() {
     [selectedCartItems]
   )
 
-  const selectedPlanData = SUBSCRIPTION_PLANS.find(p => p.months === selectedPlan) || SUBSCRIPTION_PLANS[0]
+  const selectedPlanData = SUBSCRIPTION_PLANS.find((plan) => plan.months === selectedPlan) || SUBSCRIPTION_PLANS[0]
   const discountPercent = selectedPlanData.discount
   const discountAmount = subtotal * discountPercent / 100
   const orderTotal = subtotal - discountAmount
 
-  const handleQuantityChange = async (boxId, quantity) => {
+  const handleQuantityChange = async (item, quantity) => {
     if (quantity < 1) return
+    if (quantity > item.stock) {
+      toast.error('Số lượng vượt quá tồn kho hiện có.')
+      return
+    }
 
+    const boxId = item.id
     setUpdatingBoxId(boxId)
 
     try {
@@ -118,7 +127,7 @@ export default function Checkout() {
       setSelectedBoxIds((current) => (
         current.filter((id) => nextItems.some((item) => String(item.id) === String(id)))
       ))
-      toast.success('Đã xóa sản phẩm khỏi sản phẩm thanh toán.')
+      toast.success('Đã xóa sản phẩm khỏi danh sách thanh toán.')
     } catch (error) {
       toast.error(error.message || 'Không thể xóa sản phẩm.')
     } finally {
@@ -148,7 +157,9 @@ export default function Checkout() {
         paymentMethod: 'bank_transfer',
         boxIds: selectedBoxIds
       })
-      setCartItems((current) => current.filter((item) => !selectedBoxIds.includes(String(item.id))))
+      const nextItems = cartItems.filter((item) => !selectedBoxIds.includes(String(item.id)))
+      setCartItems(nextItems)
+      notifyCartChanged({ items: nextItems })
       setSelectedBoxIds([])
       navigate('/qr-payment', {
         state: {
@@ -158,7 +169,7 @@ export default function Checkout() {
         }
       })
     } catch (error) {
-      toast.error(error.message || 'KhÃ´ng thá»ƒ táº¡o Ä‘Æ¡n hÃ ng.')
+      toast.error(error.message || 'Không thể tạo đơn hàng.')
     } finally {
       setIsCheckingOut(false)
     }
@@ -195,7 +206,7 @@ export default function Checkout() {
                   <div className="herdays-checkout-product-list">
                     {cartItems.map((item) => (
                       <div key={item.id} className="herdays-checkout-product-item">
-                        <label className="product-select" aria-label="Chon san pham thanh toan">
+                        <label className="product-select" aria-label="Chọn sản phẩm thanh toán">
                           <input
                             type="checkbox"
                             checked={selectedBoxIds.includes(String(item.id))}
@@ -207,19 +218,22 @@ export default function Checkout() {
                         </div>
                         <div className="product-info">
                           <h3 className="product-name">{item.name}</h3>
+                          <p className="product-stock-note">
+                            Tồn kho: {item.stock} - Còn lại sau khi thêm: {item.remainingStock}
+                          </p>
                           <div className="product-quantity-control">
                             <button
                               type="button"
                               disabled={updatingBoxId === item.id || item.quantity <= 1}
-                              onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                              onClick={() => handleQuantityChange(item, item.quantity - 1)}
                             >
                               -
                             </button>
                             <span>{item.quantity}</span>
                             <button
                               type="button"
-                              disabled={updatingBoxId === item.id}
-                              onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
+                              disabled={updatingBoxId === item.id || item.quantity >= item.stock}
+                              onClick={() => handleQuantityChange(item, item.quantity + 1)}
                             >
                               +
                             </button>
@@ -256,17 +270,9 @@ export default function Checkout() {
                       onClick={() => setSelectedPlan(plan.months)}
                     >
                       <span className="plan-label">{plan.label}</span>
-                      {/* {plan.badge && (
-                        <span className="plan-badge">{plan.badge}</span>
-                      )} */}
                     </button>
                   ))}
                 </div>
-                {/* {discountPercent > 0 && (
-                  <p className="subscription-savings">
-                    Tiết kiệm <strong>{formatCurrency(discountAmount)}</strong> với gói {selectedPlanData.label}
-                  </p>
-                )} */}
               </div>
 
               <div className="herdays-checkout-card">

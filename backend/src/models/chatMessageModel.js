@@ -18,6 +18,10 @@ const productRecommendationSchema = new mongoose.Schema(
     title: String,
     reason: String,
     benefits: [String],
+    price: Number,
+    currency: String,
+    thumbnail: String,
+    detailUrl: String,
     customizeUrl: String,
     confidence: Number
   },

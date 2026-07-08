@@ -187,6 +187,18 @@ $border-color: #EEEEEE;
       margin: 0 0 4px 0;
     }
 
+    .product-stock-note {
+      display: inline-flex;
+      width: fit-content;
+      border-radius: 999px;
+      padding: 4px 8px;
+      background: rgba($primary-pink, 0.08);
+      color: $primary-pink;
+      font-size: 12px;
+      font-weight: 700;
+      margin: 2px 0 0;
+    }
+
     .product-quantity {
       font-size: 14px;
       color: $text-gray;
