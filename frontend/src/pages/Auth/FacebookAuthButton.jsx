@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+import toast from 'react-hot-toast'
 import facebookLogo from '../../assets/facebook-logo.png'
 import { authApi } from '../../services/apiService.js'
 
@@ -97,11 +98,15 @@ function FacebookAuthButton({
       })
   }, [])
 
+  const handleDisabledClick = useCallback(() => {
+    toast.error('Tính năng đăng nhập bằng Facebook đang được phát triển.')
+  }, [])
+
   if (!facebookAppId) {
     return (
       <button
         type="button"
-        disabled
+        onClick={handleDisabledClick}
         title="Cần cấu hình VITE_FACEBOOK_APP_ID để đăng nhập Facebook"
       >
         <img src={facebookLogo} alt="" />

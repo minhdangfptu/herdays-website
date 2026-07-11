@@ -88,6 +88,9 @@ $font-dancing: 'Dancing Script', cursive;
     background-position: center 75%;
     min-height: 112vh;
   }
+  @media (max-height: 1080px) {
+    min-height: 900px;
+  }
 
   @media (max-width: 1200px) {
     min-height: 80vh;
