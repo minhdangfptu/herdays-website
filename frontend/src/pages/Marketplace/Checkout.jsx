@@ -206,22 +206,22 @@ export default function Checkout() {
                   <div className="herdays-checkout-product-list">
                     {cartItems.map((item) => (
                       <div key={item.id} className="herdays-checkout-product-item">
-                        <label className="product-select" aria-label="Chọn sản phẩm thanh toán">
+                        {/* <label className="product-select" aria-label="Chọn sản phẩm thanh toán">
                           <input
                             type="checkbox"
                             checked={selectedBoxIds.includes(String(item.id))}
                             onChange={() => toggleSelectItem(item.id)}
                           />
-                        </label>
+                        </label> */}
                         <div className="product-image">
                           <img src={item.image} alt={item.name} />
                         </div>
-                        <div className="product-info">
+                        <div  className="product-info-checkout">
                           <h3 className="product-name">{item.name}</h3>
-                          <p className="product-stock-note">
-                            Tồn kho: {item.stock} - Còn lại sau khi thêm: {item.remainingStock}
-                          </p>
-                          <div className="product-quantity-control">
+                          {/* <p className="product-stock-note">
+                            Còn trongkho: {item.stock} - Còn lại sau khi thêm: {item.remainingStock}
+                          </p> */}
+                          {/* <div className="product-quantity-control">
                             <button
                               type="button"
                               disabled={updatingBoxId === item.id || item.quantity <= 1}
@@ -237,7 +237,7 @@ export default function Checkout() {
                             >
                               +
                             </button>
-                          </div>
+                          </div> */}
                           <button
                             className="product-remove"
                             type="button"

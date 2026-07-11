@@ -225,13 +225,13 @@ $font-primary: 'Roboto', sans-serif;
   background-color: $primary-pink;
   box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.1);
   z-index: 999;
-  padding: 20px 0;
+  padding: 10px 0;
 }
 
 .bar-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 10px;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -248,13 +248,13 @@ $font-primary: 'Roboto', sans-serif;
   gap: 24px;
   
   .bar-title {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 800;
     color: $white;
   }
   
   .bar-price {
-    font-size: 24px;
+    font-size: 20px;
     font-weight: 700;
     color: $white;
   }
@@ -284,9 +284,9 @@ $font-primary: 'Roboto', sans-serif;
     background-color: $white;
     color: $primary-pink;
     border: none;
-    padding: 12px 32px;
+    padding: 10px 20px;
     border-radius: 24px;
-    font-size: 16px;
+    font-size: 14px;
     font-weight: 700;
     cursor: pointer;
     transition: transform 0.2s;

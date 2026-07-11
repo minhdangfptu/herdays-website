@@ -166,15 +166,14 @@ function Marketplace() {
         <div>
           <h1>Chọn box và sản phẩm chăm sóc phù hợp với hành trình của bạn</h1>
           <p>
-            Dữ liệu box và sản phẩm được lấy trực tiếp từ backend marketplace để đồng bộ với tồn kho,
-            giá bán và nội dung admin đã cấu hình.
+            Hãy lựa chọn box subcription phù hợp với nhu cầu của bạn và thêm vào giỏ hàng. 
           </p>
         </div>
         {categories.length > 0 && (
           <div className="marketplace-hero__goals" aria-label="Mục tiêu sản phẩm">
             {categories.map((category) => (
               <span className="marketplace-hero__goal" key={category}>
-                <span>Mục tiêu</span>
+                <span>Mục tiêu: </span>
                 {formatGoalLabel(category)}
               </span>
             ))}

@@ -4,6 +4,7 @@ import { Toaster } from "react-hot-toast";
 
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
+import MessengerButton from "./components/MessengerButton.jsx";
 import AdminSidebar from "./components/AdminSidebar.jsx";
 import BlogShell from "./components/blog/BlogShell.jsx";
 import BlogTopicsPage from "./pages/Blog/BlogTopicsPage.jsx";
@@ -89,6 +90,7 @@ function HeaderFooterLayout() {
       <Header />
       <Outlet />
       <Footer />
+      <MessengerButton />
     </>
   );
 }

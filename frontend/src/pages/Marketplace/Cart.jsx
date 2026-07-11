@@ -194,7 +194,7 @@ export default function Cart() {
                           <div className="cart-col-price">
                             <span className="cart-stock-status">
                               <span className="cart-stock-dot"></span>
-                              Tồn kho: {item.stock}
+                              Còn trong kho: {item.stock}
                             </span>
                             <span className="cart-stock-remaining">
                               Còn lại sau khi thêm: {item.remainingStock}
