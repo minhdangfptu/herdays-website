@@ -1,5 +1,5 @@
 // ============================================
-// BlogPostDetailPage – SCSS (blog-detail-* BEM)
+// BlogPostDetailPage - SCSS (blog-detail-* BEM)
 // ============================================
 
 $secondary-pink: #f472b6;
@@ -13,11 +13,13 @@ $pink-border: #fce7f3;
 
 $container-max: 920px;
 $page-padding: 40px;
+$font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
-// ── Root page wrapper ─────────────────────────────
+// -- Root page wrapper -----------------------------
 .blog-detail-page {
   min-height: 100vh;
   background-color: #fff;
+  font-family: $font-primary;
 }
 
 .blog-detail-back-button {
@@ -44,7 +46,7 @@ $page-padding: 40px;
   }
 }
 
-// ── Banner ────────────────────────────────────────
+// -- Banner ----------------------------------------
 .blog-detail-banner {
   width: 100%;
   background-color: $very-light-pink;
@@ -99,7 +101,7 @@ $page-padding: 40px;
   }
 }
 
-// ── Container ─────────────────────────────────────
+// -- Container -------------------------------------
 .blog-detail-container {
   max-width: $container-max;
   margin: 0 auto;
@@ -114,14 +116,14 @@ $page-padding: 40px;
   }
 }
 
-// ── Layout ────────────────────────────────────────
+// -- Layout ----------------------------------------
 .blog-detail-layout {
   display: flex;
   flex-direction: column;
   gap: 56px;
 }
 
-// ── Article card ──────────────────────────────────
+// -- Article card ----------------------------------
 .blog-detail-article {
   width: 100%;
   max-width: 760px;
@@ -218,7 +220,7 @@ $page-padding: 40px;
   object-fit: cover;
 }
 
-// ── Content body ──────────────────────────────────
+// -- Content body ----------------------------------
 // BE HTML structure: all inline content wrapped in <span>
 //   <h1/h2/h3><span>...</span></h>
 //   <p><span>...</span></p>  (img is inside span)
@@ -289,7 +291,7 @@ $page-padding: 40px;
     color: $secondary-pink;
   }
 
-  // Section headings — rendered by BE inside <h1>/<h2>/<h3> with <span>
+  // Section headings - rendered by BE inside <h1>/<h2>/<h3> with <span>
   h1 {
     font-size: 26px;
     font-weight: 800;
@@ -326,7 +328,7 @@ $page-padding: 40px;
     margin: 18px 0 6px;
   }
 
-  // Body paragraphs — BE wraps text in <p><span>...</span></p>
+  // Body paragraphs - BE wraps text in <p><span>...</span></p>
   p {
     margin: 0 0 12px;
     font-size: inherit;
@@ -360,7 +362,7 @@ $page-padding: 40px;
     object-fit: cover;
   }
 
-  // List item text — BE wraps list content in <span>
+  // List item text - BE wraps list content in <span>
   li span {
     font-size: inherit;
     line-height: inherit;
@@ -369,7 +371,7 @@ $page-padding: 40px;
   }
 }
 
-// ── Related Posts section ─────────────────────────
+// -- Related Posts section -------------------------
 .blog-detail-related {
   display: flex;
   flex-direction: column;

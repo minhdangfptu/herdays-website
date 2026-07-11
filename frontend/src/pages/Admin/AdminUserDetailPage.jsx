@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { ArrowLeft, Ban, Mail, Phone, Shield, UserRound } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Ban, Mail, Phone, Shield, UserRound, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -86,12 +86,75 @@ function DetailItem({ label, value }) {
   )
 }
 
+function DisableUserConfirmModal({ user, isSubmitting, onCancel, onConfirm }) {
+  if (!user) return null
+
+  const displayName = user.fullName || user.email || 'người dùng này'
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6" style={{ fontFamily: ADMIN_FONT_FAMILY }}>
+      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="mb-5 flex items-start justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500">
+              <AlertTriangle size={22} />
+            </span>
+            <div>
+              <h2 className="text-lg font-normal leading-6 text-slate-900">Xác nhận vô hiệu hóa</h2>
+              <p className="mt-1 text-sm font-medium leading-6 text-slate-500">
+                Tài khoản sau khi bị vô hiệu hóa sẽ không thể tiếp tục truy cập hệ thống.
+              </p>
+            </div>
+          </div>
+          <button
+            className="rounded-lg p-1.5 text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            aria-label="Đóng modal xác nhận"
+          >
+            <X size={18} />
+          </button>
+        </div>
+
+        <div className="rounded-xl border border-red-100 bg-red-50 px-4 py-3">
+          <p className="text-sm font-normal text-slate-700">Người dùng</p>
+          <p className="mt-1 text-base font-normal leading-6 text-slate-900">{displayName}</p>
+          {user.email && <p className="mt-1 text-sm font-medium text-slate-500">{user.email}</p>}
+        </div>
+
+        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+          <button
+            className="inline-flex h-10 items-center justify-center rounded-lg border border-slate-200 px-4 text-sm font-normal leading-5 text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+          >
+            Hủy
+          </button>
+          <button
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-lg bg-red-500 px-4 text-sm font-normal leading-5 text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+            type="button"
+            onClick={onConfirm}
+            disabled={isSubmitting}
+            style={{ fontFamily: ADMIN_FONT_FAMILY }}
+          >
+            <Ban size={16} />
+            {isSubmitting ? 'Đang vô hiệu hóa...' : 'Xác nhận vô hiệu hóa'}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 function AdminUserDetailPage() {
   const { userId } = useParams()
   const navigate = useNavigate()
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isDisabling, setIsDisabling] = useState(false)
+  const [isDisableModalOpen, setIsDisableModalOpen] = useState(false)
 
   useEffect(() => {
     let isActive = true
@@ -115,17 +178,25 @@ function AdminUserDetailPage() {
     }
   }, [userId])
 
+  const openDisableModal = () => {
+    if (!user || user.isDisabled) return
+    setIsDisableModalOpen(true)
+  }
+
+  const closeDisableModal = () => {
+    if (isDisabling) return
+    setIsDisableModalOpen(false)
+  }
+
   const handleDisableUser = async () => {
     if (!user || user.isDisabled) return
-
-    const confirmed = window.confirm(`Vô hiệu hóa tài khoản ${user.fullName || user.email}?`)
-    if (!confirmed) return
 
     setIsDisabling(true)
     const loadingToast = toast.loading('Đang vô hiệu hóa tài khoản...')
     try {
       const result = await adminApi.disableUser(user._id)
       setUser(result.user)
+      setIsDisableModalOpen(false)
       toast.success(result.message || 'Vô hiệu hóa tài khoản thành công.', { id: loadingToast })
     } catch (error) {
       toast.error(error.message || 'Không thể vô hiệu hóa tài khoản.', { id: loadingToast })
@@ -152,7 +223,7 @@ function AdminUserDetailPage() {
         <button
           className="inline-flex items-center justify-center gap-2 rounded-lg bg-pink-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
           type="button"
-          onClick={handleDisableUser}
+          onClick={openDisableModal}
           disabled={!user || user.isDisabled || isDisabling}
         >
           <Ban size={16} />
@@ -225,6 +296,15 @@ function AdminUserDetailPage() {
             </div>
           </section>
         </div>
+      )}
+
+      {isDisableModalOpen && (
+        <DisableUserConfirmModal
+          user={user}
+          isSubmitting={isDisabling}
+          onCancel={closeDisableModal}
+          onConfirm={handleDisableUser}
+        />
       )}
     </main>
   )
