@@ -84,10 +84,10 @@ $font-primary: 'Roboto', sans-serif;
 .tools-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 30px;
+  gap: 32px;
 
   @media (max-width: 1200px) {
-    gap: 24px;
+    gap: 28px;
   }
 
   @media (max-width: 1024px) {
@@ -114,17 +114,27 @@ $font-primary: 'Roboto', sans-serif;
   display: flex;
   flex-direction: column;
   gap: 16px;
+  padding: 12px;
+  border: 1.5px solid $border-gray;
+  border-radius: 12px;
   transition: all 0.3s ease;
   cursor: pointer;
+  background-color: $white;
 
   @media (max-width: 480px) {
     gap: 12px;
+    padding: 12px;
   }
 
   &:hover {
+    border-color: $primary-pink;
 
     .tools-card-image {
-      box-shadow: 0 12px 32px rgba(255, 129, 201, 0.15);
+      transform:  scale(1.03);
+    }
+    .tools-card-name {
+      color: $primary-pink;
+      transition: all 0.3s ease;
     }
   }
 }
@@ -138,7 +148,7 @@ $font-primary: 'Roboto', sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
 
   @media (max-width: 768px) {
@@ -155,6 +165,8 @@ $font-primary: 'Roboto', sans-serif;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transform-origin: center center;
+    transition: transform 0.3s ease;
   }
 }
 

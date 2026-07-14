@@ -110,19 +110,19 @@ $font-herdays: 'Lamoric Rowen', cursive;
     min-height: 112vh; 
   }
 
-  /* 5. Mốc 1536px chung (Phải đặt TRƯỚC 2 mốc chi tiết để không bị ghi đè) */
   @media (max-width: 1536px) {
-    min-height: 133vh; 
+    min-height: max(133vh, 950px); 
   }
 
   /* 6. 👉 DÀNH RIÊNG cho màn 1920x1200 zoom 125% (Cao 960px) */
   @media (max-width: 1536px) and (min-height: 865px) {
-    min-height: 115vh;
+    min-height: max(115vh, 900px);
   }
 
   /* 7. 👉 DÀNH RIÊNG cho màn 1920x1080 zoom 125% (Cao 864px) */
   @media (max-width: 1536px) and (max-height: 864px) {
-    min-height: 113vh; 
+    /* 🌟 BÍ THUẬT: Vẫn giữ 123vh bồ muốn, nhưng ép đáy không bao giờ thấp hơn 850px */
+    min-height: max(123vh, 850px); 
   }
 
   /* 8. Zoom 150% */

@@ -167,8 +167,9 @@ const BlogTopicsPage = () => {
   }, []);
 
   const personalizedTopic = useMemo(() => {
+    if (targetStatus === 'partner') return null;
     const preferredSlug = targetStatusTopicSlugs[targetStatus] || preferredTopicOrder[0];
-    return topics.find((topic) => topic.slug === preferredSlug) || topics[0] || null;
+    return topics.find((topic) => topic.slug === preferredSlug) || null;
   }, [targetStatus, topics]);
 
   const personalizedPosts = personalizedTopic ? postsByTopicId[personalizedTopic._id] || [] : [];
