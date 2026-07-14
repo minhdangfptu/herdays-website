@@ -33,7 +33,7 @@ $font-primary: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen'
 .blog-topics-banner {
   width: 100%;
   overflow: hidden;
-  margin-bottom: 60px;
+  margin-bottom: 30px;
 
   @media (max-width: 768px) {
     margin-bottom: 40px;
@@ -49,6 +49,113 @@ $font-primary: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Oxygen'
   height: auto;
   display: block;
   object-fit: cover;
+}
+
+// ============================================
+// Breadcrumb
+// ============================================
+
+.blog-topics-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $gray-text;
+  padding: 16px 0 4px;
+
+  a {
+    color: $secondary-pink;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+}
+
+// Breadcrumb Row (breadcrumb + search)
+// ============================================
+
+.blog-topics-breadcrumb-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 0 4px;
+  gap: 16px;
+
+  .blog-topics-breadcrumb {
+    padding: 0;
+  }
+}
+
+// Search Bar
+// ============================================
+
+.blog-topics-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+
+  &__icon {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: $gray-text;
+    pointer-events: none;
+  }
+
+  &__input {
+    width: 220px;
+    padding: 7px 38px 7px 34px;
+    border: 1px solid $light-gray-border;
+    border-radius: 8px;
+    font-size: 13px;
+    font-family: $font-primary;
+    background: $white;
+    color: $dark-text;
+    transition: border-color 0.2s, box-shadow 0.2s;
+
+    &::placeholder {
+      color: $gray-text;
+    }
+
+    &:focus {
+      outline: none;
+      border-color: $primary-pink;
+      box-shadow: 0 0 0 2px rgba(237, 119, 165, 0.15);
+    }
+  }
+
+  &__btn {
+    position: absolute;
+    right: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    padding: 4px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: $gray-text;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    transition: color 0.2s;
+
+    &:hover {
+      color: $primary-pink;
+    }
+
+    &-icon {
+      pointer-events: none;
+    }
+  }
 }
 
 // ============================================

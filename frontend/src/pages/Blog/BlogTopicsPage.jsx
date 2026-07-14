@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FiChevronRight } from 'react-icons/fi';
+import { Form, Search } from 'lucide-react';
 
 import { EmptyState, ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx';
 import { blogApi, hasAuthSession, profileApi } from '../../services/apiService.js';
@@ -109,11 +110,13 @@ const BlogSection = ({ title, subtitle, topic, posts, featured = false }) => {
 };
 
 const BlogTopicsPage = () => {
+  const navigate = useNavigate();
   const [topics, setTopics] = useState([]);
   const [postsByTopicId, setPostsByTopicId] = useState({});
   const [targetStatus, setTargetStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [searchInput, setSearchInput] = useState('');
 
   useEffect(() => {
     let isActive = true;
@@ -168,11 +171,26 @@ const BlogTopicsPage = () => {
     return topics.find((topic) => topic.slug === preferredSlug) || topics[0] || null;
   }, [targetStatus, topics]);
 
-  const visibleTopicSections = useMemo(() => (
-    topics.filter((topic) => (postsByTopicId[topic._id] || []).length > 0)
-  ), [postsByTopicId, topics]);
-
   const personalizedPosts = personalizedTopic ? postsByTopicId[personalizedTopic._id] || [] : [];
+
+  const personalizedPostIds = useMemo(() => (
+    new Set(personalizedPosts.map((p) => p._id))
+  ), [personalizedPosts]);
+
+  const visibleTopicSections = useMemo(() => (
+    topics
+      .filter((topic) => (postsByTopicId[topic._id] || []).length > 0)
+      .filter((topic) => topic._id !== personalizedTopic?._id)
+  ), [postsByTopicId, topics, personalizedTopic]);
+
+  const filteredPostsByTopicId = useMemo(() => {
+    const result = { ...postsByTopicId };
+    if (!personalizedTopic) return result;
+    result[personalizedTopic._id] = (result[personalizedTopic._id] || []).filter(
+      (post) => !personalizedPostIds.has(post._id),
+    );
+    return result;
+  }, [postsByTopicId, personalizedTopic, personalizedPostIds]);
 
   return (
     <div className="blog-topics-page">
@@ -181,6 +199,36 @@ const BlogTopicsPage = () => {
       </div>
 
       <div className="blog-topics-container">
+        <div className="blog-topics-breadcrumb-row">
+          <p className="blog-topics-breadcrumb">
+            <Link to="/">Trang chủ</Link>
+            <FiChevronRight size={14} />
+            <span>Chủ đề</span>
+          </p>
+          <div className="blog-topics-search">
+            <Form size={15} className="blog-topics-search__icon" strokeWidth={2} />
+            <input
+              type="text"
+              placeholder="Tìm kiếm bài viết..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  navigate(`/blog/search?q=${searchInput}`);
+                }
+              }}
+              className="blog-topics-search__input"
+            />
+            <button
+              type="button"
+              onClick={() => navigate(`/blog/search?q=${searchInput}`)}
+              className="blog-topics-search__btn"
+            >
+              <Search size={15} className="blog-topics-search__btn-icon" strokeWidth={2} />
+            </button>
+          </div>
+        </div>
+
         {isLoading && <LoadingState label="Đang tải bài viết..." />}
         {!isLoading && errorMessage && <ErrorState message={errorMessage} />}
         {!isLoading && !errorMessage && visibleTopicSections.length === 0 && (
@@ -206,7 +254,7 @@ const BlogTopicsPage = () => {
                 title={getTopicHeading(topic)}
                 subtitle={topic.description}
                 topic={topic}
-                posts={postsByTopicId[topic._id] || []}
+                posts={filteredPostsByTopicId[topic._id] || []}
               />
             ))}
           </>

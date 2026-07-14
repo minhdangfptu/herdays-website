@@ -26,7 +26,7 @@ export default function DownLoadAppPage() {
       <section className="download-app-hero">
         <div className="download-app-container">
           <h1 className="download-app-hero-title">
-            Đồng hành cùng sức khỏe phụ nữ bằng công nghệ AI. Tải Herdays ngay!
+            Đồng hành cùng sức khỏe phụ nữ bằng công nghệ AI. Tải <span className="lamoric-text">HerDays</span> ngay!
           </h1>
           <p className="download-app-hero-subtitle">
           Nền tảng chăm sóc sức khỏe sinh sản toàn diện, giúp bạn thấu hiểu cơ thể và chủ động trong từng giai đoạn quan trọng của cuộc sống
@@ -42,12 +42,12 @@ export default function DownLoadAppPage() {
           </div>
 
           <div className="download-app-mockups-wrapper">
-            <img src={downloadPhone1} alt="Herdays App Preview" className="download-app-mockups-img" />
+            <img src={downloadPhone1} alt="HerDays App Preview" className="download-app-mockups-img" />
 
             <div className="download-app-mockups-overlay">
             <div className="overlay-text-container">
-              <h2 className="overlay-heading">Khám phá tính năng của Herdays</h2>
-              <p className="overlay-subheading">Những tính năng cốt lõi của ứng dụng Herdays giúp bạn chăm sóc bản thân tốt hơn</p>
+              <h2 className="overlay-heading">Khám phá tính năng của <span className="lamoric-text">HerDays</span></h2>
+              <p className="overlay-subheading">Những tính năng cốt lõi của ứng dụng HerDays giúp bạn chăm sóc bản thân tốt hơn</p>
             </div>
               <div className="download-app-mockups-cards">
                 <div className="download-app-mockups-card">
@@ -90,7 +90,7 @@ export default function DownLoadAppPage() {
       <section className="feature-section-1">
         <div className="download-app-container">
           <div className="feature-section-1__content">
-            <h2 className="feature-section-1__title">Herbot AI</h2>
+            <h2 className="feature-section-1__title"><span style={{fontSize: '48px', fontWeight: '1000'}} className="herdays-about-cursive-text">HerBotAI</span></h2>
             <p className="feature-section-1__subtitle">Ứng dụng công nghệ AI tiên tiến để thấu hiểu dữ liệu sức khỏe của riêng bạn, từ đó tự động đưa ra các dự báo và đề xuất y khoa chuẩn xác theo từng giai đoạn sức khoẻ.</p>
             <div className="feature-section-1__cards">
               <div className="feature-section-1__card">
@@ -116,7 +116,7 @@ export default function DownLoadAppPage() {
             </div>
           </div>
           <div className="feature-section-1__mockup">
-            <img src={downloadPhone3} alt="Herdays App" className="feature-section-1__phone" />
+            <img src={downloadPhone3} alt="HerDays App" className="feature-section-1__phone" />
           </div>
         </div>
       </section>
@@ -127,7 +127,7 @@ export default function DownLoadAppPage() {
       <section className="feature-section-2">
         <div className="download-app-container">
           <div className="feature-section-2__mockup">
-            <img src={downloadPhone4} alt="Herdays App" className="feature-section-2__phone" />
+            <img src={downloadPhone4} alt="HerDays App" className="feature-section-2__phone" />
           </div>
           <div className="feature-section-2__content">
             <h2 className="feature-section-2__title">Thống kê trực quan, kiểm soát dễ dàng</h2>
@@ -182,7 +182,7 @@ export default function DownLoadAppPage() {
             </div>
           </div>
           <div className="feature-section-3__mockup">
-            <img src={downloadPhone5} alt="Herdays App" className="feature-section-3__phone" />
+            <img src={downloadPhone5} alt="HerDays App" className="feature-section-3__phone" />
           </div>
         </div>
       </section>
@@ -193,7 +193,7 @@ export default function DownLoadAppPage() {
       <section className="feature-section-4">
         <div className="download-app-container">
           <div className="feature-section-4__mockup">
-            <img src={downloadPhone6} alt="Herdays App" className="feature-section-4__phone" />
+            <img src={downloadPhone6} alt="HerDays App" className="feature-section-4__phone" />
           </div>
           <div className="feature-section-4__content">
             <h2 className="feature-section-4__title">Cẩm nang y khoa đáng tin cậy</h2>
@@ -242,12 +242,12 @@ export default function DownLoadAppPage() {
           <div className="feature-section-6__visuals">
             {/* Ảnh 1 điện thoại bên trái */}
             <div className="feature-section-6__single-phone">
-              <img src={downloadPhone7} alt="Herdays Single Phone" />
+              <img src={downloadPhone7} alt="HerDays Single Phone" />
             </div>
 
             {/* Ảnh 4 điện thoại bên phải */}
             <div className="feature-section-6__group-phones">
-              <img src={downloadPhone8} alt="Herdays Group Phones" />
+              <img src={downloadPhone8} alt="HerDays Group Phones" />
               
               {/* Khối "Bật mí nhỏ" góc dưới bên phải */}
               <div className="feature-section-6__tip-box">
@@ -269,7 +269,7 @@ export default function DownLoadAppPage() {
         <div className="download-app-container">
           {/* Bọc nội dung vào 1 div để dễ căn trái và giới hạn chiều rộng */}
           <div className="download-app-cta-content">
-            <h2 className="download-app-cta-title">Trải nghiệm HerDays ngay hôm nay</h2>
+            <h2 className="download-app-cta-title">Trải nghiệm <span className="lamoric-text">HerDays</span> ngay hôm nay!</h2>
             <p className="download-app-cta-subtitle">
               Bắt đầu hành trình chăm sóc sức khỏe sinh sản cá nhân hóa với sự hỗ trợ từ hệ thống trí tuệ nhân tạo
             </p>

@@ -253,7 +253,7 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
   flex: 1;
   display: flex;
   flex-direction: column;
-  background-color: transparent;
+  background-color: #fff4f9;
 
   @media (max-width: 768px) {
     width: 100%;
@@ -317,13 +317,6 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
     letter-spacing: 0.5px;
     font-weight: 700;
   }
-}
-
-// Messages Area
-.chat-ai-main--empty {
-  background-image: url('../../assets/ai_background_empty.png');
-  background-size: cover;
-  background-position: center;
 }
 
 .chat-ai-messages {
@@ -690,7 +683,7 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
 }
 
 .chat-ai-message.ai {
-  background-color: $chat-ai-light-gray;
+  background-color: white;
 }
 
 .chat-ai-error {

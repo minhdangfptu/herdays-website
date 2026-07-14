@@ -1,8 +1,10 @@
 import React from "react";
 import "./Subscription.scss";
 import sub_bg from "../../assets/subcription_bg_1.png";
+import { useNavigate } from "react-router-dom";
 
 export default function SubscriptionStep1() {
+  const navigate = useNavigate();
   return (
     <>
       <div className="sub-container">
@@ -23,7 +25,7 @@ export default function SubscriptionStep1() {
 
             <p className="sub-hint">Huỷ bất cứ lúc nào</p>
 
-            <button className="sub-btn-upgrade">Nâng cấp ngay</button>
+            <button onClick={() => navigate('/upgrade-account/continue')} className="sub-btn-upgrade">Nâng cấp ngay</button>
           </div>
         </div>
       </div>

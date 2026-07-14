@@ -29,7 +29,6 @@ const navItems = [
       { icon: ReceiptText, label: "Quản lý Đơn hàng", to: "/admin/marketplace/orders" },
     ],
   },
-  { icon: BotMessageSquare, label: "HerbotAI", to: "/admin/herbotai" },
   { icon: Users, label: "Người dùng", to: "/admin/users" },
   { icon: Mail, label: "Quản lý Liên hệ", to: "/admin/contacts" },
 ];

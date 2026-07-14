@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
-import { CircleUserRound, Lock, LogOut, ShoppingBag, UserRound } from "lucide-react";
+import { CircleUserRound, Lock, LogOut, ShoppingBag, Star, UserRound } from "lucide-react";
 import toast from "react-hot-toast";
 import "./Header.scss";
 import logoTrang from "../assets/home/logo_trang.png";
@@ -148,8 +148,9 @@ const Header = () => {
     { label: "Trang chủ", to: "/home" },
     { label: "Bài viết", to: "/blog" },
     { label: "Cửa hàng", to: "/marketplace" },
-    { label: "HerbotAI", to: "/chat-with-herbot" },
+    { label: "HerBotAI", to: "/chat-with-herbot" },
     { label: "Tải ứng dụng", to: "/download-app" },
+    { label: "Công cụ", to: "/tools" },
   ];
 
   const menuItems = isLoggedIn ? loggedInMenuItems : loggedOutMenuItems;
@@ -232,6 +233,15 @@ const Header = () => {
                       >
                         <UserRound size={18} strokeWidth={2} />
                         <span>Tài khoản</span>
+                      </Link>
+                      <Link
+                        className="header-profile-dropdown__item"
+                        role="menuitem"
+                        to="/upgrade-account"
+                        onClick={() => setIsProfileMenuOpen(false)}
+                      >
+                        <Star size={18} strokeWidth={2} />
+                        <span>Nâng cấp </span>
                       </Link>
                       {canChangePassword && (
                         <Link

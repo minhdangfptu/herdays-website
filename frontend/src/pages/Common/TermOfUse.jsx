@@ -37,7 +37,7 @@ export default function TermOfUse() {
     },
     {
       title: "9. Kết nối với chúng tôi",
-      content: `Nếu bạn có bất kỳ thắc mắc, băn khoăn hay góp ý nào về Điều khoản dịch vụ này, vui lòng liên hệ với chúng tôi qua:\n\n• Email hỗ trợ: support@herdays.vn\n• Fanpage: Herdays\n• Hoặc trực tiếp qua mục Liên hệ với chúng tôi ngay trên ứng dụng.`,
+      content: `Nếu bạn có bất kỳ thắc mắc, băn khoăn hay góp ý nào về Điều khoản dịch vụ này, vui lòng liên hệ với chúng tôi qua:\n\n• Email hỗ trợ: support@herdays.vn\n• Fanpage: HerDays\n• Hoặc trực tiếp qua mục Liên hệ với chúng tôi ngay trên ứng dụng.`,
     },
   ];
 

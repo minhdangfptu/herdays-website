@@ -13,6 +13,18 @@ $white: #FFFFFF;
 $border-color: #E8E8E8;
 $font-primary: 'Roboto', sans-serif;
 
+// Lamoric Rowen font
+@font-face {
+  font-family: 'Lamoric Rowen';
+  src: url('../../assets/font/Lamoric Rowen TTF.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+.lamoric-text {
+  font-family: 'Lamoric Rowen', cursive;
+}
+
 // ============================================
 // Page Container
 // ============================================

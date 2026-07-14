@@ -46,7 +46,7 @@ export const updateContactResponseStatus = async (req, res, next) => {
     );
 
     sendSuccess(res, {
-      message: 'Cáº­p nháº­t tráº¡ng thÃ¡i pháº£n há»“i liÃªn há»‡ thÃ nh cÃ´ng',
+      message: 'Cập nhật trạng thái phản hồi thành công',
       data: result
     });
   } catch (error) {

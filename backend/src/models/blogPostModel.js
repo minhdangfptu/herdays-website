@@ -48,6 +48,7 @@ const blogPostSchema = new mongoose.Schema(
 
 blogPostSchema.index({ postTopicId: 1, status: 1, createdAt: -1 });
 blogPostSchema.index({ status: 1, createdAt: -1 });
+blogPostSchema.index({ title: 'text', content: 'text' });
 
 const BlogPost = mongoose.model('BlogPost', blogPostSchema);
 

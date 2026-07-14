@@ -146,7 +146,16 @@ const mapApiMessage = (message) => {
 };
 
 export default function ChatWithAI() {
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState([
+    {
+      id: 'welcome',
+      type: 'ai',
+      text: 'Chào mừng bạn đến với HerBotAI!\nMình là trợ lý ảo của HERDAYS. Bạn cần mình giúp gì hôm nay?',
+      time: formatMessageTime(),
+      recommendedBoxes: [],
+      blogSuggestions: [],
+    },
+  ]);
   const [inputValue, setInputValue] = useState('');
   const [conversationId, setConversationId] = useState(null);
   const [conversationHistory, setConversationHistory] = useState([]);
@@ -325,7 +334,16 @@ export default function ChatWithAI() {
 
   const handleNewChat = () => {
     setConversationId(null);
-    setMessages([]);
+    setMessages([
+      {
+        id: 'welcome',
+        type: 'ai',
+        text: 'Chào mừng bạn đến với HerBotAI!\nMình là trợ lý ảo của HERDAYS. Bạn cần mình giúp gì hôm nay?',
+        time: formatMessageTime(),
+        recommendedBoxes: [],
+        blogSuggestions: [],
+      },
+    ]);
     setInputValue('');
     setErrorMessage('');
   };
@@ -343,7 +361,7 @@ export default function ChatWithAI() {
 
         <div className="chat-ai-sections">
           <div className="chat-ai-section">
-            <h4>HerbotAI</h4>
+            <h4>HerBotAI</h4>
             <ul>
               <li>Thông tin chung</li>
               <li>Tư vấn sức khỏe</li>
@@ -382,9 +400,9 @@ export default function ChatWithAI() {
         </div>
       </div>
 
-      <div className={`chat-ai-main${messages.length === 0 ? ' chat-ai-main--empty' : ''}`}>
+      <div className="chat-ai-main">
         <div className="chat-ai-header">
-          <h2 style={{ color: '#F176A9' }}>HerbotAI</h2>
+          <h2 style={{ color: '#F176A9' }}>HerBotAI</h2>
           <div className="chat-ai-header-actions">
             <FiSearch className="chat-ai-icon" />
             <FiSettings className="chat-ai-icon" />
@@ -398,7 +416,7 @@ export default function ChatWithAI() {
           {errorMessage && <div className="chat-ai-error">{errorMessage}</div>}
           {messages.map((message) => (
             <div key={message.id} className={`chat-ai-message-group ${message.type}`}>
-              {message.type === 'ai' && <div className="chat-ai-ai-badge">HAI</div>}
+              {message.type === 'ai' && <div className="chat-ai-ai-badge">HBI</div>}
               <div className={`chat-ai-message ${message.type}`}>
                 <div className="chat-ai-message-body">
                   <p>{message.text}</p>
@@ -480,18 +498,12 @@ export default function ChatWithAI() {
                     </div>
                   )}
                   <span className="chat-ai-message-time">{message.time}</span>
-                  {message.type === 'user' && (
-                    <div className="chat-ai-message-footer-actions">
-                      <FiThumbsUp className="chat-ai-action-icon" />
-                      <FiThumbsDown className="chat-ai-action-icon" />
-                    </div>
-                  )}
                 </div>
               </div>
               {message.type === 'user' && <div className="chat-ai-message-avatar">H</div>}
             </div>
           ))}
-          {isSending && <div className="chat-ai-typing">HerbotAI đang trả lời...</div>}
+          {isSending && <div className="chat-ai-typing">HerBotAI đang trả lời...</div>}
         </div>
 
         <div className="chat-ai-input-area">
@@ -499,7 +511,7 @@ export default function ChatWithAI() {
             <FiSmile className="chat-ai-emoji-icon" />
             <input
               type="text"
-              placeholder="Gửi tin nhắn đến HerbotAI"
+              placeholder="Gửi tin nhắn đến HerBotAI"
               value={inputValue}
               onChange={(event) => setInputValue(event.target.value)}
               onKeyDown={(event) => event.key === 'Enter' && handleSendMessage()}
