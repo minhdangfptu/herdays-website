@@ -6,6 +6,8 @@ import PostEditor from '../../components/blog/PostEditor.jsx'
 import TopicImageManager from '../../components/blog/TopicImageManager.jsx'
 import { blogApi } from '../../services/apiService.js'
 
+const ADMIN_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif"
+
 function AdminPostsPage() {
   const postPageSize = 5
   const [topics, setTopics] = useState([])
@@ -118,7 +120,7 @@ function AdminPostsPage() {
   if (isLoading) return <LoadingState label="Đang tải dashboard..." />
   if (errorMessage && posts.length === 0) {
     return (
-      <main className="mx-auto max-w-3xl px-4 py-12">
+      <main className="mx-auto max-w-3xl px-4 py-12" style={{ fontFamily: ADMIN_FONT_FAMILY }}>
         <ErrorState message={errorMessage} onRetry={fetchDashboard} />
         <p className="text-center"><Link className="font-semibold text-pink-600" to="/">Đăng nhập lại</Link></p>
       </main>
@@ -126,25 +128,30 @@ function AdminPostsPage() {
   }
 
   return (
-    <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-      <div className="mb-8">
-        <p className="text-sm font-bold uppercase tracking-widest text-pink-500">Quản trị nội dung</p>
-        <h1 className="mt-2 text-4xl font-extrabold text-slate-800">Bài viết HERDAYS</h1>
-      </div>
+    <main className="min-h-screen bg-white px-5 py-6 sm:px-8" style={{ fontFamily: ADMIN_FONT_FAMILY }}>
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-5 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-950">Bài viết HERDAYS</h1>
+            <p className="mt-1 text-sm font-medium text-slate-500">
+              Quản lý bài viết blog và ảnh chủ đề.
+            </p>
+          </div>
+        </div>
 
-      {successMessage && <p className="mb-6 rounded-xl bg-emerald-50 p-4 font-medium text-emerald-700" role="status">{successMessage}</p>}
-      {errorMessage && <p className="mb-6 rounded-xl bg-red-50 p-4 font-medium text-red-700" role="alert">{errorMessage}</p>}
+        {successMessage && <p className="mb-6 rounded-xl bg-emerald-50 p-4 font-medium text-emerald-700" role="status">{successMessage}</p>}
+        {errorMessage && <p className="mb-6 rounded-xl bg-red-50 p-4 font-medium text-red-700" role="alert">{errorMessage}</p>}
 
-      <TopicImageManager topics={topics} onUpdated={handleSaved} />
+        <TopicImageManager topics={topics} onUpdated={handleSaved} />
 
-      <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
-        <PostEditor
-          key={selectedPost?._id || 'new-post'}
-          post={selectedPost}
-          topics={topics}
-          onSaved={handleSaved}
-          onCancel={() => setSelectedPost(null)}
-        />
+        <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1.1fr)_minmax(360px,0.9fr)]">
+          <PostEditor
+            key={selectedPost?._id || 'new-post'}
+            post={selectedPost}
+            topics={topics}
+            onSaved={handleSaved}
+            onCancel={() => setSelectedPost(null)}
+          />
 
         <section className="rounded-3xl border border-pink-100 bg-white p-5 shadow-sm sm:p-7">
           <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
@@ -218,7 +225,8 @@ function AdminPostsPage() {
               )}
             </>
           )}
-        </section>
+          </section>
+        </div>
       </div>
     </main>
   )

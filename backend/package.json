@@ -16,6 +16,7 @@
     "seed:blog": "node ./src/seeds/blogTopics.js",
     "seed:blog-data": "node ./src/seeds/importBlogData.js",
     "seed:quiz": "node ./src/seeds/quizQuestions.js",
+    "seed:admin-users": "node ./src/seeds/adminUsers.js",
     "seed:marketplace": "node ./src/seeds/marketplaceSamples.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
