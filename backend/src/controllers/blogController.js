@@ -5,6 +5,7 @@ import {
   validateCreatePost,
   validatePagination,
   validatePostId,
+  validateSearchPosts,
   validateTopicId,
   validateUpdateTopicImage,
   validateUpdatePost
@@ -17,6 +18,19 @@ export const getTopics = async (req, res, next) => {
     sendSuccess(res, {
       message: 'Lấy danh sách chủ đề thành công',
       data: result.topics
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const searchPosts = async (req, res, next) => {
+  try {
+    const result = await blogService.searchPosts(validateSearchPosts(req.query));
+    sendSuccess(res, {
+      message: 'Tìm kiếm bài viết thành công',
+      data: result.posts,
+      meta: result.pagination
     });
   } catch (error) {
     next(error);

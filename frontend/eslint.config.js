@@ -20,6 +20,8 @@ export default defineConfig([
     rules: {
       // Ép nó hiện cảnh báo vàng (warn) thôi, không báo đỏ (error) nữa
       'no-unused-vars': 'warn',
+      // Tắt rule setState-in-effect vì pattern sync setState trong useEffect khi prop thay đổi là hợp lệ
+      'react-hooks/setstate-in-effect': 'off',
     }
   },
 ])

@@ -1,4 +1,4 @@
-// ============================================
+ // ============================================
 // BlogPostsPage Styles
 // ============================================
 
@@ -99,6 +99,35 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
 
   @media (max-width: 480px) {
     display: none;
+  }
+}
+
+// ============================================
+// Breadcrumb
+// ============================================
+
+.blog-posts-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $gray-text;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px 20px 4px;
+
+  a {
+    color: $secondary-pink;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.6;
   }
 }
 
@@ -276,6 +305,64 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
   @media (max-width: 768px) {
     font-size: 16px;
   }
+}
+
+.blog-posts-sidebar__search {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.blog-posts-sidebar__search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: $gray-text;
+  pointer-events: none;
+  flex-shrink: 0;
+}
+
+.blog-posts-sidebar__search-input {
+  width: 100%;
+  padding: 9px 70px 9px 36px;
+  border: 1px solid $light-gray-border;
+  border-radius: 8px;
+  font-size: 13px;
+  font-family: $font-primary;
+  color: $dark-text;
+  background-color: $white;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  box-sizing: border-box;
+
+  &::placeholder {
+    color: $gray-text;
+  }
+
+  &:focus {
+    border-color: $primary-pink;
+    box-shadow: 0 0 0 2px rgba(237, 119, 165, 0.15);
+  }
+}
+
+.blog-posts-sidebar__search-btn {
+  margin-right: 12px;
+  position: absolute;
+  right: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 5px 12px;
+  color: $white;
+  border: none;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: $font-primary;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+  flex-shrink: 0;
+
 }
 
 .blog-posts-sidebar__list {

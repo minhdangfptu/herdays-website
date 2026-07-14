@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { FiArrowLeft } from 'react-icons/fi'
+import { FiArrowLeft, FiChevronRight } from 'react-icons/fi'
 
 import { ErrorState, LoadingState, EmptyState } from '../../components/blog/AsyncState.jsx'
 import { blogApi } from '../../services/apiService.js'
@@ -73,10 +73,23 @@ function BlogPostDetailPage() {
   return (
     <div className="blog-detail-page">
       <div className="blog-detail-container">
+        
+
         <Link className="blog-detail-back-button" to={`/blog/${topicId}/posts`}>
           <FiArrowLeft size={18} />
           <span>Quay lại</span>
         </Link>
+        <p  style={{marginBottom: '30px'}} className="blog-detail-breadcrumb">
+          <Link to="/">Trang chủ</Link>
+          <FiChevronRight size={14} />
+          <Link to="/blog"> Chủ đề</Link>
+          <FiChevronRight size={14} />
+          <Link to={`/blog/${topicId}/posts`}>
+            {post.topicId?.name || post.postTopicId?.name || 'Chủ đề'}
+          </Link>
+          <FiChevronRight size={14} />
+          <span>{post.title?.length > 64 ? `${post.title.slice(0, 64)}...` : post.title}</span>
+        </p>
 
         <div className="blog-detail-layout">
           <article className="blog-detail-article">

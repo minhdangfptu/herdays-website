@@ -166,7 +166,7 @@ export default function ContactUs() {
 
               {/* Form Description */}
               <p className="text-gray-600 text-sm mb-6">
-                Để lại thông tin để nhân những thông báo mới nhất về Herdays
+                Để lại thông tin để nhận những thông báo mới nhất về <span className="herdays-lamoric-text">HerDays</span>
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">

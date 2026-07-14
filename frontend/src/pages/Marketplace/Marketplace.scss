@@ -38,7 +38,7 @@ $font-dancing: 'Dancing Script', cursive;
   }
 
   .hero-banner-eyebrow {
-    font-size: 0.8rem;
+    font-size: 18px;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -48,7 +48,7 @@ $font-dancing: 'Dancing Script', cursive;
 
   .hero-banner-title {
     margin: 0 0 10px;
-    font-size: clamp(30px, 3vw, 56px);
+    font-size: 64px;
     font-weight: 800;
     color: #F176A9;
     line-height: 1.15;
@@ -56,7 +56,7 @@ $font-dancing: 'Dancing Script', cursive;
 
   .hero-banner-subtitle {
     margin: 0 0 20px;
-    font-size: 0.95rem;
+    font-size: 24px;
     color: #68717c;
     line-height: 1.5;
   }

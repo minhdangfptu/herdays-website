@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
+import { FiChevronRight } from 'react-icons/fi';
+import { Search } from 'lucide-react';
 
 import { EmptyState, ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx';
 import { blogApi } from '../../services/apiService.js';
@@ -21,22 +23,33 @@ const BlogPostsPage = () => {
   const [posts, setPosts] = useState([]);
   const [topic, setTopic] = useState(null);
   const [pagination, setPagination] = useState(null);
+  const [allTopics, setAllTopics] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     let isActive = true;
 
-    const fetchPosts = async () => {
+    const fetchAll = async () => {
       setIsLoading(true);
       setErrorMessage('');
 
       try {
-        const result = await blogApi.getTopicPosts(topicId, currentPage);
+        const [topicsResult, postsResult] = await Promise.all([
+          blogApi.getTopics(),
+          searchQuery
+            ? blogApi.searchPosts({ q: searchQuery, page: currentPage })
+            : blogApi.getTopicPosts(topicId, currentPage),
+        ]);
         if (!isActive) return;
-        setPosts(result.posts || []);
-        setTopic(result.topic || null);
-        setPagination(result.pagination || null);
+        setAllTopics(topicsResult.topics || []);
+        setPosts(postsResult.posts || []);
+        if (postsResult.topic !== undefined) {
+          setTopic(postsResult.topic || null);
+        }
+        setPagination(postsResult.pagination || null);
       } catch (error) {
         if (isActive) setErrorMessage(error.message);
       } finally {
@@ -44,15 +57,29 @@ const BlogPostsPage = () => {
       }
     };
 
-    fetchPosts();
+    fetchAll();
 
     return () => {
       isActive = false;
     };
-  }, [currentPage, topicId]);
+  }, [currentPage, topicId, searchQuery]);
 
   const totalPages = pagination?.totalPages || 1;
-  const relatedPosts = useMemo(() => posts.slice(0, 4), [posts]);
+
+  const relatedPosts = useMemo(() => {
+    return allTopics
+      .filter((t) => t._id !== topicId)
+      .slice(0, 4)
+      .map((t) => ({
+        _id: t._id,
+        title: t.name,
+        topicId: t._id,
+        thumbnail: t.image || null,
+        images: t.image ? [t.image] : [],
+        authorId: null,
+        createdAt: null,
+      }));
+  }, [allTopics, topicId]);
 
   const MainPostCard = ({ post }) => (
     <Link className="blog-posts-main-card" to={`/blog/${topicId}/posts/${post._id}`}>
@@ -71,9 +98,9 @@ const BlogPostsPage = () => {
       </div>
     </Link>
   );
-
+  const navigate = useNavigate();
   const RelatedCard = ({ post }) => (
-    <Link className="blog-posts-related-card" to={`/blog/${topicId}/posts/${post._id}`}>
+    <Link className="blog-posts-related-card" to={`/blog/${post.topicId}/posts`}>
       <div className="blog-posts-related-card__image">
         <img src={getPostImage(post)} alt={post.title} />
       </div>
@@ -99,6 +126,14 @@ const BlogPostsPage = () => {
           </p>
         </div>
       </div>
+
+      <p className="blog-posts-breadcrumb">
+        <Link to="/">Trang chủ</Link>
+        <FiChevronRight size={14} />
+        <Link to="/blog">Chủ đề</Link>
+        <FiChevronRight size={14} />
+        <span>{topic?.name || 'Chủ đề'}</span>
+      </p>
 
       <div className="blog-posts-container">
         {isLoading && <LoadingState label="Đang tải bài viết..." />}
@@ -132,11 +167,38 @@ const BlogPostsPage = () => {
             </div>
 
             <aside className="blog-posts-sidebar">
-              <h2 className="blog-posts-sidebar__title">Bài viết liên quan</h2>
+              <h2 className="blog-posts-sidebar__title">Chủ đề khác</h2>
+              
               <div className="blog-posts-sidebar__list">
                 {relatedPosts.map((post) => (
                   <RelatedCard key={post._id} post={post} />
                 ))}
+              </div>
+              <div className="blog-posts-sidebar__search">
+                <Search size={15} className="blog-posts-sidebar__search-icon" strokeWidth={2} />
+                <input
+                  type="text"
+                  placeholder="Tìm kiếm bài viết..."
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      navigate(`/blog/search?q=${searchInput}`);
+                    }
+                  }}
+                  className="blog-posts-sidebar__search-input"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSearchQuery(searchInput);
+                    navigate(`/blog/search?q=${searchInput}`);
+                    setCurrentPage(1);
+                  }}
+                  className="blog-posts-sidebar__search-btn"
+                >
+                  <Search size={15} className="blog-posts-sidebar__search-icon" strokeWidth={2} />
+                </button>
               </div>
             </aside>
           </div>

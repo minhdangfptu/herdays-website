@@ -30,13 +30,13 @@ export const LoadingStep = () => {
 
 // 8. MÀN HOÀN THÀNH
 export const CompletionStep = ({ onStart }) => (
-  <div className="flex flex-col items-center text-center w-full max-w-[600px] mx-auto px-4">
-    <div className="w-46 h-46 rounded-full overflow-hidden mb-6 shadow-md bg-pink-100 border-4 border-white">
+  <div className="flex flex-col items-center text-center w-full max-w-[660px] mx-auto px-4">
+    <div className="w-52 h-52 rounded-full overflow-hidden mb-6 shadow-md bg-pink-100 border-4 border-white">
       <img src={quizIntro} alt="Completion" className="w-full h-full object-cover" />
     </div>
     <h2 className="text-[28px] md:text-[32px] font-bold text-[#F176A9] mb-4">
-      Chào mừng bạn đến với Herdays
-    </h2>
+      Chào mừng bạn đến với HerDays
+    </h2> 
     <p className="text-gray-600 text-[15px] md:text-base leading-relaxed px-4 mb-8">
       Chúc mừng bạn đã thiết lập xong, bây giờ hãy để chúng mình hỗ trợ và yêu thương bạn nhé!
     </p>
@@ -52,7 +52,7 @@ export const CompletionStep = ({ onStart }) => (
 // 1. MÀN INTRO
 export const IntroStep = ({ data }) => (
   <div className="flex flex-col items-center text-center w-full max-w-[600px] mx-auto px-4">
-    <div className="w-46 h-46 rounded-full overflow-hidden mb-6 shadow-md bg-pink-100 border-4 border-white">
+    <div className="w-52 h-52 rounded-full overflow-hidden mb-6 shadow-md bg-pink-100 border-4 border-white">
       <img src={quizIntro} alt="Intro" className="w-full h-full object-cover" />
     </div>
     <h2 className="text-[28px] md:text-[32px] font-bold text-[#F176A9] mb-4">{data?.title}</h2>

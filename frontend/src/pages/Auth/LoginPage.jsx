@@ -250,10 +250,10 @@ function WelcomePanel() {
         <div className="welcome-copy">
           <h2>CHÀO MỪNG BẠN!</h2>
           <p className="welcome-lead">
-            Hãy đăng nhập để sử dụng<br />toàn bộ tính năng của <u>Herdays</u>
+            Hãy đăng nhập để sử dụng<br />toàn bộ tính năng của <u>HerDays</u>
           </p>
           <p className="welcome-description">
-            HERDAYS - Nền tảng chăm sóc sức khoẻ nữ giới và<br />dịch vụ Subcription Box
+            HERDAYS - Nền tảng chăm sóc sức khoẻ nữ giới và<br />dịch vụ Subscription Box
           </p>
         </div>
         <CycleChart />

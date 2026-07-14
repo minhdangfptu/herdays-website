@@ -44,6 +44,8 @@ import QRPayment from "./pages/Marketplace/QRPayment.jsx";
 import Cart from "./pages/Marketplace/Cart.jsx";
 import BoxCustomize from "./pages/Marketplace/BoxCustomize.jsx";
 import ProductDetailPage from "./pages/Marketplace/ProductDetailPage.jsx";
+import BlogSearchPostPage from "./pages/Blog/BlogSearchPostPage.jsx";
+import Tools from "./pages/Tools/Tools.jsx";
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -69,7 +71,6 @@ function AdminLayout() {
             <Route path="marketplace" element={<Navigate to="/admin/marketplace/products" replace />} />
             <Route path="marketplace/products" element={<AdminProductsPage />} />
             <Route path="marketplace/orders" element={<AdminOrdersPage />} />
-            <Route path="herbotai" element={<div>HerbotAI Admin (coming soon)</div>} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="users/:userId" element={<AdminUserDetailPage />} />
             <Route path="contacts" element={<AdminContactsPage />} />
@@ -142,6 +143,7 @@ function App() {
           <Route path="/box-customize/:boxId" element={<BoxCustomize />} />
           <Route path="/product-detail/:type/:itemId" element={<ProductDetailPage />} />
           <Route path="/product-detail/:productId" element={<ProductDetailPage />} />
+          <Route path="/tools" element={<Tools />} />
           <Route element={<BlogShell />}>
             <Route path="/blog" element={<BlogTopicsPage />} />
             <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
@@ -149,6 +151,7 @@ function App() {
               path="/blog/:topicId/posts/:postId"
               element={<BlogPostDetailPage />}
             />
+            <Route path="/blog/search" element={<BlogSearchPostPage />} />
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/error-404" replace />} />

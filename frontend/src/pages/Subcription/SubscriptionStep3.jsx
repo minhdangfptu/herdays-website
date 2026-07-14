@@ -1,8 +1,10 @@
 import React from 'react';
 import { FaCheck } from 'react-icons/fa';
 import './Subscription.scss';
+import { useNavigate } from 'react-router-dom';
 
 const SubscriptionStep3 = () => {
+  const navigate = useNavigate();
   const plans = [
     {
       id: 1,
@@ -93,7 +95,7 @@ const SubscriptionStep3 = () => {
 
               <p className="sub-step3-plan-desc">{plan.description}</p>
 
-              <button className="sub-step3-plan-btn">Đăng ký ngay</button>
+              <button onClick={() => navigate('/download-app')} className="sub-step3-plan-btn">Đăng ký ngay</button>
 
               <ul className="sub-step3-features">
                 {plan.features.map((feature, index) => (

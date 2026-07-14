@@ -40,7 +40,7 @@ const Footer = () => {
       ],
     },
     {
-      title: "Về Herdays",
+      title: "Về HerDays",
       links: [
         { name: "Liên hệ", href: "/contact-us", requireAuth: false },
         { name: "Về chúng tôi", href: "/about-us", requireAuth: false },
@@ -66,7 +66,7 @@ const Footer = () => {
             <img src={logoMau} alt="HERDAYS Logo" />
           </div>
           <p className="footer-description">
-            Mỗi hành trình đẹu xứng đáng được lắng nghe, và HerDays sẽ luôn ở
+            Mỗi hành trình đều xứng đáng được lắng nghe, và HerDays sẽ luôn ở
             đây để đồng hành cùng bạn!
           </p>
           <div className="social-links">
@@ -129,9 +129,9 @@ const Footer = () => {
 
       {/* Bottom - Copyright */}
       <div className="footer-bottom">
-        <p>&copy; {currentYear} Herdays. Bảo lưu mọi quyền</p>
+        <p>&copy; {currentYear} HerDays. Bảo lưu mọi quyền</p>
       </div>
-    </footer>
+    </footer> 
   );
 };
 

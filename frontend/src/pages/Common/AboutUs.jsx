@@ -91,7 +91,7 @@ export default function AboutUs() {
               <img style={{width: '500px', height: 'auto', marginBottom: '20px', marginTop: '20px'}} src={logo_mau} alt="Herdays Logo" className="herdays-about-hero-logo-img" />
               <h2 className="herdays-about-hero-title">Đồng hành cùng sức khỏe phụ nữ bằng công nghệ AI.</h2>
               <p className="herdays-about-hero-desc">
-                HerDays là nền tảng chăm sóc sức khỏe phụ nữ ứng dụng AI, được phát triển nhằm hỗ trợ phụ nữ trong các giai đoạn quan trọng của hành trình sức khỏe sinh sản, từ theo dõi chu kỳ kinh nguyệt, chuẩn bị mang thai đến mang thai.
+                HerDays là nền tảng chăm sóc sức khỏe phụ nữ ứng dụng AI, được phát triển nhằm hỗ trợ phụ nữ trong các giai đoạn quan trọng của hành trình sức khỏe sinh sản, từ theo dõi chu kỳ kinh nguyệt, chuẩn bị mang thai, hành trình làm IVF đến mang thai.
               </p>
             </div>
             <div className="herdays-about-hero-visual">
@@ -103,12 +103,12 @@ export default function AboutUs() {
       </section>
 
       <section className="herdays-about-section herdays-about-white-bg herdays-about-belief">
-        <div className="herdays-about-container herdays-about-text-center">
-          <h2 className="herdays-about-cursive-title">Chúng tôi tin rằng</h2>
+        <div className="herdays-about-container herdays-about-text-center herdays-about-header-center" >
+          <h2 className="herdays-about-section-title">Chúng tôi tin rằng</h2>
           <p className="herdays-about-belief-text">
             Mỗi người phụ nữ đều có một cơ thể, một chu kỳ và một hành trình riêng. Tuy nhiên, việc theo dõi sức khỏe, ghi nhớ chu kỳ hay tìm kiếm những thông tin phù hợp vẫn còn nhiều khó khăn và tốn thời gian.
           </p>
-          <p className="herdays-about-belief-highlight">Đó là lúc Herdays ra đời</p>
+          <p className="herdays-about-belief-highlight">Đó là lúc HerDays ra đời</p>
           <p className="herdays-about-belief-subtext">
             HerDays ra đời với mong muốn giúp phụ nữ hiểu cơ thể mình hơn, chủ động hơn trong việc chăm sóc sức khỏe và đưa ra những quyết định phù hợp cho bản thân.<br/><br/>
             Thông qua công nghệ AI, HerDays không chỉ giúp người dùng theo dõi sức khỏe mà còn mang đến những gợi ý được cá nhân hóa dựa trên nhu cầu và từng giai đoạn của mỗi người.
@@ -142,7 +142,7 @@ export default function AboutUs() {
                 <div className="herdays-about-timeline-icon"><Target size={20} /></div>
                 <div className="herdays-about-timeline-content">
                   <h4 style={{fontSize: '18px', fontWeight: '700'}}>Ý tưởng nảy sinh</h4>
-                  <p>Herdays được tạo ra với mong muốn giúp phụ nữ hiểu cơ thể mình hơn, chủ động hơn trong việc chăm sóc sức khoẻ</p>
+                  <p>HerDays được tạo ra với mong muốn giúp phụ nữ hiểu cơ thể mình hơn, chủ động hơn trong việc chăm sóc sức khoẻ</p>
                 </div>
               </div>
               <div className="herdays-about-timeline-item">
@@ -155,7 +155,7 @@ export default function AboutUs() {
               <div className="herdays-about-timeline-item">
                 <div className="herdays-about-timeline-icon"><Rocket size={20} /></div>
                 <div className="herdays-about-timeline-content">
-                  <h4 style={{fontSize: '18px', fontWeight: '700'}}>Herdays ra đời</h4>
+                  <h4 style={{fontSize: '18px', fontWeight: '700'}}>HerDays ra đời</h4>
                   <p>Một nền tảng toàn diện đồng hành cùng phụ nữ Việt Nam trong từng hành trình sức khoẻ của bản thân mình</p>
                 </div>
               </div>
@@ -169,7 +169,7 @@ export default function AboutUs() {
               <div className="herdays-about-quote-author">
                 <div className="herdays-about-author-avatar"><UserRound size={36} /></div>
                 <div>
-                  <h4>Đội ngũ Herdays</h4>
+                  <h4>Đội ngũ HerDays</h4>
                   <span>Nhà sáng lập & Đội ngũ phát triển</span>
                 </div>
               </div>
@@ -241,12 +241,12 @@ export default function AboutUs() {
         <div className="herdays-about-container herdays-about-ai-layout">
           <div className="herdays-about-ai-mockup">
             {/* Thay ảnh mockup chat UI vào đây */}
-            <img src={mockupImg} alt="HerbotAI" />
+            <img src={mockupImg} alt="HerBotAI" />
           </div>
           <div className="herdays-about-ai-content">
             <div className="herdays-about-ai-title-row">
-              <h2 className="herdays-about-cursive-text-large">HerbotAI</h2>
-              <SectionTag icon="bot" text="HerbotAI" />
+              <h2 className="herdays-about-cursive-text-large">HerBotAI</h2>
+              <SectionTag icon="bot" text="HerBotAI" />
             </div>
             <h3 className="herdays-about-ai-heading">Trợ lý AI đồng hành cùng bạn</h3>
             <p className="herdays-about-ai-desc">
@@ -347,7 +347,7 @@ export default function AboutUs() {
 
             {/* Cột 2 */}
               <div className="herdays-about-price-card">
-              <span className="herdays-about-price-tag">Box Bầu 1</span>
+              <span className="herdays-about-price-tag">Box Mầm</span>
               <div className="herdays-about-price-flower"><Baby size={28} /></div>
               <h3>Kế hoạch mang thai</h3>
               <p className="desc">Dành cho người đang có kế hoạch mang thai.</p>
@@ -369,7 +369,7 @@ export default function AboutUs() {
 
             {/* Cột 3 */}
               <div className="herdays-about-price-card">
-              <span className="herdays-about-price-tag">Box Bầu 2</span>
+              <span className="herdays-about-price-tag">Box Bầu</span>
               <div className="herdays-about-price-flower"><Heart size={28} /></div>
               <h3>Đang mang thai</h3>
               <p className="desc">Dành cho người đang mang thai.</p>
@@ -423,8 +423,8 @@ export default function AboutUs() {
         <div className="herdays-about-container">
            <div className="herdays-about-header-center">
             <SectionTag icon="shield" text="Giá trị" />
-            <h2 className="herdays-about-section-title">Giá trị cốt lõi của <span className="herdays-about-cursive-text">HerDays</span></h2>
-            <p className="herdays-about-section-subtitle">Giá trị cốt lõi của nền tảng Herdays gồm 4 trụ cột chiến lược: Cá nhân hoá, Đồng hành, Thấu hiểu và Đổi mới</p>
+            <h2 className="herdays-about-section-title">Giá trị cốt lõi của <span style={{fontSize: '48px', fontWeight: '1000'}} className="herdays-about-cursive-text">HerDays</span></h2>
+            <p className="herdays-about-section-subtitle">Giá trị cốt lõi của nền tảng HerDays gồm 4 trụ cột chiến lược: Cá nhân hoá, Đồng hành, Thấu hiểu và Đổi mới</p>
           </div>
 
           <div className="herdays-about-values-grid">
@@ -446,7 +446,7 @@ export default function AboutUs() {
          <div className="herdays-about-container">
            <div className="herdays-about-header-center">
               <SectionTag icon="sparkles" text="So sánh" />
-              <h2 className="herdays-about-section-title">Vì sao chọn <span className="herdays-about-cursive-text">HerDays?</span></h2>
+              <h2 className="herdays-about-section-title">Vì sao chọn <span style={{fontSize: '48px', fontWeight: '1000'}} className="herdays-about-cursive-text">HerDays</span></h2>
               <p className="herdays-about-section-subtitle">Nhiều hơn 1 ứng dụng theo dõi chu kỳ - HerDays là hệ sinh thái sức khỏe toàn diện cho phụ nữ</p>
            </div>
 
@@ -470,7 +470,7 @@ export default function AboutUs() {
       <section className="herdays-about-section herdays-about-hero-bg">
          <div className="herdays-about-container herdays-about-text-center herdays-about-cta">
             <SectionTag icon="sparkles" text="So sánh" />
-            <h2 className="herdays-about-cursive-title-huge">HerDays đồng hành cùng mọi giai đoạn trong hành trình của phụ nữ</h2>
+            <h2 className="herdays-about-cursive-title-huge"><span style={{fontSize: '52px', fontWeight: '1000'}} className="herdays-about-cursive-text">HerDays</span> đồng hành cùng mọi giai đoạn trong hành trình sức khỏe của phụ nữ</h2>
             <p className="herdays-about-cta-subtext">
               HerDays không chỉ là một ứng dụng theo dõi sức khỏe, mà còn là người bạn đồng hành giúp phụ nữ hiểu cơ thể mình hơn, chăm sóc bản thân tốt hơn và tự tin hơn trong từng giai đoạn của cuộc sống.
             </p>
