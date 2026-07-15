@@ -15,7 +15,7 @@ const DELETED_ORDER_TTL_MS = 10 * 60 * 1000;
 
 const getStatusFilter = (status) => {
   if (status === ORDER_STATUS.CONFIRMED) {
-    return { $in: [ORDER_STATUS.CONFIRMED, 'preparing', 'delivering'] };
+    return { $in: [ORDER_STATUS.CONFIRMED, 'preparing'] };
   }
 
   if (status === ORDER_STATUS.CANCELLED) {
@@ -35,7 +35,8 @@ const mapUser = (user) => {
     id: user._id,
     fullName: user.fullName,
     email: user.email,
-    phone: user.phone
+    phone: user.phone,
+    address: user.address
   };
 };
 
@@ -117,7 +118,7 @@ export const getOrders = async ({ page, limit, search, status }) => {
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
-      .populate('userId', 'fullName email phone'),
+      .populate('userId', 'fullName email phone address'),
     Order.countDocuments(filter)
   ]);
 
@@ -217,7 +218,7 @@ export const createOrderFromCart = async (userId, { paymentMethod = 'bank_transf
 };
 
 export const getOrderById = async (id) => {
-  const order = await Order.findById(id).populate('userId', 'fullName email phone');
+  const order = await Order.findById(id).populate('userId', 'fullName email phone address');
   if (!order) throw new HttpError(404, 'Order not found');
   const itemMap = await getOrderItemMap([order]);
   return mapOrder(order, itemMap);
@@ -266,47 +267,70 @@ export const cancelOrderForUser = async (id, userId) => {
 };
 
 export const updateOrderStatus = async (id, status) => {
-  const order = await Order.findById(id).populate('userId', 'fullName email phone');
-  if (!order) throw new HttpError(404, 'Order not found');
+  const session = await Order.startSession();
+  let updatedOrder;
 
-  const currentStatus = normalizeOrderStatus(order.orderStatus);
+  try {
+    await session.withTransaction(async () => {
+      const order = await Order.findById(id)
+        .populate('userId', 'fullName email phone address')
+        .session(session);
+      if (!order) throw new HttpError(404, 'Order not found');
 
-  if (currentStatus === status) {
-    const itemMap = await getOrderItemMap([order]);
-    return mapOrder(order, itemMap);
+      const currentStatus = normalizeOrderStatus(order.orderStatus);
+
+      if (currentStatus === status) {
+        updatedOrder = order;
+        return;
+      }
+
+      if (!canTransitionOrderStatus(currentStatus, status)) {
+        const nextStatus = getNextOrderStatus(currentStatus);
+        const currentLabel = ORDER_STATUS_LABELS[currentStatus] || currentStatus;
+        const nextLabel = nextStatus ? ORDER_STATUS_LABELS[nextStatus] : null;
+
+        throw new HttpError(
+          400,
+          nextLabel
+            ? `Order status can only move from ${currentLabel} to ${nextLabel}`
+            : `Order status ${currentLabel} cannot be changed`
+        );
+      }
+
+      if (status === ORDER_STATUS.CANCELLED) {
+        const boxItems = order.items.filter((item) => item.isBox);
+        await Promise.all(boxItems.map((item) => (
+          Box.updateOne(
+            { _id: item.itemId },
+            { $inc: { quantity: item.quantity } },
+            { session }
+          )
+        )));
+      }
+
+      order.orderStatus = status;
+      order.deleteAt = status === ORDER_STATUS.DELETED ? new Date(Date.now() + DELETED_ORDER_TTL_MS) : null;
+      updatedOrder = await order.save({ session });
+    });
+  } finally {
+    await session.endSession();
   }
 
-  if (!canTransitionOrderStatus(currentStatus, status)) {
-    const nextStatus = getNextOrderStatus(currentStatus);
-    const currentLabel = ORDER_STATUS_LABELS[currentStatus] || currentStatus;
-    const nextLabel = nextStatus ? ORDER_STATUS_LABELS[nextStatus] : null;
-
-    throw new HttpError(
-      400,
-      nextLabel
-        ? `Order status can only move from ${currentLabel} to ${nextLabel}`
-        : `Order status ${currentLabel} cannot be changed`
-    );
-  }
-
-  order.orderStatus = status;
-  order.deleteAt = status === ORDER_STATUS.DELETED ? new Date(Date.now() + DELETED_ORDER_TTL_MS) : null;
-  await order.save();
-
-  const itemMap = await getOrderItemMap([order]);
-  return mapOrder(order, itemMap);
+  const itemMap = await getOrderItemMap([updatedOrder]);
+  return mapOrder(updatedOrder, itemMap);
 };
 
 export const getOrderStats = async () => {
-  const [total, pending, confirmed, delivered, deleted, cancelled] =
+  const [total, pending, confirmed, delivering, delivered, deleted, cancelled] =
     await Promise.all([
       Order.countDocuments(),
       Order.countDocuments({ orderStatus: ORDER_STATUS.PENDING }),
-      Order.countDocuments({ orderStatus: { $in: [ORDER_STATUS.CONFIRMED, 'preparing', 'delivering'] } }),
+      Order.countDocuments({ orderStatus: { $in: [ORDER_STATUS.CONFIRMED, 'preparing'] } }),
+      Order.countDocuments({ orderStatus: ORDER_STATUS.DELIVERING }),
       Order.countDocuments({ orderStatus: ORDER_STATUS.DELIVERED }),
       Order.countDocuments({ orderStatus: ORDER_STATUS.DELETED }),
       Order.countDocuments({ orderStatus: { $in: [ORDER_STATUS.CANCELLED, 'Cancel', 'cancel'] } })
     ]);
 
-  return { total, pending, confirmed, delivered, deleted, cancelled };
+  return { total, pending, confirmed, delivering, delivered, deleted, cancelled };
 };

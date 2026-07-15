@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 
 import { EmptyState, ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx'
+import DeletePostModal from '../../components/blog/DeletePostModal.jsx'
 import PostEditor from '../../components/blog/PostEditor.jsx'
 import TopicImageManager from '../../components/blog/TopicImageManager.jsx'
 import { blogApi } from '../../services/apiService.js'
@@ -21,6 +22,8 @@ function AdminPostsPage() {
   const [postPage, setPostPage] = useState(1)
   const [selectedTopicId, setSelectedTopicId] = useState('')
   const [selectedPost, setSelectedPost] = useState(null)
+  const [postToDelete, setPostToDelete] = useState(null)
+  const [isDeletingPost, setIsDeletingPost] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [isPostsLoading, setIsPostsLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -112,6 +115,31 @@ function AdminPostsPage() {
     await fetchDashboard(1)
   }
 
+  const handleDelete = async () => {
+    if (!postToDelete || isDeletingPost) return
+
+    setIsDeletingPost(true)
+    setErrorMessage('')
+    setSuccessMessage('')
+
+    try {
+      await blogApi.deletePost(postToDelete._id)
+      if (selectedPost?._id === postToDelete._id) setSelectedPost(null)
+      setPostToDelete(null)
+      setSuccessMessage('Đã xóa bài viết thành công.')
+
+      if (posts.length === 1 && postPage > 1) {
+        setPostPage((page) => page - 1)
+      } else {
+        await fetchPosts(postPage)
+      }
+    } catch (error) {
+      setErrorMessage(error.message)
+    } finally {
+      setIsDeletingPost(false)
+    }
+  }
+
   const handleTopicFilterChange = (event) => {
     setSelectedTopicId(event.target.value)
     setPostPage(1)
@@ -192,7 +220,16 @@ function AdminPostsPage() {
                         <h3 className="mt-1 font-bold text-slate-800">{post.title}</h3>
                         <p className="mt-2 text-xs text-slate-500">{post.status} · {new Date(post.updatedAt).toLocaleDateString('vi-VN')}</p>
                       </div>
-                      <button className="shrink-0 rounded-full border border-pink-200 px-3 py-1 text-sm font-semibold text-pink-600 hover:bg-pink-50" onClick={() => handleEdit(post._id)}>Sửa</button>
+                      <div className="flex shrink-0 items-center gap-2">
+                        <button className="rounded-full border border-pink-200 px-3 py-1 text-sm font-semibold text-pink-600 hover:bg-pink-50" onClick={() => handleEdit(post._id)} type="button">Sửa</button>
+                        <button
+                          className="rounded-full border border-red-200 px-3 py-1 text-sm font-semibold text-red-600 transition hover:bg-red-50"
+                          onClick={() => setPostToDelete(post)}
+                          type="button"
+                        >
+                          Xóa
+                        </button>
+                      </div>
                     </div>
                   </article>
                 ))}
@@ -228,6 +265,12 @@ function AdminPostsPage() {
           </section>
         </div>
       </div>
+      <DeletePostModal
+        post={postToDelete}
+        isDeleting={isDeletingPost}
+        onClose={() => setPostToDelete(null)}
+        onConfirm={handleDelete}
+      />
     </main>
   )
 }

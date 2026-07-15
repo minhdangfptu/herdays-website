@@ -28,6 +28,19 @@ export const getAllProducts = async (req, res, next) => {
   }
 };
 
+export const getProductCategories = async (req, res, next) => {
+  try {
+    void req;
+    const categories = await productService.listProductCategories();
+    sendSuccess(res, {
+      message: 'Lấy danh sách danh mục sản phẩm thành công',
+      data: categories
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getProducts = async (req, res, next) => {
   try {
     const params = validateProductQuery(req.query);

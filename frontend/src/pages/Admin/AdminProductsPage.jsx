@@ -60,6 +60,7 @@ function AdminProductsPage() {
   const [products, setProducts] = useState([]);
   const [boxes, setBoxes] = useState([]);
   const [productOptions, setProductOptions] = useState([]);
+  const [productCategories, setProductCategories] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, totalItems: 0 });
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState('');
@@ -102,6 +103,11 @@ function AdminProductsPage() {
     setProductOptions(result.products || []);
   };
 
+  const fetchProductCategories = async () => {
+    const categories = await adminApi.getProductCategories();
+    setProductCategories(categories || []);
+  };
+
   useEffect(() => {
     let isActive = true;
 
@@ -137,9 +143,14 @@ function AdminProductsPage() {
   useEffect(() => {
     let isActive = true;
 
-    adminApi.getSingleProducts({ page: 1, limit: 50 })
-      .then((result) => {
-        if (isActive) setProductOptions(result.products || []);
+    Promise.all([
+      adminApi.getSingleProducts({ page: 1, limit: 50 }),
+      adminApi.getProductCategories()
+    ])
+      .then(([productResult, categories]) => {
+        if (!isActive) return;
+        setProductOptions(productResult.products || []);
+        setProductCategories(categories || []);
       })
       .catch(() => undefined);
 
@@ -237,7 +248,7 @@ function AdminProductsPage() {
       }
 
       closeProductModal();
-      await Promise.all([refreshCurrentTab(), fetchProductOptions()]);
+      await Promise.all([refreshCurrentTab(), fetchProductOptions(), fetchProductCategories()]);
     } catch (error) {
       toast.error(error.message);
     } finally {
@@ -488,10 +499,10 @@ function AdminProductsPage() {
                     <button
                       type="button"
                       onClick={() => (isBoxTab ? openBoxUpdateModal(item) : openProductUpdateModal(item))}
-                      className="inline-flex h-9 items-center justify-center gap-2 rounded-md border border-slate-200 px-3 text-sm font-bold text-slate-600 transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-500"
+                      className="inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-slate-200 px-3 py-2 text-xs font-bold leading-tight text-slate-600 transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-500"
                     >
                       <Pencil size={15} />
-                      Update
+                      {isBoxTab ? 'Chi tiết box' : 'Chi tiết sản phẩm'}
                     </button>
                   </td>
                 </tr>
@@ -536,7 +547,13 @@ function AdminProductsPage() {
               required={!editingProduct}
               onChange={setProductImageFile}
             />
-            <FormInput label="Danh mục" required value={productForm.category} onChange={(value) => handleProductFieldChange('category', value)} />
+            <FormSelect
+              label="Danh mục"
+              options={productCategories}
+              required
+              value={productForm.category}
+              onChange={(value) => handleProductFieldChange('category', value)}
+            />
             <div className="grid gap-4 sm:grid-cols-2">
               <FormInput label="Giá" type="number" min="0" required value={productForm.price} onChange={(value) => handleProductFieldChange('price', value)} />
               <FormInput label="Số lượng" type="number" min="0" required value={productForm.quantity} onChange={(value) => handleProductFieldChange('quantity', value)} />
@@ -619,6 +636,25 @@ function FormInput({ label, value, onChange, type = 'text', required = false, mi
         onChange={(event) => onChange(event.target.value)}
         className="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
       />
+    </label>
+  );
+}
+
+function FormSelect({ label, options, value, onChange, required = false }) {
+  return (
+    <label className="block">
+      <span className="mb-1 block text-sm font-bold text-slate-700">
+        {label}{required && <span className="text-pink-500"> *</span>}
+      </span>
+      <select
+        className="h-11 w-full rounded-md border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
+        onChange={(event) => onChange(event.target.value)}
+        required={required}
+        value={value}
+      >
+        <option value="">Chọn danh mục</option>
+        {options.map((option) => <option key={option} value={option}>{option}</option>)}
+      </select>
     </label>
   );
 }

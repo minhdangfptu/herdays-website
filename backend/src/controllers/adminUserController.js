@@ -52,3 +52,15 @@ export const disableUser = async (req, res, next) => {
     next(error);
   }
 };
+
+export const enableUser = async (req, res, next) => {
+  try {
+    const user = await adminUserService.enableUser(req.params.id);
+    sendSuccess(res, {
+      message: 'Gỡ vô hiệu hóa tài khoản thành công',
+      data: user
+    });
+  } catch (error) {
+    next(error);
+  }
+};

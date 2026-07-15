@@ -27,7 +27,9 @@ export const validateRegister = (body) => {
   const email = normalizeEmail(body.email);
   const phone = normalizePhoneNumber(body.phone);
   const otpChannel = body.otpChannel?.trim();
+  const fullName = typeof body.fullName === 'string' ? body.fullName.trim() : '';
 
+  if (!fullName) throw new HttpError(400, 'fullName is required');
   if (!email) throw new HttpError(400, 'email is required');
   if (!phone) throw new HttpError(400, 'phone is required');
 
@@ -53,7 +55,7 @@ export const validateRegister = (body) => {
     phone,
     otpChannel: otpChannel || 'email',
     password: body.password,
-    fullName: body.fullName?.trim(),
+    fullName,
     targetStatus: body.targetStatus
   };
 };

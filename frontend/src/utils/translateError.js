@@ -46,6 +46,7 @@ const TRANSLATIONS = {
   'Forbidden — insufficient permissions':           'Bạn không có quyền thực hiện thao tác này.',
 
   // Validation — common
+  'fullName is required': 'Họ và tên không được để trống.',
   'E12000': 'Email đã được sử dụng cho tài khoản khác.',
   'P12000': 'Số điện thoại đã được sử dụng cho tài khoản khác.',
   'Invalid Vietnamese phone format': 'Số điện thoại Việt Nam phải có 10 chữ số và bắt đầu bằng 0.',

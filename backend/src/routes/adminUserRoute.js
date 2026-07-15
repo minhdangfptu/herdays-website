@@ -9,6 +9,7 @@ router.use(authMiddleware, adminMiddleware);
 
 router.get('/', adminUserController.listUsers);
 router.patch('/:id/disable', adminUserController.disableUser);
+router.patch('/:id/enable', adminUserController.enableUser);
 router.get('/:id', adminUserController.getUser);
 
 export default router;

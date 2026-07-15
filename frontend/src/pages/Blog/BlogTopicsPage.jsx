@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { FiChevronRight } from 'react-icons/fi';
+import { FiChevronRight, FiSearch, FiX } from 'react-icons/fi';
 
 import { EmptyState, ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx';
 import { blogApi, hasAuthSession, profileApi } from '../../services/apiService.js';
@@ -16,7 +16,6 @@ const targetStatusTopicSlugs = {
   normal: 'chu-ky-kinh-nguyet',
   periodTracking: 'chu-ky-kinh-nguyet',
   relatives: 'khac',
-  partner: 'khac',
 };
 
 const preferredTopicOrder = [
@@ -45,6 +44,15 @@ const formatDate = (value) => {
   if (!value) return '';
   return new Date(value).toLocaleDateString('vi-VN');
 };
+
+const normalizeSearchValue = (value = '') => (
+  value
+    .toString()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim()
+);
 
 const getTopicHeading = (topic) => (
   topicHeadingBySlug[topic.slug] || `Bài viết về ${topic.name}`
@@ -111,6 +119,7 @@ const BlogSection = ({ title, subtitle, topic, posts, featured = false }) => {
 const BlogTopicsPage = () => {
   const [topics, setTopics] = useState([]);
   const [postsByTopicId, setPostsByTopicId] = useState({});
+  const [searchTerm, setSearchTerm] = useState('');
   const [targetStatus, setTargetStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
@@ -164,15 +173,39 @@ const BlogTopicsPage = () => {
   }, []);
 
   const personalizedTopic = useMemo(() => {
+    if (!targetStatus || targetStatus === 'partner') return null;
     const preferredSlug = targetStatusTopicSlugs[targetStatus] || preferredTopicOrder[0];
     return topics.find((topic) => topic.slug === preferredSlug) || topics[0] || null;
   }, [targetStatus, topics]);
 
-  const visibleTopicSections = useMemo(() => (
-    topics.filter((topic) => (postsByTopicId[topic._id] || []).length > 0)
-  ), [postsByTopicId, topics]);
+  const normalizedSearchTerm = useMemo(() => normalizeSearchValue(searchTerm), [searchTerm]);
 
-  const personalizedPosts = personalizedTopic ? postsByTopicId[personalizedTopic._id] || [] : [];
+  const filteredPostsByTopicId = useMemo(() => {
+    if (!normalizedSearchTerm) return postsByTopicId;
+
+    return Object.entries(postsByTopicId).reduce((acc, [topicId, posts]) => {
+      acc[topicId] = (posts || []).filter((post) => (
+        normalizeSearchValue(post.title).includes(normalizedSearchTerm)
+      ));
+      return acc;
+    }, {});
+  }, [normalizedSearchTerm, postsByTopicId]);
+
+  const personalizedPosts = personalizedTopic ? filteredPostsByTopicId[personalizedTopic._id] || [] : [];
+  const personalizedPreviewPosts = personalizedPosts.slice(0, 3);
+  const shouldShowPersonalizedSection = Boolean(personalizedTopic && personalizedPosts.length > 0);
+
+  const visibleTopicSections = useMemo(() => (
+    topics.filter((topic) => (
+      topic._id !== personalizedTopic?._id
+      && (filteredPostsByTopicId[topic._id] || []).length > 0
+    ))
+  ), [filteredPostsByTopicId, personalizedTopic, topics]);
+
+  const hasBlogContent = shouldShowPersonalizedSection || visibleTopicSections.length > 0;
+  const emptyMessage = searchTerm.trim()
+    ? `Không tìm thấy bài viết phù hợp với từ khóa "${searchTerm.trim()}".`
+    : 'Chưa có bài viết nào được xuất bản.';
 
   return (
     <div className="blog-topics-page">
@@ -181,24 +214,49 @@ const BlogTopicsPage = () => {
       </div>
 
       <div className="blog-topics-container">
+        <div className="blog-topics-search" role="search">
+          <label className="blog-topics-search__label" htmlFor="blog-topics-search-input">
+            Tìm kiếm bài viết
+          </label>
+          <div className="blog-topics-search__control">
+            <FiSearch className="blog-topics-search__icon" size={20} />
+            <input
+              id="blog-topics-search-input"
+              className="blog-topics-search__input"
+              type="search"
+              value={searchTerm}
+              onChange={(event) => setSearchTerm(event.target.value)}
+              placeholder="Nhập tên bài viết..."
+            />
+            {searchTerm && (
+              <button
+                type="button"
+                className="blog-topics-search__clear"
+                onClick={() => setSearchTerm('')}
+                aria-label="Xóa tìm kiếm"
+              >
+                <FiX size={18} />
+              </button>
+            )}
+          </div>
+        </div>
+
         {isLoading && <LoadingState label="Đang tải bài viết..." />}
         {!isLoading && errorMessage && <ErrorState message={errorMessage} />}
-        {!isLoading && !errorMessage && visibleTopicSections.length === 0 && (
-          <EmptyState message="Chưa có bài viết nào được xuất bản." />
+        {!isLoading && !errorMessage && !hasBlogContent && (
+          <EmptyState message={emptyMessage} />
         )}
-        {!isLoading && !errorMessage && visibleTopicSections.length > 0 && (
+        {!isLoading && !errorMessage && hasBlogContent && (
           <>
-            <BlogSection
-              featured={personalizedPosts.length >= 3}
-              title="Dành cho bạn"
-              subtitle={
-                personalizedTopic
-                  ? `Bài viết phù hợp với chủ đề ${personalizedTopic.name}.`
-                  : 'Bài viết được gợi ý cho bạn.'
-              }
-              topic={personalizedTopic}
-              posts={personalizedPosts}
-            />
+            {shouldShowPersonalizedSection && (
+              <BlogSection
+                featured
+                title="Dành cho bạn"
+                subtitle={`Bài viết phù hợp với chủ đề ${personalizedTopic.name}.`}
+                topic={personalizedTopic}
+                posts={personalizedPreviewPosts}
+              />
+            )}
 
             {visibleTopicSections.map((topic) => (
               <BlogSection
@@ -206,7 +264,7 @@ const BlogTopicsPage = () => {
                 title={getTopicHeading(topic)}
                 subtitle={topic.description}
                 topic={topic}
-                posts={postsByTopicId[topic._id] || []}
+                posts={filteredPostsByTopicId[topic._id] || []}
               />
             ))}
           </>

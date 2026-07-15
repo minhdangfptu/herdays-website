@@ -11,5 +11,6 @@ router.get('/', blogController.getAdminPosts);
 router.get('/:postId', blogController.getAdminPost);
 router.post('/', blogController.createPost);
 router.put('/:postId', blogController.updatePost);
+router.delete('/:postId', blogController.deletePost);
 
 export default router;

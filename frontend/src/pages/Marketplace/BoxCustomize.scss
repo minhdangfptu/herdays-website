@@ -56,7 +56,7 @@ $font-primary: 'Roboto', sans-serif;
   
   .box-title {
     font-size: 32px;
-    font-weight: 700;
+    font-weight: 500;
     color: $dark-text;
     margin: 0 0 8px 0;
   }
@@ -71,7 +71,7 @@ $font-primary: 'Roboto', sans-serif;
 .box-customize-status {
   margin: 24px 0;
   color: $gray-text;
-  font-weight: 700;
+  font-weight: 500;
 }
 
 .box-customize-status--error {
@@ -91,7 +91,7 @@ $font-primary: 'Roboto', sans-serif;
   
   h2 {
     font-size: 24px;
-    font-weight: 700;
+    font-weight: 500;
     color: $dark-text;
     margin: 0 0 10px 0;
   }
@@ -127,6 +127,16 @@ $font-primary: 'Roboto', sans-serif;
     font-size: 14px;
     font-weight: 600;
   }
+
+  strong {
+    border-radius: 999px;
+    background: $light-pink;
+    color: $primary-pink;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 5px 10px;
+    white-space: nowrap;
+  }
 }
 
 // ============================================
@@ -161,8 +171,14 @@ $font-primary: 'Roboto', sans-serif;
     border-color: $primary-pink;
     box-shadow: 0 0 0 2px rgba($primary-pink, 0.3);
   }
+
+  &.is-out-of-stock,
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
   
-  &:hover {
+  &:hover:not(:disabled) {
     transform: translateY(-4px);
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
   }
@@ -199,6 +215,18 @@ $font-primary: 'Roboto', sans-serif;
     -webkit-line-clamp: 1;
     -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  .product-description {
+    display: -webkit-box;
+    min-height: 36px;
+    margin: 0 0 10px;
+    overflow: hidden;
+    color: #68717c;
+    font-size: 12px;
+    line-height: 1.5;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
   }
   
   .product-meta {
@@ -249,7 +277,7 @@ $font-primary: 'Roboto', sans-serif;
   
   .bar-title {
     font-size: 20px;
-    font-weight: 800;
+    font-weight: 600;
     color: $white;
   }
   
@@ -277,7 +305,17 @@ $font-primary: 'Roboto', sans-serif;
     background: rgba(255, 255, 255, 0.18);
     color: $white;
     font-size: 14px;
-    font-weight: 800;
+    font-weight: 600;
+  }
+
+  .bar-required {
+    border-radius: 999px;
+    padding: 6px 12px;
+    background: rgba(255, 255, 255, 0.92);
+    color: #c63561;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
   }
   
   .bar-checkout-btn {

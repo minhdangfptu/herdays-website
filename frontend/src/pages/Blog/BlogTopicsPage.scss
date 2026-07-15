@@ -71,6 +71,83 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
 }
 
 // ============================================
+// Search
+// ============================================
+
+.blog-topics-search {
+  max-width: 680px;
+  margin: 0 auto 48px;
+
+  @media (max-width: 768px) {
+    margin-bottom: 36px;
+  }
+}
+
+.blog-topics-search__label {
+  display: block;
+  margin-bottom: 10px;
+  color: $dark-text;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.blog-topics-search__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.blog-topics-search__icon {
+  position: absolute;
+  left: 16px;
+  color: $gray-text;
+  pointer-events: none;
+}
+
+.blog-topics-search__input {
+  width: 100%;
+  height: 52px;
+  border: 1px solid $light-gray-border;
+  border-radius: 14px;
+  padding: 0 48px;
+  color: $dark-text;
+  font-family: $font-primary;
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+  &::placeholder {
+    color: rgba($gray-text, 0.72);
+  }
+
+  &:focus {
+    border-color: $secondary-pink;
+    box-shadow: 0 0 0 4px rgba($secondary-pink, 0.14);
+  }
+}
+
+.blog-topics-search__clear {
+  position: absolute;
+  right: 12px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background-color: $very-light-pink;
+  color: $secondary-pink;
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease;
+
+  &:hover {
+    background-color: $light-pink;
+    color: darken($secondary-pink, 8%);
+  }
+}
+
+// ============================================
 // Sections
 // ============================================
 

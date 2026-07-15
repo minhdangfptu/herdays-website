@@ -64,3 +64,14 @@ export const disableUser = async (adminUserId, targetUserId) => {
 
   return user;
 };
+
+export const enableUser = async (targetUserId) => {
+  const user = await User.findByIdAndUpdate(
+    targetUserId,
+    { $set: { isDisabled: false } },
+    { new: true, runValidators: true, projection: LIST_FIELDS }
+  ).lean();
+
+  if (!user) throw new HttpError(404, 'User not found');
+  return user;
+};

@@ -111,23 +111,26 @@ function RegisterForm() {
   const [isConfirmVisible, setIsConfirmVisible] = useState(false)
   const [isTermsAccepted, setIsTermsAccepted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [fullName, setFullName] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [touched, setTouched] = useState({ password: false, confirm: false })
+  const [touched, setTouched] = useState({ fullName: false, password: false, confirm: false })
 
   const strength     = getStrength(password)
   const matched      = confirmPassword.length > 0 && password === confirmPassword
   const allPassed    = STRENGTH_RULES.every((r) => r.test(password))
   const emptyConfirm = confirmPassword.length === 0
+  const isFullNameValid = fullName.trim().length > 0
 
   const hasError = (field) => {
     if (!touched[field]) return false
+    if (field === 'fullName') return !isFullNameValid
     if (field === 'password') return !allPassed && password.length > 0
     if (field === 'confirm')  return !matched && !emptyConfirm
     return false
   }
 
-  const isFormValid = allPassed && matched
+  const isFormValid = isFullNameValid && allPassed && matched
 
   const navigateAfterSocialAuth = useCallback((result) => {
     const shouldCompleteQuiz = result.isNewUser || !result.user.targetStatus
@@ -171,7 +174,7 @@ function RegisterForm() {
 
     try {
       const result = await authApi.register({
-        fullName: formData.get('fullname'),
+        fullName: fullName.trim(),
         email: formData.get('email'),
         phone: formData.get('phone'),
         password,
@@ -202,7 +205,7 @@ function RegisterForm() {
           className="login-form"
           onSubmit={handleSubmit}
         >
-          <label className="form-field">
+          <label className={`form-field${hasError('fullName') ? ' is-error' : ''}`}>
             <span style={{ fontWeight: '400' }}>Họ và tên</span>
             <span className="input-shell">
               <span className="field-icon">
@@ -213,9 +216,15 @@ function RegisterForm() {
                 name="fullname"
                 autoComplete="name"
                 placeholder="Nhập họ và tên của bạn"
+                value={fullName}
+                onChange={(event) => setFullName(event.target.value)}
+                onBlur={() => setTouched((current) => ({ ...current, fullName: true }))}
                 required
               />
             </span>
+            {hasError('fullName') && (
+              <span className="form-field__error">Họ và tên không được chỉ chứa khoảng trắng</span>
+            )}
           </label>
 
           <label className="form-field">

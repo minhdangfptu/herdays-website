@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { AlertTriangle, ArrowLeft, Ban, Mail, Phone, Shield, UserRound, X } from 'lucide-react'
+import { AlertTriangle, ArrowLeft, Ban, Mail, Phone, Shield, UserCheck, UserRound, X } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useNavigate, useParams } from 'react-router-dom'
 
@@ -154,6 +154,7 @@ function AdminUserDetailPage() {
   const [user, setUser] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isDisabling, setIsDisabling] = useState(false)
+  const [isEnabling, setIsEnabling] = useState(false)
   const [isDisableModalOpen, setIsDisableModalOpen] = useState(false)
 
   useEffect(() => {
@@ -205,6 +206,22 @@ function AdminUserDetailPage() {
     }
   }
 
+  const handleEnableUser = async () => {
+    if (!user?.isDisabled || isEnabling) return
+
+    setIsEnabling(true)
+    const loadingToast = toast.loading('Đang gỡ vô hiệu hóa tài khoản...')
+    try {
+      const result = await adminApi.enableUser(user._id)
+      setUser(result.user)
+      toast.success(result.message || 'Gỡ vô hiệu hóa tài khoản thành công.', { id: loadingToast })
+    } catch (error) {
+      toast.error(error.message || 'Không thể gỡ vô hiệu hóa tài khoản.', { id: loadingToast })
+    } finally {
+      setIsEnabling(false)
+    }
+  }
+
   return (
     <main className="min-h-screen bg-white px-5 py-6 sm:px-8" style={{ fontFamily: ADMIN_FONT_FAMILY }}>
       <div className="mb-10 flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-center sm:justify-between">
@@ -220,15 +237,27 @@ function AdminUserDetailPage() {
           <h1 className="m-0 text-xl font-bold text-slate-800">Chi tiết người dùng</h1>
         </div>
 
-        <button
-          className="inline-flex items-center justify-center gap-2 rounded-lg bg-pink-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
-          type="button"
-          onClick={openDisableModal}
-          disabled={!user || user.isDisabled || isDisabling}
-        >
-          <Ban size={16} />
-          {user?.isDisabled ? 'Đã vô hiệu hóa' : 'Vô hiệu hóa tài khoản'}
-        </button>
+        {user?.isDisabled ? (
+          <button
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
+            disabled={isEnabling}
+            onClick={handleEnableUser}
+            type="button"
+          >
+            <UserCheck size={16} />
+            {isEnabling ? 'Đang xử lý...' : 'Gỡ vô hiệu hóa'}
+          </button>
+        ) : (
+          <button
+            className="inline-flex items-center justify-center gap-2 rounded-lg bg-pink-500 px-5 py-2.5 text-sm font-bold text-white shadow-sm transition hover:bg-pink-600 disabled:cursor-not-allowed disabled:opacity-60"
+            type="button"
+            onClick={openDisableModal}
+            disabled={!user || isDisabling}
+          >
+            <Ban size={16} />
+            Vô hiệu hóa tài khoản
+          </button>
+        )}
       </div>
 
       {isLoading ? (

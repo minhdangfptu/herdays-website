@@ -280,6 +280,13 @@ export const blogApi = {
     })
     return { message: response.message, post: response.data }
   },
+  deletePost: async (postId) => {
+    const response = await request(`/admin/posts/${postId}`, {
+      method: 'DELETE',
+      isAuthenticated: true
+    })
+    return { message: response.message, post: response.data }
+  },
   updateTopicImage: async (topicId, imgThumbnail) => {
     const response = await request(`/admin/topics/${topicId}/image`, {
       method: 'PUT',
@@ -513,6 +520,13 @@ export const adminApi = {
     })
     return { message: response.message, user: response.data }
   },
+  enableUser: async (id) => {
+    const response = await request(`/admin/users/${id}/enable`, {
+      method: 'PATCH',
+      isAuthenticated: true
+    })
+    return { message: response.message, user: response.data }
+  },
   getOrders: async (params = {}) => {
     const response = await request(`/admin/orders${buildQuery(params)}`, { isAuthenticated: true })
     return { orders: response.data, pagination: response.meta }
@@ -532,6 +546,10 @@ export const adminApi = {
   getProducts: async (params = {}) => {
     const response = await request(`/admin/products${buildQuery(params)}`, { isAuthenticated: true })
     return { products: response.data, pagination: response.meta }
+  },
+  getProductCategories: async () => {
+    const response = await request('/admin/products/categories', { isAuthenticated: true })
+    return response.data
   },
   getSingleProducts: async (params = {}) => {
     const response = await request(`/admin/products/products${buildQuery(params)}`, { isAuthenticated: true })

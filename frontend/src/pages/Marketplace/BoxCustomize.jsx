@@ -21,6 +21,8 @@ const getBoxName = (box) => box?.boxName || 'HerDays Box của bạn'
 const getBoxImage = (box) =>
   box?.thumbnail || `https://placehold.co/360x360/f8c4d8/ffffff?text=${encodeURIComponent(getBoxName(box))}`
 
+const isProductInStock = (product) => Number(product?.quantity) > 0
+
 const normalizeBoxProduct = (item) => ({
   id: String(item.productId),
   productName: item.productName || 'Sản phẩm trong box',
@@ -60,7 +62,14 @@ export default function BoxCustomize() {
         if (!isMounted) return
 
         const nextProducts = productResult.items || []
-        const initialProducts = (boxResult?.products || []).map(normalizeBoxProduct)
+        const availableProductIds = new Set(
+          nextProducts
+            .filter(isProductInStock)
+            .map((product) => String(product.id))
+        )
+        const initialProducts = (boxResult?.products || [])
+          .map(normalizeBoxProduct)
+          .filter((product) => availableProductIds.has(product.id))
 
         setProducts(nextProducts)
         setBox(boxResult)
@@ -89,12 +98,34 @@ export default function BoxCustomize() {
     }, {})
   ), [products])
 
+  const requiredCategories = useMemo(() => {
+    const boxCategories = Array.isArray(box?.productCategories)
+      ? box.productCategories.filter(Boolean)
+      : []
+
+    if (boxCategories.length > 0) return [...new Set(boxCategories)]
+    return Object.keys(groupedProducts)
+  }, [box, groupedProducts])
+
+  const missingCategories = useMemo(() => (
+    requiredCategories.filter((category) => (
+      !selectedItems.some((item) => item.category === category)
+    ))
+  ), [requiredCategories, selectedItems])
+
+  const isSelectionComplete = requiredCategories.length > 0 && missingCategories.length === 0
+
   const toggleProduct = (product) => {
     const productId = String(product.id)
     const isSelected = selectedItems.some((item) => item.id === productId)
 
     if (isSelected) {
       setSelectedItems((current) => current.filter((item) => item.id !== productId))
+      return
+    }
+
+    if (!isProductInStock(product)) {
+      toast.error('Sản phẩm này đã hết hàng.')
       return
     }
 
@@ -122,6 +153,14 @@ export default function BoxCustomize() {
 
     if (availableBoxQuantity <= 0) {
       toast.error('Box này đã hết hàng.')
+      return
+    }
+
+    if (!isSelectionComplete) {
+      const missingText = missingCategories.length > 0
+        ? `: ${missingCategories.join(', ')}`
+        : ''
+      toast.error(`Vui lòng chọn ít nhất 1 sản phẩm cho mỗi phân khúc${missingText}.`)
       return
     }
 
@@ -184,16 +223,21 @@ export default function BoxCustomize() {
                   <div key={category} className="category-section">
                     <div className="category-divider">
                       <span>{category}</span>
+                      {requiredCategories.includes(category) && (
+                        <strong>{selectedItems.some((item) => item.category === category) ? 'Đã chọn' : 'Bắt buộc'}</strong>
+                      )}
                     </div>
 
                     <div className="product-grid">
                       {categoryProducts.map((product) => {
                         const isSelected = selectedItems.some((item) => item.id === String(product.id))
+                        const isOutOfStock = !isProductInStock(product)
                         return (
                           <button
                             key={product.id}
                             type="button"
-                            className={`product-card ${isSelected ? 'selected' : ''}`}
+                            className={`product-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'is-out-of-stock' : ''}`}
+                            disabled={isOutOfStock}
                             onClick={() => toggleProduct(product)}
                           >
                             <div className="product-image">
@@ -201,6 +245,9 @@ export default function BoxCustomize() {
                             </div>
                             <div className="product-info">
                               <h3 className="product-name">{product.productName}</h3>
+                              <p className="product-description">
+                                {product.description || 'Chưa có mô tả sản phẩm.'}
+                              </p>
                               <div className="product-meta">
                                 <span className="product-tag">{product.quantity > 0 ? `Còn ${product.quantity}` : 'Hết hàng'}</span>
                               </div>
@@ -226,12 +273,15 @@ export default function BoxCustomize() {
 
           <div className="bar-right">
             <span className="bar-count">Đã chọn {selectedItems.length} sản phẩm</span>
+            {!isSelectionComplete && (
+              <span className="bar-required">Còn thiếu {missingCategories.length} phân khúc</span>
+            )}
             <span className="bar-stock">{availableBoxQuantity > 0 ? `Còn ${availableBoxQuantity}` : 'Hết hàng'}</span>
             <button
               ref={checkoutButtonRef}
               className="bar-checkout-btn"
               type="button"
-              disabled={isAdding || !box?.id || availableBoxQuantity <= 0}
+              disabled={isAdding || !box?.id || availableBoxQuantity <= 0 || !isSelectionComplete}
               onClick={handleBuyNow}
             >
               {isAdding ? 'Đang thêm...' : 'Mua ngay'}

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { ChevronLeft, ChevronRight, Search } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Search, UserCheck } from 'lucide-react'
 import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
@@ -95,6 +95,7 @@ function AdminUsersPage() {
   const [search, setSearch] = useState('')
   const [debouncedSearch, setDebouncedSearch] = useState('')
   const [isLoading, setIsLoading] = useState(true)
+  const [enablingUserId, setEnablingUserId] = useState(null)
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -147,6 +148,24 @@ function AdminUsersPage() {
   const handleRoleChange = (nextRole) => {
     setRole(nextRole)
     setPage(1)
+  }
+
+  const handleEnableUser = async (user) => {
+    if (!user?.isDisabled || enablingUserId) return
+
+    setEnablingUserId(user._id)
+    const loadingToast = toast.loading('Đang gỡ vô hiệu hóa tài khoản...')
+    try {
+      const result = await adminApi.enableUser(user._id)
+      setUsers((current) => current.map((item) => (
+        item._id === user._id ? result.user : item
+      )))
+      toast.success(result.message || 'Gỡ vô hiệu hóa tài khoản thành công.', { id: loadingToast })
+    } catch (error) {
+      toast.error(error.message || 'Không thể gỡ vô hiệu hóa tài khoản.', { id: loadingToast })
+    } finally {
+      setEnablingUserId(null)
+    }
   }
 
   const firstItem = pagination.total === 0 ? 0 : ((pagination.page || page) - 1) * PAGE_SIZE + 1
@@ -229,13 +248,26 @@ function AdminUsersPage() {
                   <td className="px-6 py-4"><TargetBadge targetStatus={user.targetStatus} /></td>
                   <td className="px-6 py-4"><StatusBadge user={user} /></td>
                   <td className="px-6 py-4 text-right">
-                    <button
-                      className="font-bold text-pink-500 transition hover:text-pink-600"
-                      type="button"
-                      onClick={() => navigate(`/admin/users/${user._id}`)}
-                    >
-                      Xem chi tiết
-                    </button>
+                    <div className="flex flex-wrap items-center justify-end gap-3">
+                      {user.isDisabled && (
+                        <button
+                          className="inline-flex items-center gap-1.5 font-bold text-emerald-600 transition hover:text-emerald-700 disabled:cursor-not-allowed disabled:opacity-50"
+                          disabled={Boolean(enablingUserId)}
+                          onClick={() => handleEnableUser(user)}
+                          type="button"
+                        >
+                          <UserCheck size={16} />
+                          {enablingUserId === user._id ? 'Đang xử lý...' : 'Gỡ vô hiệu hóa'}
+                        </button>
+                      )}
+                      <button
+                        className="font-bold text-pink-500 transition hover:text-pink-600"
+                        type="button"
+                        onClick={() => navigate(`/admin/users/${user._id}`)}
+                      >
+                        Xem chi tiết
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

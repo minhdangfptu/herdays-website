@@ -9,6 +9,7 @@ router.use(authMiddleware, adminMiddleware);
 
 // ─── READ ─────────────────────────────────────────────────────────────────────
 router.get('/', productController.getAllProducts);
+router.get('/categories', productController.getProductCategories);
 router.get('/products', productController.getProducts);
 router.get('/boxes', productController.getBoxes);
 

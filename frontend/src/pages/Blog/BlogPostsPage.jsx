@@ -52,10 +52,11 @@ const BlogPostsPage = () => {
   }, [currentPage, topicId]);
 
   const totalPages = pagination?.totalPages || 1;
-  const relatedPosts = useMemo(() => posts.slice(0, 4), [posts]);
+  const featuredPosts = useMemo(() => posts.slice(0, 3), [posts]);
+  const remainingPosts = useMemo(() => posts.slice(3), [posts]);
 
-  const MainPostCard = ({ post }) => (
-    <Link className="blog-posts-main-card" to={`/blog/${topicId}/posts/${post._id}`}>
+  const MainPostCard = ({ post, variant = 'medium' }) => (
+    <Link className={`blog-posts-main-card blog-posts-main-card--${variant}`} to={`/blog/${topicId}/posts/${post._id}`}>
       <div className="blog-posts-main-card__image">
         <img src={getPostImage(post)} alt={post.title} />
       </div>
@@ -67,21 +68,6 @@ const BlogPostsPage = () => {
             <span className="blog-posts-main-card__author">{getAuthorName(post)}</span>
           </div>
           <span className="blog-posts-main-card__date">{formatDate(post.createdAt)}</span>
-        </div>
-      </div>
-    </Link>
-  );
-
-  const RelatedCard = ({ post }) => (
-    <Link className="blog-posts-related-card" to={`/blog/${topicId}/posts/${post._id}`}>
-      <div className="blog-posts-related-card__image">
-        <img src={getPostImage(post)} alt={post.title} />
-      </div>
-      <div className="blog-posts-related-card__content">
-        <h4 className="blog-posts-related-card__title">{post.title}</h4>
-        <div className="blog-posts-related-card__meta">
-          <span className="blog-posts-related-card__author">{getAuthorName(post)}</span>
-          <span className="blog-posts-related-card__date">{formatDate(post.createdAt)}</span>
         </div>
       </div>
     </Link>
@@ -108,37 +94,40 @@ const BlogPostsPage = () => {
         )}
         {!isLoading && !errorMessage && posts.length > 0 && (
           <div className="blog-posts-layout">
-            <div className="blog-posts-main">
-              {posts.map((post) => (
-                <MainPostCard key={post._id} post={post} />
+            <div className="blog-posts-featured-grid">
+              {featuredPosts.map((post, index) => (
+                <MainPostCard
+                  key={post._id}
+                  post={post}
+                  variant={index === 0 ? 'featured' : 'side'}
+                />
               ))}
-
-              {totalPages > 1 && (
-                <div className="blog-posts-pagination">
-                  {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
-                    <button
-                      key={page}
-                      className={`blog-posts-pagination__btn ${
-                        currentPage === page ? 'blog-posts-pagination__btn--active' : ''
-                      }`}
-                      type="button"
-                      onClick={() => setCurrentPage(page)}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-              )}
             </div>
 
-            <aside className="blog-posts-sidebar">
-              <h2 className="blog-posts-sidebar__title">Bài viết liên quan</h2>
-              <div className="blog-posts-sidebar__list">
-                {relatedPosts.map((post) => (
-                  <RelatedCard key={post._id} post={post} />
+            {remainingPosts.length > 0 && (
+              <div className="blog-posts-main">
+                {remainingPosts.map((post) => (
+                  <MainPostCard key={post._id} post={post} />
                 ))}
               </div>
-            </aside>
+            )}
+
+            {totalPages > 1 && (
+              <div className="blog-posts-pagination">
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                  <button
+                    key={page}
+                    className={`blog-posts-pagination__btn ${
+                      currentPage === page ? 'blog-posts-pagination__btn--active' : ''
+                    }`}
+                    type="button"
+                    onClick={() => setCurrentPage(page)}
+                  >
+                    {page}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
       </div>
