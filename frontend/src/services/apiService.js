@@ -243,6 +243,10 @@ export const blogApi = {
     const response = await request('/blog/topics')
     return { topics: response.data }
   },
+  searchPosts: async (params = {}) => {
+    const response = await request(`/blog/posts/search${buildQuery(params)}`)
+    return { posts: response.data, pagination: response.meta }
+  },
   getTopicPosts: async (topicId, page = 1, limit) => {
     const response = await request(`/blog/topics/${topicId}/posts${buildQuery({ page, limit })}`)
     return {

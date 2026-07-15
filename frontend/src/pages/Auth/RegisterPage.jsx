@@ -197,7 +197,7 @@ function RegisterForm() {
 
         <div className="login-copy">
           <h1 id="register-title">Đăng ký</h1>
-          <p style={{ fontWeight: '400' }}>Bắt đầu hành trình HERDAYS ngay hôm nay</p>
+          <p style={{ fontWeight: '400' }}>Bắt đầu hành trình cùng HERDAYS ngay hôm nay</p>
         </div>
 
         <form
@@ -426,12 +426,12 @@ function WelcomePanel() {
           <p className="welcome-lead">
             Hãy đăng ký để sử dụng
             <br />
-            toàn bộ tính năng của <u>Herdays</u>
+            toàn bộ tính năng của <u>HerDays</u>
           </p>
           <p className="welcome-description">
             HERDAYS - Nền tảng chăm sóc sức khoẻ nữ giới và
             <br />
-            dịch vụ Subcription Box
+            dịch vụ Subscription Box
           </p>
         </div>
         <CycleChart />

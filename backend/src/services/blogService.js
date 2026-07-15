@@ -78,6 +78,33 @@ export const getTopics = async () => {
   return { topics };
 };
 
+export const searchPosts = async ({ page, limit, q }) => {
+  const filter = { status: 'Published' };
+  if (q) {
+    const words = q.trim().split(/\s+/).filter(Boolean);
+
+    filter.$and = words.map((word) => ({
+      $or: [
+        { title: { $regex: word, $options: 'i' } },
+        { content: { $regex: word, $options: 'i' } }
+      ]
+    }));
+  }
+
+  const [posts, total] = await Promise.all([
+    BlogPost.find(filter)
+      .select('-content')
+      .populate('postTopicId', 'name slug')
+      .sort(q ? { updatedAt: -1 } : { createdAt: -1 })
+      .skip((page - 1) * limit)
+      .limit(limit)
+      .lean(),
+    BlogPost.countDocuments(filter)
+  ]);
+
+  return { posts, pagination: buildPagination(page, limit, total) };
+};
+
 export const ingestPostsToKnowledge = async () => {
   const posts = await BlogPost.find()
     .populate('postTopicId', 'name slug')

@@ -24,7 +24,7 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
           </svg>
         </button>
 
-        <img className="logout-modal-logo" src={herdaysLogo} alt="Herdays" />
+        <img className="logout-modal-logo" src={herdaysLogo} alt="HerDays" />
 
         <h2 className="logout-modal-title">Đăng xuất</h2>
 

@@ -14,7 +14,13 @@ $text-light: #666666;
 $border-color: #EEEEEE;
 
 // Cursive font fallback (Replace with your actual project script font like 'Dancing Script' or 'Playball')
-$font-cursive: 'Dancing Script', cursive, sans-serif;
+@font-face {
+  font-family: 'Lamoric Rowen';
+  src: url('../../assets/font/Lamoric Rowen TTF.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+$font-cursive: 'Lamoric Rowen', cursive, sans-serif;
 
 .herdays-about-page {
   font-family: 'Roboto', sans-serif;
@@ -54,7 +60,8 @@ $font-cursive: 'Dancing Script', cursive, sans-serif;
   margin-bottom: 24px; 
 }
 .herdays-about-cursive-title-huge {
-  font-family: $font-cursive; 
+  font-weight: 600;
+  font-family: 'Roboto', sans-serif;
   font-size: 56px; 
   color: $primary-pink; 
   margin: 24px auto; 
@@ -136,7 +143,6 @@ $font-cursive: 'Dancing Script', cursive, sans-serif;
 
   &-title {
     font-weight: 1000;
-    font-family: $font-cursive;
     font-size: 36px;
     color: $primary-pink;
     margin-bottom: 20px;

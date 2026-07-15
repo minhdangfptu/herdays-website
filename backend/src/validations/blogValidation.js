@@ -119,3 +119,12 @@ export const validateUpdatePost = (body) => {
   if (body.status !== undefined) update.status = validateStatus(body.status);
   return update;
 };
+
+export const validateSearchPosts = (query) => {
+  const result = validatePagination(query);
+  const raw = typeof query.q === 'string' ? query.q.trim() : '';
+  if (raw.length >= 2) {
+    result.q = raw;
+  }
+  return result;
+};

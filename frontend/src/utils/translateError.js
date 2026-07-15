@@ -51,11 +51,14 @@ const TRANSLATIONS = {
   'P12000': 'Số điện thoại đã được sử dụng cho tài khoản khác.',
   'Invalid Vietnamese phone format': 'Số điện thoại Việt Nam phải có 10 chữ số và bắt đầu bằng 0.',
 
+  // Network
+  'failed to fetch': 'Vui lòng kiểm tra kết nối và thử lại sau.',
+
   // Cart
   'Box is out of stock': 'Box nay da het hang.',
-  'Requested quantity exceeds available stock': 'So luong vuot qua ton kho hien co.',
-  'Quantity must be an integer': 'So luong phai la so nguyen.',
-  'Quantity must be at least 1': 'So luong phai lon hon hoac bang 1.',
+  'Requested quantity exceeds available stock': 'Số lượng hàng vượt quá hàng có sẵn.',
+  'Quantity must be an integer': 'Số lượng phải là số nguyên.',
+  'Quantity must be at least 1': 'Số lượng phải lớn hơn hoặc bằng 1.',
 }
 
 /**

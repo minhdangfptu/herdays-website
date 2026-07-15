@@ -2,7 +2,7 @@
 // BlogPostDetailPage - SCSS (blog-detail-* BEM)
 // ============================================
 
-$secondary-pink: #f472b6;
+$secondary-pink: #ED77A5;
 $dark-text: #1e293b;
 $gray-text: #64748b;
 $light-gray: #f1f5f9;
@@ -19,7 +19,13 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
 .blog-detail-page {
   min-height: 100vh;
   background-color: #fff;
-  font-family: $font-primary;
+  font-family: 'Roboto', sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  font-synthesis: none;
+  font-variant-numeric: lining-nums;
 }
 
 .blog-detail-back-button {
@@ -31,18 +37,16 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
   padding: 9px 14px;
   border: 1px solid $pink-border;
   border-radius: 999px;
-  background: $white;
-  color: $secondary-pink;
+  background: $secondary-pink;
+  color: $white;
   font-size: 14px;
   font-weight: 700;
   text-decoration: none;
-  box-shadow: 0 8px 22px rgba(244, 114, 182, 0.1);
   transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
 
   &:hover {
-    background-color: $very-light-pink;
-    box-shadow: 0 10px 28px rgba(244, 114, 182, 0.16);
-    transform: translateX(-2px);
+    background-color: #ed3493;
+    color: $white;
   }
 }
 
@@ -101,7 +105,31 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
   }
 }
 
-// -- Container -------------------------------------
+// ── Breadcrumb ────────────────────────────────────
+.blog-detail-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: $gray-text;
+  margin-bottom: 12px;
+
+  a {
+    color: $secondary-pink;
+    text-decoration: none;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  svg {
+    flex-shrink: 0;
+    opacity: 0.6;
+  }
+}
+
+// ── Container ─────────────────────────────────────
 .blog-detail-container {
   max-width: $container-max;
   margin: 0 auto;
@@ -121,14 +149,12 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
   display: flex;
   flex-direction: column;
   gap: 56px;
+  max-width: $container-max;
 }
 
 // -- Article card ----------------------------------
 .blog-detail-article {
   width: 100%;
-  max-width: 760px;
-  margin: 0 auto;
-  background-color: transparent;
 }
 
 .blog-detail-article__header {
@@ -142,10 +168,13 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
 .blog-detail-article__title {
   padding: 0;
   font-size: 34px;
-  font-weight: 800;
-  line-height: 1.18;
+  font-weight: 700;
+  line-height: 1.2;
   color: $dark-text;
   margin: 0;
+  font-family: 'Roboto', sans-serif !important;
+  overflow-wrap: break-word;
+  hyphens: auto;
 
   @media (max-width: 768px) {
     font-size: 26px;
@@ -231,6 +260,13 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
   font-size: 15px;
   line-height: 1.8;
   color: $dark-text;
+  font-family: 'Roboto', sans-serif !important;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+  font-synthesis: none;
+  transform: translateZ(0);
 
   @media (max-width: 768px) {
     font-size: 14px;
@@ -294,10 +330,14 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
   // Section headings - rendered by BE inside <h1>/<h2>/<h3> with <span>
   h1 {
     font-size: 26px;
-    font-weight: 800;
+    font-weight: 700;
     line-height: 1.25;
     color: $dark-text;
     margin: 28px 0 10px;
+    font-family: 'Roboto', sans-serif !important;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 
     &:first-child {
       margin-top: 0;
@@ -312,6 +352,10 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
     margin: 24px 0 8px;
     padding-top: 0;
     border-top: none;
+    font-family: 'Roboto', sans-serif !important;
+    letter-spacing: -0.01em;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 
     &:first-child {
       margin-top: 0;

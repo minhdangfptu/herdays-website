@@ -1,0 +1,422 @@
+// ============================================
+// ToolsCalculate Styles
+// ============================================
+
+// Color Variables
+$primary-pink: #F176A9;
+$dark-pink: #D05E8E;
+$light-pink: #FFE8F3;
+$hero-pink: #E8D5E8;
+$very-light-pink: #FFF5F8;
+$dark-text: #1A1A1A;
+$gray-text: #4D4D4D;
+$light-gray: #F5F5F5;
+$border-gray: #E0E0E0;
+$white: #FFFFFF;
+$teal: #1B9FA7;
+
+// Font Variables
+$font-primary: 'Roboto', sans-serif;
+
+// ============================================
+// Tools Calculate Page
+// ============================================
+
+.tools-calculate-page {
+  background-color: $white;
+  font-family: $font-primary;
+}
+
+// ============================================
+// Breadcrumb
+// ============================================
+
+.tools-calculate-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 40px;
+  background-color: $hero-pink;
+  font-size: 13px;
+  color: $dark-text;
+
+  @media (max-width: 768px) {
+    padding: 16px 20px;
+    font-size: 12px;
+    gap: 8px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 12px 15px;
+    font-size: 11px;
+    gap: 6px;
+  }
+}
+
+.tools-calculate-breadcrumb-link {
+  color: $dark-text;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: $primary-pink;
+  }
+}
+
+.tools-calculate-breadcrumb-separator {
+  color: $border-gray;
+}
+
+.tools-calculate-breadcrumb-active {
+  color: $gray-text;
+  font-weight: 600;
+}
+
+// ============================================
+// Hero Section
+// ============================================
+
+.tools-calculate-hero {
+  background-color: $hero-pink;
+  padding: 60px 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: center;
+
+  @media (max-width: 1024px) {
+    gap: 40px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    padding: 50px 20px;
+    gap: 30px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 40px 15px;
+    gap: 20px;
+  }
+}
+
+.tools-calculate-hero-content {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tools-calculate-hero-title {
+  font-size: 44px;
+  font-weight: 700;
+  color: $dark-text;
+  margin: 0;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 36px;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 28px;
+  }
+}
+
+.tools-calculate-hero-description {
+  font-size: 16px;
+  color: $gray-text;
+  margin: 0;
+  line-height: 1.6;
+
+  @media (max-width: 480px) {
+    font-size: 14px;
+  }
+}
+
+.tools-calculate-link {
+  color: $teal;
+  text-decoration: none;
+  font-weight: 500;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.tools-calculate-hero-illustration {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 350px;
+
+  @media (max-width: 768px) {
+    min-height: 300px;
+  }
+
+  @media (max-width: 480px) {
+    min-height: 250px;
+  }
+}
+
+.tools-calculate-illustration-placeholder {
+  width: 100%;
+  height: 100%;
+  background-color: rgba(255, 255, 255, 0.5);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $gray-text;
+  font-size: 14px;
+}
+
+// ============================================
+// Main Container
+// ============================================
+
+.tools-calculate-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 50px 40px;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: 60px;
+
+  @media (max-width: 1200px) {
+    gap: 40px;
+  }
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr 250px;
+    gap: 40px;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    padding: 40px 20px;
+    gap: 30px;
+  }
+
+  @media (max-width: 480px) {
+    padding: 30px 15px;
+    gap: 24px;
+  }
+}
+
+.tools-calculate-main {
+  display: flex;
+  flex-direction: column;
+  gap: 40px;
+}
+
+// ============================================
+// Article Info
+// ============================================
+
+.tools-calculate-article-info {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding-bottom: 24px;
+  border-bottom: 1px solid $border-gray;
+}
+
+.tools-calculate-update-date {
+  font-size: 13px;
+  color: $gray-text;
+  margin: 0;
+}
+
+.tools-calculate-reviewer {
+  display: flex;
+  gap: 12px;
+}
+
+.tools-calculate-reviewer-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: $light-gray;
+  flex-shrink: 0;
+}
+
+.tools-calculate-reviewer-text {
+  font-size: 13px;
+  color: $gray-text;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tools-calculate-reviewer-link {
+  color: $teal;
+  text-decoration: none;
+  font-weight: 600;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.tools-calculate-written-by {
+  font-size: 13px;
+  color: $gray-text;
+  margin: 0;
+}
+
+// ============================================
+// Calculator Form
+// ============================================
+
+.tools-calculate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.tools-calculate-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tools-calculate-form-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: $dark-text;
+  margin: 0;
+}
+
+.tools-calculate-date-input,
+.tools-calculate-number-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid $border-gray;
+  border-radius: 4px;
+  background-color: $white;
+  overflow: hidden;
+}
+
+.tools-calculate-input {
+  flex: 1;
+  border: none;
+  padding: 12px 16px;
+  font-size: 14px;
+  color: $dark-text;
+  font-family: $font-primary;
+  background: transparent;
+
+  &:focus {
+    outline: none;
+  }
+
+  &::placeholder {
+    color: $gray-text;
+  }
+}
+
+.tools-calculate-input-number {
+  text-align: center;
+  padding: 12px 8px;
+}
+
+.tools-calculate-date-btn,
+.tools-calculate-number-btn {
+  background: none;
+  border: none;
+  padding: 0 12px;
+  cursor: pointer;
+  color: $gray-text;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: $primary-pink;
+  }
+}
+
+.tools-calculate-number-btn {
+  padding: 12px 12px;
+}
+
+.tools-calculate-button {
+  padding: 14px 32px;
+  background-color: $primary-pink;
+  color: $white;
+  border: none;
+  border-radius: 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-family: $font-primary;
+  width: 100%;
+
+  @media (max-width: 480px) {
+    padding: 12px 24px;
+    font-size: 13px;
+  }
+
+  &:hover {
+    background-color: $dark-pink;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba($primary-pink, 0.3);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// ============================================
+// Sidebar
+// ============================================
+
+.tools-calculate-sidebar {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.tools-calculate-sidebar-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: $dark-text;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.tools-calculate-sidebar-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tools-calculate-sidebar-item {
+  display: flex;
+}
+
+.tools-calculate-sidebar-link {
+  font-size: 13px;
+  color: $gray-text;
+  text-decoration: none;
+  line-height: 1.5;
+  transition: color 0.3s ease;
+
+  &:hover {
+    color: $primary-pink;
+    text-decoration: underline;
+  }
+}
+
+@media (max-width: 1024px) {
+  .tools-calculate-sidebar {
+    display: none;
+  }
+}

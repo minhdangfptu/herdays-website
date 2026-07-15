@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link } from 'react-router-dom';
-import { FiChevronRight, FiSearch, FiX } from 'react-icons/fi';
+import { Link, useNavigate } from 'react-router-dom';
+import { FiChevronRight } from 'react-icons/fi';
+import { Search } from 'lucide-react';
 
 import { EmptyState, ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx';
 import { blogApi, hasAuthSession, profileApi } from '../../services/apiService.js';
@@ -44,15 +45,6 @@ const formatDate = (value) => {
   if (!value) return '';
   return new Date(value).toLocaleDateString('vi-VN');
 };
-
-const normalizeSearchValue = (value = '') => (
-  value
-    .toString()
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
-);
 
 const getTopicHeading = (topic) => (
   topicHeadingBySlug[topic.slug] || `Bài viết về ${topic.name}`
@@ -117,12 +109,13 @@ const BlogSection = ({ title, subtitle, topic, posts, featured = false }) => {
 };
 
 const BlogTopicsPage = () => {
+  const navigate = useNavigate();
   const [topics, setTopics] = useState([]);
   const [postsByTopicId, setPostsByTopicId] = useState({});
-  const [searchTerm, setSearchTerm] = useState('');
   const [targetStatus, setTargetStatus] = useState('');
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
+  const [searchInput, setSearchInput] = useState('');
 
   useEffect(() => {
     let isActive = true;
@@ -175,37 +168,28 @@ const BlogTopicsPage = () => {
   const personalizedTopic = useMemo(() => {
     if (!targetStatus || targetStatus === 'partner') return null;
     const preferredSlug = targetStatusTopicSlugs[targetStatus] || preferredTopicOrder[0];
-    return topics.find((topic) => topic.slug === preferredSlug) || topics[0] || null;
+    return topics.find((topic) => topic.slug === preferredSlug) || null;
   }, [targetStatus, topics]);
 
-  const normalizedSearchTerm = useMemo(() => normalizeSearchValue(searchTerm), [searchTerm]);
-
-  const filteredPostsByTopicId = useMemo(() => {
-    if (!normalizedSearchTerm) return postsByTopicId;
-
-    return Object.entries(postsByTopicId).reduce((acc, [topicId, posts]) => {
-      acc[topicId] = (posts || []).filter((post) => (
-        normalizeSearchValue(post.title).includes(normalizedSearchTerm)
-      ));
-      return acc;
-    }, {});
-  }, [normalizedSearchTerm, postsByTopicId]);
-
-  const personalizedPosts = personalizedTopic ? filteredPostsByTopicId[personalizedTopic._id] || [] : [];
+  const personalizedPosts = personalizedTopic ? postsByTopicId[personalizedTopic._id] || [] : [];
   const personalizedPreviewPosts = personalizedPosts.slice(0, 3);
   const shouldShowPersonalizedSection = Boolean(personalizedTopic && personalizedPosts.length > 0);
 
   const visibleTopicSections = useMemo(() => (
     topics.filter((topic) => (
       topic._id !== personalizedTopic?._id
-      && (filteredPostsByTopicId[topic._id] || []).length > 0
+      && (postsByTopicId[topic._id] || []).length > 0
     ))
-  ), [filteredPostsByTopicId, personalizedTopic, topics]);
+  ), [personalizedTopic, postsByTopicId, topics]);
 
   const hasBlogContent = shouldShowPersonalizedSection || visibleTopicSections.length > 0;
-  const emptyMessage = searchTerm.trim()
-    ? `Không tìm thấy bài viết phù hợp với từ khóa "${searchTerm.trim()}".`
-    : 'Chưa có bài viết nào được xuất bản.';
+  const emptyMessage = 'Chưa có bài viết nào được xuất bản.';
+
+  const handleSearch = () => {
+    const query = searchInput.trim();
+    if (!query) return;
+    navigate(`/blog/search?q=${encodeURIComponent(query)}`);
+  };
 
   return (
     <div className="blog-topics-page">
@@ -214,30 +198,33 @@ const BlogTopicsPage = () => {
       </div>
 
       <div className="blog-topics-container">
-        <div className="blog-topics-search" role="search">
-          <label className="blog-topics-search__label" htmlFor="blog-topics-search-input">
-            Tìm kiếm bài viết
-          </label>
-          <div className="blog-topics-search__control">
-            <FiSearch className="blog-topics-search__icon" size={20} />
+        <div className="blog-topics-breadcrumb-row">
+          <p className="blog-topics-breadcrumb">
+            <Link to="/">Trang chủ</Link>
+            <FiChevronRight size={14} />
+            <span>Chủ đề</span>
+          </p>
+          <div className="blog-topics-search">
+            <Search size={15} className="blog-topics-search__icon" strokeWidth={2} />
             <input
-              id="blog-topics-search-input"
+              type="text"
+              placeholder="Tìm kiếm bài viết..."
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  handleSearch();
+                }
+              }}
               className="blog-topics-search__input"
-              type="search"
-              value={searchTerm}
-              onChange={(event) => setSearchTerm(event.target.value)}
-              placeholder="Nhập tên bài viết..."
             />
-            {searchTerm && (
-              <button
-                type="button"
-                className="blog-topics-search__clear"
-                onClick={() => setSearchTerm('')}
-                aria-label="Xóa tìm kiếm"
-              >
-                <FiX size={18} />
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={handleSearch}
+              className="blog-topics-search__btn"
+            >
+              <Search size={15} className="blog-topics-search__btn-icon" strokeWidth={2} />
+            </button>
           </div>
         </div>
 
@@ -264,7 +251,7 @@ const BlogTopicsPage = () => {
                 title={getTopicHeading(topic)}
                 subtitle={topic.description}
                 topic={topic}
-                posts={filteredPostsByTopicId[topic._id] || []}
+                posts={postsByTopicId[topic._id] || []}
               />
             ))}
           </>

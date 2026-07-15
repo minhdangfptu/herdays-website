@@ -43,11 +43,11 @@ const avatarColors = [
 ]
 
 const getInitials = (user) => {
-  const source = user.fullName || user.email || 'Herdays'
+  const source = user.fullName || user.email || 'HerDays'
   const words = source.replace(/@.*/, '').split(/\s+/).filter(Boolean)
   if (words.length >= 2) return `${words[0][0]}${words[words.length - 1][0]}`.toUpperCase()
   return source.slice(0, 2).toUpperCase()
-}
+} 
 
 function UserAvatar({ user, index = 0 }) {
   return (

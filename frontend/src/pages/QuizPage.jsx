@@ -195,7 +195,7 @@ function QuizPage() {
       setIsPersonalizing(true);
       const loadingToastId = toast.loading('Đang cá nhân hoá trải nghiệm cho bạn ...');
       await new Promise((resolve) => setTimeout(resolve, 5000));
-      toast.success(result.message || 'Chào mừng bạn đến với Herdays', {
+      toast.success(result.message || 'Chào mừng bạn đến với HerDays', {
         icon: '💖',
         id: loadingToastId,
         duration: 5000
