@@ -19,6 +19,7 @@ const getAuthorName = (post) => post.authorId?.fullName || 'HERDAYS';
 
 const BlogPostsPage = () => {
   const { topicId } = useParams();
+  const navigate = useNavigate();
   const [currentPage, setCurrentPage] = useState(1);
   const [posts, setPosts] = useState([]);
   const [topic, setTopic] = useState(null);
@@ -27,7 +28,6 @@ const BlogPostsPage = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [searchInput, setSearchInput] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
 
   useEffect(() => {
     let isActive = true;
@@ -39,9 +39,7 @@ const BlogPostsPage = () => {
       try {
         const [topicsResult, postsResult] = await Promise.all([
           blogApi.getTopics(),
-          searchQuery
-            ? blogApi.searchPosts({ q: searchQuery, page: currentPage })
-            : blogApi.getTopicPosts(topicId, currentPage),
+          blogApi.getTopicPosts(topicId, currentPage),
         ]);
         if (!isActive) return;
         setAllTopics(topicsResult.topics || []);
@@ -62,9 +60,11 @@ const BlogPostsPage = () => {
     return () => {
       isActive = false;
     };
-  }, [currentPage, topicId, searchQuery]);
+  }, [currentPage, topicId]);
 
   const totalPages = pagination?.totalPages || 1;
+  const featuredPosts = useMemo(() => posts.slice(0, 3), [posts]);
+  const remainingPosts = useMemo(() => posts.slice(3), [posts]);
 
   const relatedPosts = useMemo(() => {
     return allTopics
@@ -74,15 +74,21 @@ const BlogPostsPage = () => {
         _id: t._id,
         title: t.name,
         topicId: t._id,
-        thumbnail: t.image || null,
-        images: t.image ? [t.image] : [],
+        thumbnail: t.imgThumbnail || null,
+        images: t.imgThumbnail ? [t.imgThumbnail] : [],
         authorId: null,
         createdAt: null,
       }));
   }, [allTopics, topicId]);
 
-  const MainPostCard = ({ post }) => (
-    <Link className="blog-posts-main-card" to={`/blog/${topicId}/posts/${post._id}`}>
+  const handleSearch = () => {
+    const query = searchInput.trim();
+    if (!query) return;
+    navigate(`/blog/search?q=${encodeURIComponent(query)}`);
+  };
+
+  const MainPostCard = ({ post, variant = 'medium' }) => (
+    <Link className={`blog-posts-main-card blog-posts-main-card--${variant}`} to={`/blog/${topicId}/posts/${post._id}`}>
       <div className="blog-posts-main-card__image">
         <img src={getPostImage(post)} alt={post.title} />
       </div>
@@ -98,7 +104,6 @@ const BlogPostsPage = () => {
       </div>
     </Link>
   );
-  const navigate = useNavigate();
   const RelatedCard = ({ post }) => (
     <Link className="blog-posts-related-card" to={`/blog/${post.topicId}/posts`}>
       <div className="blog-posts-related-card__image">
@@ -143,10 +148,24 @@ const BlogPostsPage = () => {
         )}
         {!isLoading && !errorMessage && posts.length > 0 && (
           <div className="blog-posts-layout">
-            <div className="blog-posts-main">
-              {posts.map((post) => (
-                <MainPostCard key={post._id} post={post} />
-              ))}
+            <div className="blog-posts-content">
+              <div className="blog-posts-featured-grid">
+                {featuredPosts.map((post, index) => (
+                  <MainPostCard
+                    key={post._id}
+                    post={post}
+                    variant={index === 0 ? 'featured' : 'side'}
+                  />
+                ))}
+              </div>
+
+              {remainingPosts.length > 0 && (
+                <div className="blog-posts-main">
+                  {remainingPosts.map((post) => (
+                    <MainPostCard key={post._id} post={post} />
+                  ))}
+                </div>
+              )}
 
               {totalPages > 1 && (
                 <div className="blog-posts-pagination">
@@ -168,7 +187,7 @@ const BlogPostsPage = () => {
 
             <aside className="blog-posts-sidebar">
               <h2 className="blog-posts-sidebar__title">Chủ đề khác</h2>
-              
+
               <div className="blog-posts-sidebar__list">
                 {relatedPosts.map((post) => (
                   <RelatedCard key={post._id} post={post} />
@@ -180,27 +199,21 @@ const BlogPostsPage = () => {
                   type="text"
                   placeholder="Tìm kiếm bài viết..."
                   value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                      navigate(`/blog/search?q=${searchInput}`);
-                    }
-                  }}
+                   onChange={(e) => setSearchInput(e.target.value)}
+                   onKeyDown={(e) => {
+                     if (e.key === 'Enter') handleSearch();
+                   }}
                   className="blog-posts-sidebar__search-input"
                 />
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSearchQuery(searchInput);
-                    navigate(`/blog/search?q=${searchInput}`);
-                    setCurrentPage(1);
-                  }}
+                 <button
+                   type="button"
+                   onClick={handleSearch}
                   className="blog-posts-sidebar__search-btn"
                 >
                   <Search size={15} className="blog-posts-sidebar__search-icon" strokeWidth={2} />
                 </button>
               </div>
-            </aside>
+             </aside>
           </div>
         )}
       </div>

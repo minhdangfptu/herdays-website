@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiChevronRight } from 'react-icons/fi';
-import { Form, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 import { EmptyState, ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx';
 import { blogApi, hasAuthSession, profileApi } from '../../services/apiService.js';
@@ -17,7 +17,6 @@ const targetStatusTopicSlugs = {
   normal: 'chu-ky-kinh-nguyet',
   periodTracking: 'chu-ky-kinh-nguyet',
   relatives: 'khac',
-  partner: 'khac',
 };
 
 const preferredTopicOrder = [
@@ -167,31 +166,30 @@ const BlogTopicsPage = () => {
   }, []);
 
   const personalizedTopic = useMemo(() => {
-    if (targetStatus === 'partner') return null;
+    if (!targetStatus || targetStatus === 'partner') return null;
     const preferredSlug = targetStatusTopicSlugs[targetStatus] || preferredTopicOrder[0];
     return topics.find((topic) => topic.slug === preferredSlug) || null;
   }, [targetStatus, topics]);
 
   const personalizedPosts = personalizedTopic ? postsByTopicId[personalizedTopic._id] || [] : [];
-
-  const personalizedPostIds = useMemo(() => (
-    new Set(personalizedPosts.map((p) => p._id))
-  ), [personalizedPosts]);
+  const personalizedPreviewPosts = personalizedPosts.slice(0, 3);
+  const shouldShowPersonalizedSection = Boolean(personalizedTopic && personalizedPosts.length > 0);
 
   const visibleTopicSections = useMemo(() => (
-    topics
-      .filter((topic) => (postsByTopicId[topic._id] || []).length > 0)
-      .filter((topic) => topic._id !== personalizedTopic?._id)
-  ), [postsByTopicId, topics, personalizedTopic]);
+    topics.filter((topic) => (
+      topic._id !== personalizedTopic?._id
+      && (postsByTopicId[topic._id] || []).length > 0
+    ))
+  ), [personalizedTopic, postsByTopicId, topics]);
 
-  const filteredPostsByTopicId = useMemo(() => {
-    const result = { ...postsByTopicId };
-    if (!personalizedTopic) return result;
-    result[personalizedTopic._id] = (result[personalizedTopic._id] || []).filter(
-      (post) => !personalizedPostIds.has(post._id),
-    );
-    return result;
-  }, [postsByTopicId, personalizedTopic, personalizedPostIds]);
+  const hasBlogContent = shouldShowPersonalizedSection || visibleTopicSections.length > 0;
+  const emptyMessage = 'Chưa có bài viết nào được xuất bản.';
+
+  const handleSearch = () => {
+    const query = searchInput.trim();
+    if (!query) return;
+    navigate(`/blog/search?q=${encodeURIComponent(query)}`);
+  };
 
   return (
     <div className="blog-topics-page">
@@ -207,7 +205,7 @@ const BlogTopicsPage = () => {
             <span>Chủ đề</span>
           </p>
           <div className="blog-topics-search">
-            <Form size={15} className="blog-topics-search__icon" strokeWidth={2} />
+            <Search size={15} className="blog-topics-search__icon" strokeWidth={2} />
             <input
               type="text"
               placeholder="Tìm kiếm bài viết..."
@@ -215,14 +213,14 @@ const BlogTopicsPage = () => {
               onChange={(e) => setSearchInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === 'Enter') {
-                  navigate(`/blog/search?q=${searchInput}`);
+                  handleSearch();
                 }
               }}
               className="blog-topics-search__input"
             />
             <button
               type="button"
-              onClick={() => navigate(`/blog/search?q=${searchInput}`)}
+              onClick={handleSearch}
               className="blog-topics-search__btn"
             >
               <Search size={15} className="blog-topics-search__btn-icon" strokeWidth={2} />
@@ -232,22 +230,20 @@ const BlogTopicsPage = () => {
 
         {isLoading && <LoadingState label="Đang tải bài viết..." />}
         {!isLoading && errorMessage && <ErrorState message={errorMessage} />}
-        {!isLoading && !errorMessage && visibleTopicSections.length === 0 && (
-          <EmptyState message="Chưa có bài viết nào được xuất bản." />
+        {!isLoading && !errorMessage && !hasBlogContent && (
+          <EmptyState message={emptyMessage} />
         )}
-        {!isLoading && !errorMessage && visibleTopicSections.length > 0 && (
+        {!isLoading && !errorMessage && hasBlogContent && (
           <>
-            <BlogSection
-              featured={personalizedPosts.length >= 3}
-              title="Dành cho bạn"
-              subtitle={
-                personalizedTopic
-                  ? `Bài viết phù hợp với chủ đề ${personalizedTopic.name}.`
-                  : 'Bài viết được gợi ý cho bạn.'
-              }
-              topic={personalizedTopic}
-              posts={personalizedPosts}
-            />
+            {shouldShowPersonalizedSection && (
+              <BlogSection
+                featured
+                title="Dành cho bạn"
+                subtitle={`Bài viết phù hợp với chủ đề ${personalizedTopic.name}.`}
+                topic={personalizedTopic}
+                posts={personalizedPreviewPosts}
+              />
+            )}
 
             {visibleTopicSections.map((topic) => (
               <BlogSection
@@ -255,7 +251,7 @@ const BlogTopicsPage = () => {
                 title={getTopicHeading(topic)}
                 subtitle={topic.description}
                 topic={topic}
-                posts={filteredPostsByTopicId[topic._id] || []}
+                posts={postsByTopicId[topic._id] || []}
               />
             ))}
           </>

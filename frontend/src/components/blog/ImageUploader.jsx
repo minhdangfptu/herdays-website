@@ -28,7 +28,9 @@ function ImageUploader({ label, multiple = false, maxFiles = 1, onUploaded, disa
     setIsUploading(true)
     setErrorMessage('')
     try {
-      const uploadedImages = await Promise.all(files.map(cloudinaryApi.uploadImage))
+      const uploadedImages = await Promise.all(
+        files.map((file) => cloudinaryApi.uploadImage(file, 'blog')),
+      )
       onUploaded(multiple ? uploadedImages : uploadedImages[0])
     } catch (error) {
       setErrorMessage(error.message)

@@ -129,6 +129,18 @@ export const updatePost = async (req, res, next) => {
   }
 };
 
+export const deletePost = async (req, res, next) => {
+  try {
+    const result = await blogService.deletePost(validatePostId(req.params.postId));
+    sendSuccess(res, {
+      message: result.message,
+      data: result.post
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateTopicImage = async (req, res, next) => {
   try {
     const topicId = validateTopicId(req.params.topicId);

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
+  AlertTriangle,
   ChevronLeft,
   ChevronRight,
   Download,
@@ -16,11 +17,12 @@ const ADMIN_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Robot
 const ORDER_STATUSES = [
   { value: 'pending', label: 'Chờ', className: 'bg-orange-50 text-orange-600' },
   { value: 'confirmed', label: 'Đã duyệt', className: 'bg-blue-50 text-blue-600' },
+  { value: 'delivering', label: 'Bắt đầu giao hàng', className: 'bg-violet-50 text-violet-600' },
   { value: 'delivered', label: 'Giao hàng thành công', className: 'bg-emerald-50 text-emerald-600' },
   { value: 'deleted', label: 'Đã xóa', className: 'bg-slate-100 text-slate-500' },
   { value: 'cancelled', label: 'Đã hủy', className: 'bg-red-50 text-red-600' }
 ];
-const ORDER_STATUS_FLOW = ['pending', 'confirmed', 'delivered', 'deleted'];
+const ORDER_STATUS_FLOW = ['pending', 'confirmed', 'delivering', 'delivered', 'deleted'];
 
 const STATUS_META = ORDER_STATUSES.reduce((map, status) => ({
   ...map,
@@ -58,8 +60,83 @@ const getNextStatus = (status) => {
 
 const getSelectableStatuses = (status) => {
   const nextStatus = getNextStatus(status);
-  return ORDER_STATUSES.filter((item) => item.value === status || item.value === nextStatus);
+  const allowedStatuses = status === 'confirmed'
+    ? [status, nextStatus, 'cancelled']
+    : [status, nextStatus];
+  return ORDER_STATUSES.filter((item) => allowedStatuses.includes(item.value));
 };
+
+function OrderStatusConfirmModal({ change, isSubmitting, onCancel, onConfirm }) {
+  useEffect(() => {
+    if (!change) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && !isSubmitting) onCancel();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [change, isSubmitting, onCancel]);
+
+  if (!change) return null;
+
+  const isCancelling = change.nextStatus === 'cancelled';
+  const title = isCancelling ? 'Xác nhận hủy đơn hàng' : 'Xác nhận xóa đơn hàng';
+  const description = isCancelling
+    ? 'Đơn hàng sẽ chuyển sang trạng thái Đã hủy và số lượng sản phẩm sẽ được hoàn lại kho.'
+    : 'Đơn hàng sẽ chuyển sang trạng thái Đã xóa và tự động bị xóa khỏi hệ thống sau 10 phút.';
+  const confirmLabel = isCancelling ? 'Xác nhận hủy' : 'Xác nhận xóa';
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6"
+      onClick={isSubmitting ? undefined : onCancel}
+    >
+      <section
+        className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="order-status-confirm-title"
+        aria-describedby="order-status-confirm-description"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="flex items-start gap-4">
+          <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-red-50 text-red-500">
+            <AlertTriangle size={24} aria-hidden="true" />
+          </span>
+          <div>
+            <h2 id="order-status-confirm-title" className="text-lg font-bold text-slate-900">{title}</h2>
+            <p id="order-status-confirm-description" className="mt-2 text-sm font-medium leading-6 text-slate-500">
+              {description}
+            </p>
+            <p className="mt-2 text-xs font-semibold text-slate-400">
+              Mã đơn: {String(change.order.id).slice(-8)}
+            </p>
+          </div>
+        </div>
+
+        <div className="mt-6 flex justify-end gap-3">
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={onCancel}
+            className="h-10 rounded-lg border border-slate-200 bg-white px-4 text-sm font-bold text-slate-600 transition hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            Quay lại
+          </button>
+          <button
+            type="button"
+            disabled={isSubmitting}
+            onClick={onConfirm}
+            className="h-10 min-w-32 rounded-lg bg-red-500 px-4 text-sm font-bold text-white transition hover:bg-red-600 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isSubmitting ? 'Đang xử lý...' : confirmLabel}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
 
 function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
@@ -71,6 +148,7 @@ function AdminOrdersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState('');
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
+  const [pendingStatusChange, setPendingStatusChange] = useState(null);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -113,20 +191,7 @@ function AdminOrdersPage() {
     };
   }, [debouncedSearch, page, status]);
 
-  const handleStatusChange = async (order, nextStatus) => {
-    if (!nextStatus || nextStatus === order.orderStatus) return;
-    if (nextStatus !== getNextStatus(order.orderStatus)) {
-      toast.error('Trạng thái đơn hàng chỉ được chuyển sang bước kế tiếp.');
-      return;
-    }
-
-    if (
-      nextStatus === 'deleted'
-      && !window.confirm('Đơn hàng đã xóa sẽ tự bị xóa khỏi hệ thống sau 10 phút. Tiếp tục?')
-    ) {
-      return;
-    }
-
+  const applyStatusChange = async (order, nextStatus) => {
     setUpdatingOrderId(order.id);
 
     try {
@@ -134,14 +199,48 @@ function AdminOrdersPage() {
       setOrders((current) => current.map((item) => (
         item.id === order.id ? updatedOrder : item
       )));
-      toast.success(nextStatus === 'deleted'
-        ? 'Đã chuyển sang trạng thái đã xóa. Đơn sẽ tự xóa khỏi hệ thống sau 10 phút.'
-        : 'Đã cập nhật trạng thái đơn hàng');
+      toast.success(
+        nextStatus === 'deleted'
+          ? 'Đã chuyển sang trạng thái đã xóa. Đơn sẽ tự xóa khỏi hệ thống sau 10 phút.'
+          : nextStatus === 'cancelled'
+            ? 'Đã hủy đơn hàng và hoàn lại số lượng vào kho.'
+            : 'Đã cập nhật trạng thái đơn hàng'
+      );
+      return true;
     } catch (error) {
       toast.error(error.message);
+      return false;
     } finally {
       setUpdatingOrderId(null);
     }
+  };
+
+  const handleStatusChange = async (order, nextStatus) => {
+    if (!nextStatus || nextStatus === order.orderStatus) return;
+    const allowedNextStatuses = order.orderStatus === 'confirmed'
+      ? [getNextStatus(order.orderStatus), 'cancelled']
+      : [getNextStatus(order.orderStatus)];
+    if (!allowedNextStatuses.includes(nextStatus)) {
+      toast.error('Trạng thái đơn hàng chỉ được chuyển sang bước kế tiếp.');
+      return;
+    }
+
+    if (nextStatus === 'cancelled' || nextStatus === 'deleted') {
+      setPendingStatusChange({ order, nextStatus });
+      return;
+    }
+
+    await applyStatusChange(order, nextStatus);
+  };
+
+  const handleConfirmStatusChange = async () => {
+    if (!pendingStatusChange) return;
+
+    const isUpdated = await applyStatusChange(
+      pendingStatusChange.order,
+      pendingStatusChange.nextStatus
+    );
+    if (isUpdated) setPendingStatusChange(null);
   };
 
   const clearFilters = () => {
@@ -158,7 +257,7 @@ function AdminOrdersPage() {
           <div>
             <h1 className="text-2xl font-bold text-slate-950">Quản lý đơn hàng</h1>
             <p className="mt-1 text-sm font-medium text-slate-500">
-              Admin chỉ có thể chuyển đơn hàng theo đúng thứ tự: Chờ, Đã duyệt, Giao hàng thành công, Đã xóa.
+              Luồng xử lý: Chờ → Đã duyệt → Bắt đầu giao hàng → Giao hàng thành công → Đã xóa. Đơn đã duyệt cũng có thể chuyển sang Đã hủy.
             </p>
           </div>
 
@@ -212,12 +311,13 @@ function AdminOrdersPage() {
         </div>
 
         <div className="overflow-hidden rounded-lg border border-slate-100 bg-white">
-          <table className="w-full min-w-[1080px] border-collapse text-left">
+          <table className="w-full min-w-[1240px] border-collapse text-left">
             <thead className="bg-white text-xs font-bold uppercase tracking-wide text-slate-400">
               <tr className="border-b border-slate-100">
                 <th className="px-5 py-4">Mã đơn hàng</th>
                 <th className="px-5 py-4">Mã người dùng</th>
                 <th className="px-5 py-4">Tên người dùng</th>
+                <th className="px-5 py-4">Địa chỉ</th>
                 <th className="px-5 py-4">Sản phẩm</th>
                 <th className="px-5 py-4">Số lượng</th>
                 <th className="px-5 py-4">Tổng tiền</th>
@@ -228,22 +328,21 @@ function AdminOrdersPage() {
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td className="px-5 py-10 text-center font-semibold text-slate-400" colSpan={8}>Đang tải đơn hàng...</td>
+                  <td className="px-5 py-10 text-center font-semibold text-slate-400" colSpan={9}>Đang tải đơn hàng...</td>
                 </tr>
               ) : errorMessage ? (
                 <tr>
-                  <td className="px-5 py-10 text-center font-semibold text-red-500" colSpan={8}>{errorMessage}</td>
+                  <td className="px-5 py-10 text-center font-semibold text-red-500" colSpan={9}>{errorMessage}</td>
                 </tr>
               ) : orders.length === 0 ? (
                 <tr>
-                  <td className="px-5 py-10 text-center font-semibold text-slate-400" colSpan={8}>Không có đơn hàng phù hợp.</td>
+                  <td className="px-5 py-10 text-center font-semibold text-slate-400" colSpan={9}>Không có đơn hàng phù hợp.</td>
                 </tr>
               ) : orders.map((order, index) => {
                 const statusMeta = STATUS_META[order.orderStatus] || STATUS_META.pending;
                 const products = (order.items || []).map((item) => item.itemName || item.itemId).join(', ');
                 const totalQuantity = (order.items || []).reduce((total, item) => total + Number(item.quantity || 0), 0);
                 const isUpdating = updatingOrderId === order.id;
-                const nextStatus = getNextStatus(order.orderStatus);
                 const selectableStatuses = getSelectableStatuses(order.orderStatus);
                 const statusOptions = selectableStatuses.length > 0
                   ? selectableStatuses
@@ -257,6 +356,9 @@ function AdminOrdersPage() {
                       <p className="text-sm font-bold text-slate-800">{order.user?.fullName || order.user?.email || 'Người dùng'}</p>
                       {order.user?.phone && <p className="mt-1 text-xs font-medium text-slate-400">{order.user.phone}</p>}
                     </td>
+                    <td className="max-w-[220px] px-5 py-4 text-sm font-semibold text-slate-600">
+                      <span className="line-clamp-2">{order.user?.address || 'Chưa cập nhật'}</span>
+                    </td>
                     <td className="max-w-[260px] px-5 py-4 text-sm font-semibold text-slate-600">
                       <span className="line-clamp-2">{products || '--'}</span>
                     </td>
@@ -265,7 +367,7 @@ function AdminOrdersPage() {
                     <td className="px-5 py-4">
                       <select
                         value={order.orderStatus}
-                        disabled={isUpdating || !nextStatus}
+                        disabled={isUpdating || selectableStatuses.length <= 1}
                         onChange={(event) => handleStatusChange(order, event.target.value)}
                         className={`h-9 rounded-md border border-transparent px-2 text-xs font-bold outline-none transition focus:border-pink-200 focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:opacity-70 ${statusMeta.className}`}
                       >
@@ -308,6 +410,13 @@ function AdminOrdersPage() {
           </button>
         </div>
       </section>
+
+      <OrderStatusConfirmModal
+        change={pendingStatusChange}
+        isSubmitting={updatingOrderId === pendingStatusChange?.order.id}
+        onCancel={() => setPendingStatusChange(null)}
+        onConfirm={handleConfirmStatusChange}
+      />
     </main>
   );
 }

@@ -397,6 +397,22 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
     }
   }
 
+  a {
+    color: $secondary-pink;
+    font-weight: 700;
+    text-decoration-line: underline;
+    text-decoration-thickness: 2px;
+    text-underline-offset: 4px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover,
+    &:focus-visible {
+      background: rgba($secondary-pink, 0.12);
+      color: #c93678;
+      outline: none;
+    }
+  }
+
   // Images not inside a paragraph (fallback)
   > img {
     display: block;

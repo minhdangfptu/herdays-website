@@ -110,6 +110,13 @@ export const listAll = async ({ search, category, sort = '-createdAt', page = 1,
   };
 };
 
+export const listProductCategories = async () => {
+  const categories = await Product.distinct('category', {
+    category: { $type: 'string', $ne: '' }
+  });
+  return categories.sort((first, second) => first.localeCompare(second, 'vi'));
+};
+
 export const listProducts = async ({ search, category, sort = '-createdAt', page = 1, limit = 10 } = {}) => {
   const filter = {};
   if (search) filter.$or = [{ productName: { $regex: search, $options: 'i' } }];

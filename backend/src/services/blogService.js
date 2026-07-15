@@ -203,6 +203,12 @@ export const updatePost = async (postId, postData) => {
   return { message: 'Blog post updated successfully', post };
 };
 
+export const deletePost = async (postId) => {
+  const post = await BlogPost.findByIdAndDelete(postId);
+  if (!post) throw new HttpError(404, 'Blog post not found');
+  return { message: 'Blog post deleted successfully', post };
+};
+
 export const updateTopicImage = async (topicId, imgThumbnail) => {
   const topic = await BlogTopic.findByIdAndUpdate(
     topicId,

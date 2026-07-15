@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { FiEdit2, FiTrash2, FiInfo, FiX } from "react-icons/fi";
 import { AiOutlineUser, AiOutlineCheck } from "react-icons/ai";
-import { Phone, Mail, Calendar, Briefcase, MapPin, Heart } from "lucide-react";
+import { Briefcase, Calendar, Eye, Heart, Mail, MapPin, Package, Phone, X } from "lucide-react";
 import DeleteAccountModal from "../../components/DeleteAccountModal";
 import toast from "react-hot-toast";
-import { profileApi } from "../../services/apiService.js";
+import { orderApi, profileApi } from "../../services/apiService.js";
 import avatarDefault from "../../assets/avatar_default.png";
 import "./UserProfile.scss";
 
@@ -25,6 +25,148 @@ const accountTypeLabels = {
   admin: "Admin",
   others: "Khác",
 };
+
+const orderStatusMeta = {
+  pending: { label: "Chờ", className: "bg-orange-50 text-orange-600" },
+  confirmed: { label: "Đã duyệt", className: "bg-blue-50 text-blue-600" },
+  delivering: { label: "Đang giao hàng", className: "bg-violet-50 text-violet-600" },
+  delivered: { label: "Giao hàng thành công", className: "bg-emerald-50 text-emerald-600" },
+  cancelled: { label: "Đã hủy", className: "bg-red-50 text-red-600" },
+  deleted: { label: "Đã xóa", className: "bg-slate-100 text-slate-500" },
+};
+
+const paymentMethodLabels = {
+  bank_transfer: "Chuyển khoản ngân hàng",
+  qr_transfer: "Chuyển khoản QR",
+  cod: "Thanh toán khi nhận hàng",
+};
+
+const formatOrderCurrency = (value) => new Intl.NumberFormat("vi-VN", {
+  style: "currency",
+  currency: "VND",
+  maximumFractionDigits: 0,
+}).format(Number(value) || 0);
+
+const formatOrderDate = (value) => value
+  ? new Intl.DateTimeFormat("vi-VN", {
+    hour: "2-digit",
+    minute: "2-digit",
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(new Date(value))
+  : "--";
+
+const getOrderCode = (order) => order?.id
+  ? `HD${String(order.id).slice(-6).toUpperCase()}`
+  : "--";
+
+function OrderDetailModal({ order, isLoading, onClose }) {
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape" && !isLoading) onClose();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isLoading, onClose]);
+
+  const status = orderStatusMeta[order?.orderStatus] || {
+    label: order?.orderStatus || "Không xác định",
+    className: "bg-slate-100 text-slate-500",
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6" onClick={onClose}>
+      <section
+        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="order-detail-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white px-6 py-5">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-[#ed77a5]">Chi tiết đơn hàng</p>
+            <h2 id="order-detail-title" className="mt-1 text-xl font-extrabold text-slate-900">
+              {isLoading ? "Đang tải..." : getOrderCode(order)}
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Đóng chi tiết đơn hàng"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {isLoading ? (
+          <p className="px-6 py-12 text-center text-sm font-semibold text-slate-400">Đang tải thông tin đơn hàng...</p>
+        ) : order ? (
+          <div className="space-y-6 p-6">
+            <div className="grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Ngày đặt hàng</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">{formatOrderDate(order.createdAt)}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Trạng thái</p>
+                <span className={`mt-1 inline-flex rounded-full px-3 py-1 text-xs font-bold ${status.className}`}>
+                  {status.label}
+                </span>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Phương thức thanh toán</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">
+                  {paymentMethodLabels[order.paymentMethod] || order.paymentMethod || "Chưa xác định"}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Tổng thanh toán</p>
+                <p className="mt-1 text-base font-extrabold text-[#ed77a5]">{formatOrderCurrency(order.totalAmount)}</p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="mb-3 text-sm font-extrabold text-slate-800">Sản phẩm</h3>
+              <div className="divide-y divide-slate-100 rounded-xl border border-slate-100">
+                {(order.items || []).map((item) => (
+                  <div key={String(item.itemId)} className="flex items-center gap-4 p-4">
+                    {item.thumbnail ? (
+                      <img className="h-16 w-16 rounded-lg border border-slate-100 object-cover" src={item.thumbnail} alt={item.itemName || "Sản phẩm"} />
+                    ) : (
+                      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-pink-50 text-[#ed77a5]">
+                        <Package size={24} />
+                      </span>
+                    )}
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-bold text-slate-800">{item.itemName || "Sản phẩm"}</p>
+                      <p className="mt-1 text-xs font-medium text-slate-400">Số lượng: {item.quantity}</p>
+                    </div>
+                    <p className="text-right text-sm font-extrabold text-slate-700">
+                      {formatOrderCurrency(Number(item.price) * Number(item.quantity))}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {order.lovelyMessage && (
+              <div className="rounded-xl border border-pink-100 bg-pink-50/50 p-4">
+                <p className="text-xs font-semibold text-slate-400">Lời nhắn</p>
+                <p className="mt-1 text-sm font-medium text-slate-700">{order.lovelyMessage}</p>
+              </div>
+            )}
+          </div>
+        ) : (
+          <p className="px-6 py-12 text-center text-sm font-semibold text-red-500">Không thể tải thông tin đơn hàng.</p>
+        )}
+      </section>
+    </div>
+  );
+}
 
 const formatVietnamPhoneForDisplay = (phone) => {
   if (!phone) return "";
@@ -67,10 +209,16 @@ const mapProfileToForm = (profile) => ({
 
 export default function UserProfile() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [savedProfile, setSavedProfile] = useState(null);
+  const [orders, setOrders] = useState([]);
+  const [isOrdersLoading, setIsOrdersLoading] = useState(true);
+  const [ordersError, setOrdersError] = useState("");
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderDetailError, setOrderDetailError] = useState(null);
   const [formData, setFormData] = useState({
     displayName: "",
     email: "",
@@ -107,6 +255,75 @@ export default function UserProfile() {
       isActive = false;
     };
   }, []);
+
+  useEffect(() => {
+    let isActive = true;
+
+    const fetchOrders = async () => {
+      setIsOrdersLoading(true);
+      setOrdersError("");
+      try {
+        const result = await orderApi.listMine();
+        if (isActive) setOrders(result || []);
+      } catch (error) {
+        if (isActive) setOrdersError(error.message || "Không thể tải danh sách đơn hàng.");
+      } finally {
+        if (isActive) setIsOrdersLoading(false);
+      }
+    };
+
+    fetchOrders();
+    return () => {
+      isActive = false;
+    };
+  }, []);
+
+  const requestedOrderId = searchParams.get("orderId");
+
+  useEffect(() => {
+    if (!requestedOrderId) return undefined;
+
+    let isActive = true;
+
+    orderApi.getById(requestedOrderId)
+      .then((order) => {
+        if (isActive) {
+          setSelectedOrder(order);
+          setOrderDetailError(null);
+        }
+      })
+      .catch((error) => {
+        if (isActive) {
+          setOrderDetailError({
+            orderId: requestedOrderId,
+            message: error.message || "Không thể tải chi tiết đơn hàng.",
+          });
+          toast.error(error.message || "Không thể tải chi tiết đơn hàng.");
+        }
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [requestedOrderId]);
+
+  const isSelectedOrderCurrent = String(selectedOrder?.id || "") === requestedOrderId;
+  const currentOrderDetailError = orderDetailError?.orderId === requestedOrderId
+    ? orderDetailError.message
+    : "";
+  const isOrderDetailLoading = Boolean(requestedOrderId)
+    && !isSelectedOrderCurrent
+    && !currentOrderDetailError;
+
+  const handleViewOrder = (orderId) => {
+    setSearchParams({ orderId: String(orderId) });
+  };
+
+  const handleCloseOrderDetail = () => {
+    setSelectedOrder(null);
+    setOrderDetailError(null);
+    setSearchParams({});
+  };
 
   const userData = {
     displayName: formData.displayName,
@@ -386,7 +603,89 @@ export default function UserProfile() {
             </div>
           </div>
         </div>
+
+        <section className="mt-8 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
+          <div className="flex items-center gap-3 border-b border-gray-100 px-5 py-4 sm:px-6">
+            <span className="flex h-10 w-10 items-center justify-center rounded-full bg-pink-50 text-[#ed77a5]">
+              <Package size={20} />
+            </span>
+            <div>
+              <h2 className="text-lg font-bold text-gray-900">Đơn hàng của bạn</h2>
+              <p className="text-sm text-gray-500">Theo dõi và xem lại các đơn hàng đã đặt.</p>
+            </div>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[760px] border-collapse text-left">
+              <thead className="bg-gray-50 text-xs font-bold uppercase tracking-wide text-gray-400">
+                <tr>
+                  <th className="px-5 py-3">Mã đơn</th>
+                  <th className="px-5 py-3">Ngày đặt</th>
+                  <th className="px-5 py-3">Sản phẩm</th>
+                  <th className="px-5 py-3">Tổng tiền</th>
+                  <th className="px-5 py-3">Trạng thái</th>
+                  <th className="px-5 py-3 text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100">
+                {isOrdersLoading ? (
+                  <tr>
+                    <td colSpan={6} className="px-5 py-10 text-center text-sm font-semibold text-gray-400">Đang tải đơn hàng...</td>
+                  </tr>
+                ) : ordersError ? (
+                  <tr>
+                    <td colSpan={6} className="px-5 py-10 text-center text-sm font-semibold text-red-500">{ordersError}</td>
+                  </tr>
+                ) : orders.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-5 py-10 text-center text-sm font-semibold text-gray-400">Bạn chưa có đơn hàng nào.</td>
+                  </tr>
+                ) : orders.map((order) => {
+                  const status = orderStatusMeta[order.orderStatus] || {
+                    label: order.orderStatus,
+                    className: "bg-slate-100 text-slate-500",
+                  };
+                  const productNames = (order.items || [])
+                    .map((item) => item.itemName || "Sản phẩm")
+                    .join(", ");
+
+                  return (
+                    <tr key={order.id} className="transition hover:bg-pink-50/30">
+                      <td className="px-5 py-4 text-sm font-extrabold text-gray-800">{getOrderCode(order)}</td>
+                      <td className="px-5 py-4 text-sm font-medium text-gray-500">{formatOrderDate(order.createdAt)}</td>
+                      <td className="max-w-[240px] px-5 py-4 text-sm font-semibold text-gray-600">
+                        <span className="line-clamp-2">{productNames || "--"}</span>
+                      </td>
+                      <td className="px-5 py-4 text-sm font-extrabold text-gray-800">{formatOrderCurrency(order.totalAmount)}</td>
+                      <td className="px-5 py-4">
+                        <span className={`inline-flex rounded-full px-3 py-1 text-xs font-bold ${status.className}`}>{status.label}</span>
+                      </td>
+                      <td className="px-5 py-4 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleViewOrder(order.id)}
+                          className="inline-flex items-center gap-2 rounded-lg border border-pink-200 px-3 py-2 text-xs font-bold text-[#ed77a5] transition hover:bg-pink-50"
+                        >
+                          <Eye size={15} />
+                          Xem chi tiết
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </section>
       </div>
+
+      {(requestedOrderId || selectedOrder) && (
+        <OrderDetailModal
+          order={isSelectedOrderCurrent ? selectedOrder : null}
+          isLoading={isOrderDetailLoading}
+          onClose={handleCloseOrderDetail}
+        />
+      )}
 
       <DeleteAccountModal
         isOpen={showDeleteModal}
