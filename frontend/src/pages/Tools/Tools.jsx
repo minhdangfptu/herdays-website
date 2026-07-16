@@ -1,8 +1,7 @@
 "use client";
 
-import React from "react";
+import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import { FiChevronLeft } from "react-icons/fi";
 import "./Tools.scss";
 import "./ToolsCalculate.scss";
 import { TOOLS, getToolById } from "./toolsConfig";
@@ -128,12 +127,248 @@ const HERO_CONTENT = {
   },
 };
 
+const renderToolResult = (toolId, resultData) => {
+  if (!resultData) return null;
+
+  switch (toolId) {
+    case "ovulation":
+      return (
+        <>
+          <h4 className="tools-calculate-result-title">Kết quả của bạn</h4>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Cửa sổ dễ thụ thai nhất:
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.fertileWindow}
+            </span>
+          </div>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Ngày rụng trứng (dự kiến):
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.ovulation}
+            </span>
+          </div>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Kỳ kinh tiếp theo:
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.nextPeriod}
+            </span>
+          </div>
+        </>
+      );
+    case "beta-hcg":
+      return (
+        <>
+          <h4 className="tools-calculate-result-title">Kết quả đánh giá</h4>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Thời gian nhân đôi:
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.hours} giờ ({resultData.days} ngày)
+            </span>
+          </div>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Tốc độ tăng mỗi 48h:
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.increase}%
+            </span>
+          </div>
+        </>
+      );
+    case "pregnancy-test":
+      return (
+        <>
+          <h4 className="tools-calculate-result-title">
+            Thời điểm thử thai lý tưởng
+          </h4>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Có thể thử nghiệm sớm từ:
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.earlyTest}
+            </span>
+          </div>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Chính xác nhất (Trễ kinh 2 ngày):
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.bestTest}
+            </span>
+          </div>
+        </>
+      );
+    case "menstrual-cycle":
+      return (
+        <>
+          <h4 className="tools-calculate-result-title">Dự báo 3 chu kỳ tới</h4>
+          <div className="tools-calculate-result-list">
+            {resultData.map((item) => (
+              <div className="tools-calculate-result-item" key={item.month}>
+                <span className="tools-calculate-result-label">
+                  Chu kỳ lần {item.month}:
+                </span>
+                <span className="tools-calculate-result-value">
+                  {item.dateString}
+                </span>
+              </div>
+            ))}
+          </div>
+        </>
+      );
+    case "period":
+      return (
+        <>
+          <h4 className="tools-calculate-result-title">
+            Kỳ kinh tiếp theo của bạn
+          </h4>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Dự kiến bắt đầu:
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.start}
+            </span>
+          </div>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Thời gian hành kinh:
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.window}
+            </span>
+          </div>
+        </>
+      );
+    case "implantation":
+      return (
+        <>
+          <h4 className="tools-calculate-result-title">
+            Giai đoạn làm tổ dự kiến
+          </h4>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Ngày rụng trứng:
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.ovulation}
+            </span>
+          </div>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Cửa sổ phôi làm tổ:
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.implantationWindow}
+            </span>
+          </div>
+        </>
+      );
+    case "pregnancy-weeks-months":
+      return (
+        <>
+          <h4 className="tools-calculate-result-title">
+            Tuổi thai của bạn đang là:
+          </h4>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Quy đổi ra tháng:
+            </span>
+            <span className="tools-calculate-result-value">
+              Tháng thứ {resultData.month}
+            </span>
+          </div>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Tam cá nguyệt (Quý):
+            </span>
+            <span className="tools-calculate-result-value">
+              Quý {resultData.trimester}
+            </span>
+          </div>
+        </>
+      );
+    case "due-date":
+    case "ivf":
+    case "ultrasound":
+      return (
+        <>
+          <h4 className="tools-calculate-result-title">Kết quả của bạn</h4>
+          <div className="tools-calculate-result-item">
+            <span className="tools-calculate-result-label">
+              Ngày dự sinh (EDD):
+            </span>
+            <span className="tools-calculate-result-value">
+              {resultData.dueDate}
+            </span>
+          </div>
+        </>
+      );
+    default:
+      return null;
+  }
+};
+
+function CalculatorContent({ tool, toolId }) {
+  const Component = tool?.component;
+  const [toolResult, setToolResult] = useState(null);
+  const [isLoadingResult, setIsLoadingResult] = useState(false);
+
+  const handleToolResult = (result) => {
+    setIsLoadingResult(true);
+    setToolResult(null);
+
+    window.setTimeout(() => {
+      setToolResult(result);
+      setIsLoadingResult(false);
+    }, 2000);
+  };
+
+  return (
+    <div className="tools-calculate-calculator-row">
+      <div className="tools-calculate-calculator-col">
+        {Component && (
+          <Component onResult={handleToolResult} showInlineResult={false} />
+        )}
+      </div>
+      <div className="tools-calculate-results-col">
+        <h3 className="tools-calculate-results-title">Kết quả</h3>
+        {isLoadingResult ? (
+          <div className="tools-calculate-results-card tools-calculate-results-loading">
+            <div className="tools-calculate-loading-spinner" />
+            <p className="tools-calculate-loading-text">
+              Đang tính toán kết quả của bạn...
+            </p>
+          </div>
+        ) : toolResult ? (
+          <div className="tools-calculate-results-card">
+            {renderToolResult(toolId, toolResult)}
+          </div>
+        ) : (
+          <div className="tools-calculate-results-placeholder">
+            Điền thông tin bên trái và nhấn <strong>"Tính toán"</strong> để xem
+            kết quả của bạn
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Calculator Page View ─────────────────────────────────────────────────────
 function CalculatorView() {
   const { toolId } = useParams();
   const navigate = useNavigate();
   const tool = getToolById(toolId);
-  const Component = tool?.component;
   const hero = HERO_CONTENT[toolId] || {
     title: tool?.name || "",
     description: tool?.description || "",
@@ -196,7 +431,7 @@ function CalculatorView() {
       {/* Main content */}
       <div className="tools-calculate-container">
         <div className="tools-calculate-main">
-          <div className="tools-calculate-article-info">
+          {/* <div className="tools-calculate-article-info">
             <p className="tools-calculate-update-date">
               Cập nhật: Tháng 7 năm 2026
             </p>
@@ -218,20 +453,9 @@ function CalculatorView() {
                 Natalie Healey
               </a>
             </p>
-          </div>
+          </div> */}
 
-          <div className="tools-calculate-calculator-row">
-            <div className="tools-calculate-calculator-col">
-              {Component && <Component />}
-            </div>
-            <div className="tools-calculate-results-col">
-              <h3 className="tools-calculate-results-title">Kết quả</h3>
-              <div className="tools-calculate-results-placeholder">
-                Điền thông tin bên trái và nhấn <strong>"Tính toán"</strong> để
-                xem kết quả của bạn
-              </div>
-            </div>
-          </div>
+          <CalculatorContent key={toolId} tool={tool} toolId={toolId} />
         </div>
       </div>
     </div>
