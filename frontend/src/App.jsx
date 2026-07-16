@@ -144,6 +144,7 @@ function App() {
           <Route path="/product-detail/:type/:itemId" element={<ProductDetailPage />} />
           <Route path="/product-detail/:productId" element={<ProductDetailPage />} />
           <Route path="/tools" element={<Tools />} />
+          <Route path="/tools/:toolId" element={<Tools />} />
           <Route element={<BlogShell />}>
             <Route path="/blog" element={<BlogTopicsPage />} />
             <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
