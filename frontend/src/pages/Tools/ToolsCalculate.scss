@@ -2,11 +2,13 @@
 // ToolsCalculate Styles
 // ============================================
 
+@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
+
 // Color Variables
 $primary-pink: #F176A9;
 $dark-pink: #D05E8E;
 $light-pink: #FFE8F3;
-$hero-pink: #E8D5E8;
+$hero-pink: #FFE8F3;
 $very-light-pink: #FFF5F8;
 $dark-text: #1A1A1A;
 $gray-text: #4D4D4D;
@@ -17,6 +19,7 @@ $teal: #1B9FA7;
 
 // Font Variables
 $font-primary: 'Roboto', sans-serif;
+$font-dancing: 'Dancing Script', cursive;
 
 // ============================================
 // Tools Calculate Page
@@ -32,29 +35,42 @@ $font-primary: 'Roboto', sans-serif;
 // ============================================
 
 .tools-calculate-breadcrumb {
+  position: absolute;
+  top: 60px;
+  left: 0;
+  right: 0;
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 20px 40px;
-  background-color: $hero-pink;
+  padding: 0 0 24px;
   font-size: 13px;
-  color: $dark-text;
+  color: $white;
+  width: 100%;
+  z-index: 1;
 
   @media (max-width: 768px) {
-    padding: 16px 20px;
+    top: 50px;
+    padding: 0 0 20px;
     font-size: 12px;
-    gap: 8px;
   }
 
   @media (max-width: 480px) {
-    padding: 12px 15px;
+    top: 40px;
+    padding: 0 0 16px;
     font-size: 11px;
-    gap: 6px;
   }
 }
 
+.tools-calculate-breadcrumb-inner {
+  max-width: 1200px;
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .tools-calculate-breadcrumb-link {
-  color: $dark-text;
+  color: $white;
   text-decoration: none;
   cursor: pointer;
   transition: color 0.3s ease;
@@ -65,7 +81,53 @@ $font-primary: 'Roboto', sans-serif;
 }
 
 .tools-calculate-breadcrumb-separator {
-  color: $border-gray;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.tools-calculate-breadcrumb-back {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  color: $white;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s ease;
+
+  &:hover {
+    color: $primary-pink;
+  }
+
+  @media (max-width: 768px) {
+    font-size: 12px;
+  }
+}
+
+// ============================================
+// Back Button
+// ============================================
+
+.tools-calculate-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: 1px solid $border-gray;
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 13px;
+  color: $gray-text;
+  cursor: pointer;
+  margin-bottom: 20px;
+  transition: all 0.2s ease;
+  font-family: $font-primary;
+
+  &:hover {
+    border-color: $primary-pink;
+    color: $primary-pink;
+  }
 }
 
 .tools-calculate-breadcrumb-active {
@@ -78,44 +140,62 @@ $font-primary: 'Roboto', sans-serif;
 // ============================================
 
 .tools-calculate-hero {
+  position: relative;
   background-color: $hero-pink;
-  padding: 60px 40px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 60px;
+  background-size: cover;
+  background-position: center;
+  padding: 60px 0 80px;
+  min-height: 92vh;
+  display: flex;
   align-items: center;
 
-  @media (max-width: 1024px) {
-    gap: 40px;
-  }
-
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    padding: 50px 20px;
-    gap: 30px;
+    padding: 50px 15px 70px;
   }
 
   @media (max-width: 480px) {
-    padding: 40px 15px;
-    gap: 20px;
+    padding: 40px 12px 60px;
   }
+}
+
+.tools-calculate-hero-inner {
+  max-width: 1200px;
+  width: 90%;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  flex: 1;
+
 }
 
 .tools-calculate-hero-content {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 14px;
+  max-width: 700px;
+  padding: 8px 0;
+  justify-content: center;
+}
+
+.tools-calculate-hero-eyebrow {
+  margin: 0;
+  color: #ed77a5;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
 }
 
 .tools-calculate-hero-title {
-  font-size: 44px;
-  font-weight: 700;
-  color: $dark-text;
+  font-size: clamp(32px, 5vw, 48px);
+  font-weight: 600;
+  color: #f176a9;
   margin: 0;
-  line-height: 1.2;
+  line-height: 1.1;
+  letter-spacing: -0.03em;
 
   @media (max-width: 768px) {
-    font-size: 36px;
+    font-size: clamp(28px, 6vw, 36px);
   }
 
   @media (max-width: 480px) {
@@ -124,13 +204,14 @@ $font-primary: 'Roboto', sans-serif;
 }
 
 .tools-calculate-hero-description {
-  font-size: 16px;
-  color: $gray-text;
+  font-size: 1rem;
+  color: #5f6670;
   margin: 0;
   line-height: 1.6;
+  max-width: 560px;
 
   @media (max-width: 480px) {
-    font-size: 14px;
+    font-size: 0.95rem;
   }
 }
 
@@ -176,31 +257,17 @@ $font-primary: 'Roboto', sans-serif;
 // ============================================
 
 .tools-calculate-container {
-  max-width: 1400px;
+  max-width: 1200px;
+  width: 90%;
   margin: 0 auto;
-  padding: 50px 40px;
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: 60px;
-
-  @media (max-width: 1200px) {
-    gap: 40px;
-  }
-
-  @media (max-width: 1024px) {
-    grid-template-columns: 1fr 250px;
-    gap: 40px;
-  }
+  padding: 50px 0;
 
   @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    padding: 40px 20px;
-    gap: 30px;
+    padding: 40px 0;
   }
 
   @media (max-width: 480px) {
-    padding: 30px 15px;
-    gap: 24px;
+    padding: 30px 0;
   }
 }
 
@@ -372,6 +439,53 @@ $font-primary: 'Roboto', sans-serif;
 }
 
 // ============================================
+// Calculator & Results Row (2 columns)
+// ============================================
+
+.tools-calculate-calculator-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 40px;
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.tools-calculate-calculator-col {
+  background-color: $very-light-pink;
+  border: 1px solid $border-gray;
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.tools-calculate-results-col {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.tools-calculate-results-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: $dark-text;
+  margin: 0;
+}
+
+.tools-calculate-results-placeholder {
+  padding: 24px;
+  border: 1px dashed $border-gray;
+  border-radius: 12px;
+  color: $gray-text;
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.6;
+  background-color: $light-gray;
+}
+
+// ============================================
 // Sidebar
 // ============================================
 
@@ -412,11 +526,5 @@ $font-primary: 'Roboto', sans-serif;
   &:hover {
     color: $primary-pink;
     text-decoration: underline;
-  }
-}
-
-@media (max-width: 1024px) {
-  .tools-calculate-sidebar {
-    display: none;
   }
 }
