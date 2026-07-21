@@ -35,6 +35,7 @@ export default function BoxCustomize() {
   const { boxId } = useParams()
   const navigate = useNavigate()
   const [box, setBox] = useState(null)
+  const [boxes, setBoxes] = useState([])
   const [products, setProducts] = useState([])
   const [selectedItems, setSelectedItems] = useState([])
   const [loading, setLoading] = useState(true)
@@ -51,7 +52,8 @@ export default function BoxCustomize() {
       setErrorMessage('')
 
       try {
-        const [productResult, boxResult, cartResult] = await Promise.all([
+        const [boxListResult, productResult, boxResult, cartResult] = await Promise.all([
+          marketplaceApi.listBoxes({ limit: 100 }),
           marketplaceApi.listProducts({ limit: 100 }),
           boxId ? marketplaceApi.getBox(boxId) : Promise.resolve(null),
           hasAuthSession()
@@ -71,6 +73,7 @@ export default function BoxCustomize() {
           .map(normalizeBoxProduct)
           .filter((product) => availableProductIds.has(product.id))
 
+        setBoxes(boxListResult.items || [])
         setProducts(nextProducts)
         setBox(boxResult)
         setSelectedItems(initialProducts)
@@ -98,47 +101,77 @@ export default function BoxCustomize() {
     }, {})
   ), [products])
 
-  const requiredCategories = useMemo(() => {
-    const boxCategories = Array.isArray(box?.productCategories)
-      ? box.productCategories.filter(Boolean)
-      : []
+  const categoryLimits = useMemo(() => (
+    (box?.products || []).reduce((limits, item) => {
+      const product = normalizeBoxProduct(item)
+      limits[product.category] = (limits[product.category] || 0) + product.quantity
+      return limits
+    }, {})
+  ), [box])
 
-    if (boxCategories.length > 0) return [...new Set(boxCategories)]
-    return Object.keys(groupedProducts)
-  }, [box, groupedProducts])
+  const requiredCategories = useMemo(() => Object.keys(categoryLimits), [categoryLimits])
 
-  const missingCategories = useMemo(() => (
+  const customizableProductGroups = useMemo(() => (
+    Object.entries(groupedProducts).filter(([category]) => requiredCategories.includes(category))
+  ), [groupedProducts, requiredCategories])
+
+  const selectedCategoryTotals = useMemo(() => (
+    selectedItems.reduce((totals, item) => {
+      totals[item.category] = (totals[item.category] || 0) + item.quantity
+      return totals
+    }, {})
+  ), [selectedItems])
+
+  const incompleteCategories = useMemo(() => (
     requiredCategories.filter((category) => (
-      !selectedItems.some((item) => item.category === category)
+      (selectedCategoryTotals[category] || 0) !== categoryLimits[category]
     ))
-  ), [requiredCategories, selectedItems])
+  ), [categoryLimits, requiredCategories, selectedCategoryTotals])
 
-  const isSelectionComplete = requiredCategories.length > 0 && missingCategories.length === 0
+  const isSelectionComplete = requiredCategories.length > 0 && incompleteCategories.length === 0
 
-  const toggleProduct = (product) => {
+  const selectedProductCount = useMemo(() => (
+    selectedItems.reduce((total, item) => total + item.quantity, 0)
+  ), [selectedItems])
+
+  const updateProductQuantity = (product, change) => {
     const productId = String(product.id)
-    const isSelected = selectedItems.some((item) => item.id === productId)
+    const category = product.category || 'Sản phẩm khác'
+    const currentItem = selectedItems.find((item) => item.id === productId)
+    const currentQuantity = currentItem?.quantity || 0
 
-    if (isSelected) {
-      setSelectedItems((current) => current.filter((item) => item.id !== productId))
-      return
-    }
-
-    if (!isProductInStock(product)) {
+    if (change > 0 && !isProductInStock(product)) {
       toast.error('Sản phẩm này đã hết hàng.')
       return
     }
 
-    setSelectedItems((current) => [
-      ...current,
-      {
+    if (change > 0 && (selectedCategoryTotals[category] || 0) >= (categoryLimits[category] || 0)) {
+      toast.error(`Danh mục ${category} đã đủ ${categoryLimits[category]} sản phẩm.`)
+      return
+    }
+
+    if (change > 0 && currentQuantity >= Number(product.quantity)) {
+      toast.error('Số lượng chọn đã đạt tồn kho của sản phẩm này.')
+      return
+    }
+
+    const nextQuantity = currentQuantity + change
+    setSelectedItems((current) => {
+      if (nextQuantity <= 0) return current.filter((item) => item.id !== productId)
+      if (currentItem) {
+        return current.map((item) => (
+          item.id === productId ? { ...item, quantity: nextQuantity } : item
+        ))
+      }
+
+      return [...current, {
         id: productId,
         productName: product.productName,
-        category: product.category,
+        category,
         thumbnail: product.thumbnail,
         quantity: 1
-      }
-    ])
+      }]
+    })
   }
 
   const availableBoxQuantity = box
@@ -157,10 +190,10 @@ export default function BoxCustomize() {
     }
 
     if (!isSelectionComplete) {
-      const missingText = missingCategories.length > 0
-        ? `: ${missingCategories.join(', ')}`
+      const missingText = incompleteCategories.length > 0
+        ? `: ${incompleteCategories.join(', ')}`
         : ''
-      toast.error(`Vui lòng chọn ít nhất 1 sản phẩm cho mỗi phân khúc${missingText}.`)
+      toast.error(`Vui lòng chọn đúng số lượng sản phẩm cho mỗi danh mục${missingText}.`)
       return
     }
 
@@ -208,6 +241,23 @@ export default function BoxCustomize() {
           <p className="box-subtitle">
             {box?.description || 'Chọn sản phẩm từ marketplace để xem cấu hình box cá nhân hóa.'}
           </p>
+          <label className="box-picker">
+            <span>Chọn box muốn tùy chỉnh</span>
+            <select
+              value={boxId || ''}
+              onChange={(event) => {
+                const nextBoxId = event.target.value
+                if (nextBoxId) navigate(`/box-customize/${nextBoxId}`)
+              }}
+            >
+              <option value="">-- Chọn một box --</option>
+              {boxes.map((boxOption) => (
+                <option key={boxOption.id} value={boxOption.id}>
+                  {boxOption.boxName}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
 
         {loading && <p className="box-customize-status">Đang tải sản phẩm...</p>}
@@ -216,29 +266,32 @@ export default function BoxCustomize() {
         {!loading && !errorMessage && (
           <div className="box-selection-card">
             <div className="selection-card-body">
-              {Object.keys(groupedProducts).length === 0 ? (
-                <p className="box-customize-status">Chưa có sản phẩm nào để tùy chỉnh box.</p>
+              {!box ? (
+                <p className="box-customize-status">Vui lòng chọn một box để bắt đầu tùy chỉnh.</p>
+              ) : customizableProductGroups.length === 0 ? (
+                <p className="box-customize-status">Box này chưa có danh mục sản phẩm để tùy chỉnh.</p>
               ) : (
-                Object.entries(groupedProducts).map(([category, categoryProducts]) => (
+                customizableProductGroups.map(([category, categoryProducts]) => (
                   <div key={category} className="category-section">
                     <div className="category-divider">
                       <span>{category}</span>
-                      {requiredCategories.includes(category) && (
-                        <strong>{selectedItems.some((item) => item.category === category) ? 'Đã chọn' : 'Bắt buộc'}</strong>
-                      )}
+                      <strong>
+                        Đã chọn {selectedCategoryTotals[category] || 0}/{categoryLimits[category]}
+                      </strong>
                     </div>
 
                     <div className="product-grid">
                       {categoryProducts.map((product) => {
-                        const isSelected = selectedItems.some((item) => item.id === String(product.id))
+                        const selectedQuantity = selectedItems.find(
+                          (item) => item.id === String(product.id)
+                        )?.quantity || 0
+                        const isSelected = selectedQuantity > 0
                         const isOutOfStock = !isProductInStock(product)
+                        const isCategoryFull = (selectedCategoryTotals[category] || 0) >= categoryLimits[category]
                         return (
-                          <button
+                          <article
                             key={product.id}
-                            type="button"
                             className={`product-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'is-out-of-stock' : ''}`}
-                            disabled={isOutOfStock}
-                            onClick={() => toggleProduct(product)}
                           >
                             <div className="product-image">
                               <img src={getProductImage(product)} alt={product.productName} />
@@ -250,9 +303,28 @@ export default function BoxCustomize() {
                               </p>
                               <div className="product-meta">
                                 <span className="product-tag">{product.quantity > 0 ? `Còn ${product.quantity}` : 'Hết hàng'}</span>
+                                <div className="product-quantity-selector" aria-label={`Số lượng ${product.productName}`}>
+                                  <button
+                                    type="button"
+                                    disabled={selectedQuantity <= 0}
+                                    onClick={() => updateProductQuantity(product, -1)}
+                                    aria-label={`Giảm ${product.productName}`}
+                                  >
+                                    −
+                                  </button>
+                                  <strong>{selectedQuantity}</strong>
+                                  <button
+                                    type="button"
+                                    disabled={isOutOfStock || isCategoryFull || selectedQuantity >= Number(product.quantity)}
+                                    onClick={() => updateProductQuantity(product, 1)}
+                                    aria-label={`Tăng ${product.productName}`}
+                                  >
+                                    +
+                                  </button>
+                                </div>
                               </div>
                             </div>
-                          </button>
+                          </article>
                         )
                       })}
                     </div>
@@ -272,9 +344,9 @@ export default function BoxCustomize() {
           </div>
 
           <div className="bar-right">
-            <span className="bar-count">Đã chọn {selectedItems.length} sản phẩm</span>
+            <span className="bar-count">Đã chọn {selectedProductCount} sản phẩm</span>
             {!isSelectionComplete && (
-              <span className="bar-required">Còn thiếu {missingCategories.length} phân khúc</span>
+              <span className="bar-required">Còn {incompleteCategories.length} danh mục chưa đủ</span>
             )}
             <span className="bar-stock">{availableBoxQuantity > 0 ? `Còn ${availableBoxQuantity}` : 'Hết hàng'}</span>
             <button

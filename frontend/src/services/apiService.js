@@ -240,15 +240,17 @@ export const profileApi = {
 
 export const blogApi = {
   getTopics: async () => {
-    const response = await request('/blog/topics')
+    const response = await request('/blog/topics', { isAuthenticated: true })
     return { topics: response.data }
   },
   searchPosts: async (params = {}) => {
-    const response = await request(`/blog/posts/search${buildQuery(params)}`)
+    const response = await request(`/blog/posts/search${buildQuery(params)}`, { isAuthenticated: true })
     return { posts: response.data, pagination: response.meta }
   },
   getTopicPosts: async (topicId, page = 1, limit) => {
-    const response = await request(`/blog/topics/${topicId}/posts${buildQuery({ page, limit })}`)
+    const response = await request(`/blog/topics/${topicId}/posts${buildQuery({ page, limit })}`, {
+      isAuthenticated: true
+    })
     return {
       topic: response.meta?.topic || null,
       posts: response.data,
@@ -257,7 +259,7 @@ export const blogApi = {
   },
   getPostsByTopic: async (topicId, page = 1, limit) => blogApi.getTopicPosts(topicId, page, limit),
   getPost: async (postId) => {
-    const response = await request(`/blog/posts/${postId}`)
+    const response = await request(`/blog/posts/${postId}`, { isAuthenticated: true })
     return { post: response.data }
   },
   getAdminPosts: async (params = {}) => {
@@ -353,34 +355,34 @@ export const contactApi = {
 
 export const boxApi = {
   list: async (params = {}) => {
-    const response = await request(`/box${buildQuery(params)}`)
+    const response = await request(`/box${buildQuery(params)}`, { isAuthenticated: true })
     return { items: response.data, pagination: response.meta }
   },
   getById: async (id) => {
-    const response = await request(`/box/${id}`)
+    const response = await request(`/box/${id}`, { isAuthenticated: true })
     return response.data
   }
 }
 
 export const marketplaceApi = {
   listAll: async (params = {}) => {
-    const response = await request(`/marketplace${buildQuery(params)}`)
+    const response = await request(`/marketplace${buildQuery(params)}`, { isAuthenticated: true })
     return { items: response.data, pagination: response.meta }
   },
   listProducts: async (params = {}) => {
-    const response = await request(`/marketplace/products${buildQuery(params)}`)
+    const response = await request(`/marketplace/products${buildQuery(params)}`, { isAuthenticated: true })
     return { items: response.data, pagination: response.meta }
   },
   getProduct: async (id) => {
-    const response = await request(`/marketplace/products/${id}`)
+    const response = await request(`/marketplace/products/${id}`, { isAuthenticated: true })
     return response.data
   },
   listBoxes: async (params = {}) => {
-    const response = await request(`/marketplace/boxes${buildQuery(params)}`)
+    const response = await request(`/marketplace/boxes${buildQuery(params)}`, { isAuthenticated: true })
     return { items: response.data, pagination: response.meta }
   },
   getBox: async (id) => {
-    const response = await request(`/marketplace/boxes/${id}`)
+    const response = await request(`/marketplace/boxes/${id}`, { isAuthenticated: true })
     return response.data
   }
 }
@@ -465,26 +467,23 @@ const persistChatSession = (result) => {
   return result
 }
 
-const isChatAuthenticated = () => hasAuthSession()
-
 export const chatApi = {
   createConversation: async (payload = {}) => {
     const response = await request('/chat/conversations', {
       method: 'POST',
       body: payload,
-      isAuthenticated: isChatAuthenticated(),
+      isAuthenticated: true,
       headers: getChatSessionHeaders()
     })
     return persistChatSession(response.data)
   },
   getConversations: async () => {
-    if (!hasAuthSession()) return { conversations: [] }
     const response = await request('/chat/conversations', { isAuthenticated: true })
     return response.data
   },
   getMessages: async (conversationId) => {
     const response = await request(`/chat/conversations/${conversationId}/messages`, {
-      isAuthenticated: isChatAuthenticated(),
+      isAuthenticated: true,
       headers: getChatSessionHeaders()
     })
     return response.data
@@ -493,7 +492,7 @@ export const chatApi = {
     const response = await request(`/chat/conversations/${conversationId}/messages`, {
       method: 'POST',
       body: { userMessage },
-      isAuthenticated: isChatAuthenticated(),
+      isAuthenticated: true,
       headers: getChatSessionHeaders()
     })
     return response.data
@@ -501,7 +500,7 @@ export const chatApi = {
   deleteConversation: async (conversationId) => {
     const response = await request(`/chat/conversations/${conversationId}`, {
       method: 'DELETE',
-      isAuthenticated: isChatAuthenticated(),
+      isAuthenticated: true,
       headers: getChatSessionHeaders()
     })
     return response.data

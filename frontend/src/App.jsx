@@ -46,6 +46,11 @@ import BoxCustomize from "./pages/Marketplace/BoxCustomize.jsx";
 import ProductDetailPage from "./pages/Marketplace/ProductDetailPage.jsx";
 import BlogSearchPostPage from "./pages/Blog/BlogSearchPostPage.jsx";
 import Tools from "./pages/Tools/Tools.jsx";
+import { hasAuthSession } from "./services/apiService.js";
+
+function RequireAuth({ children }) {
+  return hasAuthSession() ? children : <Navigate to="/login" replace />;
+}
 
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
@@ -121,7 +126,6 @@ function App() {
         <Route element={<HeaderFooterLayout />}>
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/contact-us" element={<ContactUs />} />
-          <Route path="/chat-with-herbot" element={<ChatWithAI />} />
           <Route path="/upgrade-account" element={<SubscriptionStep1 />} />
           <Route
             path="/upgrade-account/continue"
@@ -135,23 +139,32 @@ function App() {
           <Route path="/profile" element={<UserProfile />} />
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/download-app" element={<DownloadAppPage />} />
-          <Route path="/marketplace" element={<Marketplace />} />
-          <Route path="/check-out" element={<Checkout />} />
-          <Route path="/qr-payment" element={<QRPayment />} />
-          <Route path="/cart" element={<Cart />} />
-          <Route path="/box-customize" element={<BoxCustomize />} />
-          <Route path="/box-customize/:boxId" element={<BoxCustomize />} />
-          <Route path="/product-detail/:type/:itemId" element={<ProductDetailPage />} />
-          <Route path="/product-detail/:productId" element={<ProductDetailPage />} />
           <Route path="/tools" element={<Tools />} />
-          <Route element={<BlogShell />}>
-            <Route path="/blog" element={<BlogTopicsPage />} />
-            <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
-            <Route
-              path="/blog/:topicId/posts/:postId"
-              element={<BlogPostDetailPage />}
-            />
-            <Route path="/blog/search" element={<BlogSearchPostPage />} />
+          <Route
+            element={
+              <RequireAuth>
+                <Outlet />
+              </RequireAuth>
+            }
+          >
+            <Route path="/chat-with-herbot" element={<ChatWithAI />} />
+            <Route path="/marketplace" element={<Marketplace />} />
+            <Route path="/check-out" element={<Checkout />} />
+            <Route path="/qr-payment" element={<QRPayment />} />
+            <Route path="/cart" element={<Cart />} />
+            <Route path="/box-customize" element={<BoxCustomize />} />
+            <Route path="/box-customize/:boxId" element={<BoxCustomize />} />
+            <Route path="/product-detail/:type/:itemId" element={<ProductDetailPage />} />
+            <Route path="/product-detail/:productId" element={<ProductDetailPage />} />
+            <Route element={<BlogShell />}>
+              <Route path="/blog" element={<BlogTopicsPage />} />
+              <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
+              <Route
+                path="/blog/:topicId/posts/:postId"
+                element={<BlogPostDetailPage />}
+              />
+              <Route path="/blog/search" element={<BlogSearchPostPage />} />
+            </Route>
           </Route>
         </Route>
         <Route path="*" element={<Navigate to="/error-404" replace />} />
