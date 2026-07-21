@@ -5,7 +5,8 @@ import HttpError from '../utils/httpError.js';
 
 const POST_STATUSES = ['Draft', 'Published'];
 const MAX_PAGE_SIZE = 50;
-const EDITOR_STYLE_TAGS = ['p', 'div', 'h1', 'h2', 'h3', 'li', 'blockquote'];
+const EDITOR_STYLE_TAGS = ['span', 'p', 'div', 'h1', 'h2', 'h3', 'li', 'blockquote'];
+const EDITOR_FONT_SIZE_PATTERN = /^(0\.875|1\.0625|1\.75)rem$/;
 
 const sanitizeContent = (content) => sanitizeHtml(content, {
   allowedTags: sanitizeHtml.defaults.allowedTags.concat(['img', 'figure', 'figcaption', 'h1', 'h2', 'h3']),
@@ -17,7 +18,7 @@ const sanitizeContent = (content) => sanitizeHtml(content, {
   },
   allowedStyles: {
     '*': {
-      'font-size': [/^0\.875rem$/],
+      'font-size': [EDITOR_FONT_SIZE_PATTERN],
       'text-align': [/^(left|center|right|justify)$/]
     }
   },

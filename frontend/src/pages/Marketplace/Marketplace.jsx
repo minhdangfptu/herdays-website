@@ -136,6 +136,12 @@ function Marketplace() {
             <strong>{formatCurrency(box.price)}</strong>
             <span>{availableQuantity > 0 ? `Còn ${availableQuantity}` : 'Hết hàng'}</span>
           </div>
+          <Link
+            className="marketplace-product__button-link"
+            to={`/box-customize/${box.id}`}
+          >
+            Tùy chỉnh box này
+          </Link>
           <button
             type="button"
             disabled={addingBoxId === box.id || availableQuantity <= 0}

@@ -110,10 +110,6 @@ function BlogPostDetailPage() {
               </div>
             </header>
 
-            {post.thumbnail && (
-              <img className="blog-detail-article__hero" src={post.thumbnail} alt={post.title} />
-            )}
-
             <div
               className="blog-detail-article__content"
               dangerouslySetInnerHTML={{ __html: post.content }}

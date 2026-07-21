@@ -36,10 +36,71 @@ const sampleProducts = [
     quantity: 80,
     description: 'Khăn ướt không mùi, dịu nhẹ, tiện dùng khi cần làm sạch nhanh.',
     category: 'Vệ sinh cá nhân'
+  },
+  {
+    productName: 'Nến thơm oải hương HerDays',
+    thumbnail: 'https://res.cloudinary.com/demo/image/upload/cld-sample-5.jpg',
+    price: 149000,
+    quantity: 30,
+    description: 'Nến thơm hương oải hương dịu nhẹ, giúp không gian thư giãn hơn trước giờ ngủ.',
+    category: 'Thư giãn'
+  },
+  {
+    productName: 'Mặt nạ ngủ lụa mềm',
+    thumbnail: 'https://res.cloudinary.com/demo/image/upload/cld-sample-3.jpg',
+    price: 89000,
+    quantity: 45,
+    description: 'Mặt nạ ngủ bằng vải lụa mềm mại, hạn chế ánh sáng và tạo cảm giác dễ chịu khi nghỉ ngơi.',
+    category: 'Giấc ngủ'
+  },
+  {
+    productName: 'Trà hoa cúc túi lọc',
+    thumbnail: 'https://res.cloudinary.com/demo/image/upload/samples/food/spices.jpg',
+    price: 69000,
+    quantity: 60,
+    description: 'Trà hoa cúc thanh nhẹ, phù hợp dùng vào buổi tối để thư giãn sau một ngày dài.',
+    category: 'Đồ uống'
+  },
+  {
+    productName: 'Xịt thơm gối hương dịu nhẹ',
+    thumbnail: 'https://res.cloudinary.com/demo/image/upload/samples/ecommerce/accessories-bag.jpg',
+    price: 119000,
+    quantity: 35,
+    description: 'Xịt thơm gối với hương dịu nhẹ, giúp tạo không gian nghỉ ngơi thoải mái và dễ chịu.',
+    category: 'Thư giãn'
   }
 ];
 
-const sampleBoxName = 'Box chăm sóc ngày dâu';
+const sampleBoxes = [
+  {
+    boxName: 'Box chăm sóc ngày dâu',
+    thumbnail: 'https://res.cloudinary.com/demo/image/upload/gift.jpg',
+    price: 329000,
+    quantity: 15,
+    description: 'Box mẫu gồm các sản phẩm chăm sóc cơ bản cho kỳ kinh, có thể dùng để demo customize box.',
+    category: 'Chăm sóc kỳ kinh',
+    items: [
+      { productName: 'Dầu ấm thư giãn HerDays', quantity: 1 },
+      { productName: 'Túi chườm bụng mini', quantity: 1 },
+      { productName: 'Trà gừng mật ong', quantity: 2 },
+      { productName: 'Khăn ướt dịu nhẹ', quantity: 1 }
+    ]
+  },
+  {
+    boxName: 'Box thư giãn và ngủ ngon',
+    thumbnail: 'https://res.cloudinary.com/demo/image/upload/cld-sample-2.jpg',
+    price: 359000,
+    quantity: 20,
+    description: 'Bộ sản phẩm giúp tạo không gian thư giãn, chăm sóc giấc ngủ và phục hồi năng lượng mỗi tối.',
+    category: 'Thư giãn',
+    items: [
+      { productName: 'Nến thơm oải hương HerDays', quantity: 1 },
+      { productName: 'Mặt nạ ngủ lụa mềm', quantity: 1 },
+      { productName: 'Trà hoa cúc túi lọc', quantity: 2 },
+      { productName: 'Xịt thơm gối hương dịu nhẹ', quantity: 1 }
+    ]
+  }
+];
 
 const seedMarketplaceSamples = async () => {
   await mongoose.connect(env.mongodbUri, { dbName: env.mongodbDbName });
@@ -57,39 +118,39 @@ const seedMarketplaceSamples = async () => {
   });
 
   const productByName = new Map(products.map((product) => [product.productName, product]));
-  const boxItems = [
-    { productName: 'Dầu ấm thư giãn HerDays', quantity: 1 },
-    { productName: 'Túi chườm bụng mini', quantity: 1 },
-    { productName: 'Trà gừng mật ong', quantity: 2 },
-    { productName: 'Khăn ướt dịu nhẹ', quantity: 1 }
-  ].map((item) => ({
-    productId: productByName.get(item.productName)._id,
-    quantity: item.quantity
+  await Box.bulkWrite(sampleBoxes.map((box) => {
+    const boxProducts = box.items.map((item) => ({
+      productId: productByName.get(item.productName)._id,
+      quantity: item.quantity
+    }));
+    const productCategories = [
+      ...new Set(box.items
+        .map((item) => productByName.get(item.productName).category)
+        .filter(Boolean))
+    ];
+
+    return {
+      updateOne: {
+        filter: { boxName: box.boxName },
+        update: {
+          $set: {
+            boxName: box.boxName,
+            thumbnail: box.thumbnail,
+            price: box.price,
+            quantity: box.quantity,
+            description: box.description,
+            category: box.category,
+            products: boxProducts,
+            productCategories
+          }
+        },
+        upsert: true
+      }
+    };
   }));
 
-  const productCategories = [
-    ...new Set(products.map((product) => product.category).filter(Boolean))
-  ];
-
-  await Box.updateOne(
-    { boxName: sampleBoxName },
-    {
-      $set: {
-        boxName: sampleBoxName,
-        thumbnail: 'https://res.cloudinary.com/demo/image/upload/gift.jpg',
-        price: 329000,
-        quantity: 15,
-        description: 'Box mẫu gồm các sản phẩm chăm sóc cơ bản cho kỳ kinh, có thể dùng để demo customize box.',
-        category: productCategories[0] || 'Chăm sóc kỳ kinh',
-        products: boxItems,
-        productCategories
-      }
-    },
-    { upsert: true }
-  );
-
   await mongoose.disconnect();
-  process.stdout.write(`Seeded ${sampleProducts.length} products and 1 box.\n`);
+  process.stdout.write(`Seeded ${sampleProducts.length} products and ${sampleBoxes.length} boxes.\n`);
 };
 
 seedMarketplaceSamples().catch(async (error) => {

@@ -23,6 +23,7 @@ import productRoute from './productRoute.js';
 import adminOrderRoute from './adminOrderRoute.js';
 import adminUserRoute from './adminUserRoute.js';
 import marketplaceRoute from './marketplaceRoute.js';
+import authMiddleware from '../middlewares/authMiddleware.js';
 
 const router = express.Router();
 
@@ -43,9 +44,9 @@ router.use('/admin/contacts', adminContactRoute);
 router.use('/profile', profileRoute);
 router.use('/contacts', contactRoute);
 router.use('/quiz', quizRoute);
-router.use('/chat', chatRoute);
-router.use('/box', boxRoute);
-router.use('/marketplace', marketplaceRoute);
+router.use('/chat', authMiddleware, chatRoute);
+router.use('/box', authMiddleware, boxRoute);
+router.use('/marketplace', authMiddleware, marketplaceRoute);
 router.use('/cart', cartRoute);
 router.use('/orders', orderRoute);
 router.use('/admin/products', productRoute);

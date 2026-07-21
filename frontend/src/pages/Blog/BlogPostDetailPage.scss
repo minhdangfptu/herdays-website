@@ -240,15 +240,6 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
   white-space: nowrap;
 }
 
-.blog-detail-article__hero {
-  display: block;
-  width: 100%;
-  max-height: 420px;
-  margin: 0 0 24px;
-  border-radius: 4px;
-  object-fit: cover;
-}
-
 // -- Content body ----------------------------------
 // BE HTML structure: all inline content wrapped in <span>
 //   <h1/h2/h3><span>...</span></h>
