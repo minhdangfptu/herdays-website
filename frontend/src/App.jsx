@@ -140,6 +140,7 @@ function App() {
           <Route path="/about-us" element={<AboutUs />} />
           <Route path="/download-app" element={<DownloadAppPage />} />
           <Route path="/tools" element={<Tools />} />
+          <Route path="/tools/:toolId" element={<Tools />} />
           <Route
             element={
               <RequireAuth>

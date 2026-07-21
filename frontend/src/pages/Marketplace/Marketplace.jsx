@@ -212,7 +212,7 @@ function Marketplace() {
         <img src={subBoxBanner} alt="HerDays Subscription Box" className="footer-banner-image" />
         <div className="footer-banner-content">
           <h2 className="footer-banner-title">
-            <span className="footer-banner-title-herdays">HerDays</span> Subscription Box
+            <span className="lamoric-text">HerDays</span> Subscription Box
           </h2>
           <p className="footer-banner-subtitle">
             Các Subscription Box được cá nhân hóa dựa trên từng giai đoạn sức khỏe của người dùng.
