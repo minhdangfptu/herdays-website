@@ -2,6 +2,11 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi, profileApi } from '../../services/apiService.js'
+import {
+  canAccessAllBoxes,
+  isBoxCompatibleWithTarget,
+  targetStatusLabels
+} from '../../utils/boxTarget.js'
 import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
 import heroBanner from '../../assets/marketplace/hero_banner.png'
 import subBoxBanner from '../../assets/marketplace/sub_box.png'
@@ -18,32 +23,6 @@ const getItemName = (item) => item.boxName || item.productName || 'Sản phẩm 
 
 const getItemImage = (item) =>
   item.thumbnail || `https://placehold.co/480x360/f8c4d8/ffffff?text=${encodeURIComponent(getItemName(item))}`
-
-const formatGoalLabel = (category) => (
-  String(category || '').replace(/^(mục|muc)\s*(tiêu|tieu)\s*:\s*/i, '').trim()
-)
-
-const boxCategoriesByTargetStatus = {
-  tryingToConceive: ['Đang mong con'],
-  pregnant: ['Đang trong thai kỳ'],
-  ivf: ['IVF'],
-  normal: ['Chăm sóc sức khỏe', 'Thư giãn'],
-  periodTracking: ['Theo dõi chu kỳ', 'Chăm sóc kỳ kinh']
-}
-
-const targetStatusLabels = {
-  tryingToConceive: 'Đang mong con',
-  pregnant: 'Đang trong thai kỳ',
-  ivf: 'IVF',
-  normal: 'Chăm sóc sức khỏe',
-  periodTracking: 'Theo dõi chu kỳ',
-  partner: 'Người thân',
-  relatives: 'Người thân'
-}
-
-const canViewAllBoxes = (targetStatus) => (
-  targetStatus === 'partner' || targetStatus === 'relatives'
-)
 
 const getAllMarketplaceBoxes = async () => {
   const firstPage = await marketplaceApi.listBoxes({ page: 1, limit: 50 })
@@ -110,12 +89,8 @@ function Marketplace() {
   }, [])
 
   const visibleBoxes = useMemo(() => {
-    if (!targetStatus || canViewAllBoxes(targetStatus)) return boxes
-
-    const targetCategories = boxCategoriesByTargetStatus[targetStatus]
-    if (!targetCategories) return boxes
-
-    return boxes.filter((box) => targetCategories.includes(formatGoalLabel(box.category)))
+    if (!targetStatus || canAccessAllBoxes(targetStatus)) return boxes
+    return boxes.filter((box) => isBoxCompatibleWithTarget(box, targetStatus))
   }, [boxes, targetStatus])
 
   const goalLabel = targetStatusLabels[targetStatus] || ''

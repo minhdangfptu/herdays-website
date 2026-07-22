@@ -2,7 +2,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { MdKeyboardArrowRight } from 'react-icons/md'
-import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi, profileApi } from '../../services/apiService.js'
+import { isBoxCompatibleWithTarget } from '../../utils/boxTarget.js'
 import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
 import './BoxCustomize.scss'
 
@@ -31,6 +32,24 @@ const normalizeBoxProduct = (item) => ({
   quantity: item.quantity || 1
 })
 
+const getAllMarketplaceItems = async (listItems) => {
+  const firstPage = await listItems({ page: 1, limit: 50 })
+  const totalPages = firstPage.pagination?.totalPages || 1
+
+  if (totalPages === 1) return firstPage.items || []
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) => (
+      listItems({ page: index + 2, limit: 50 })
+    ))
+  )
+
+  return [
+    ...(firstPage.items || []),
+    ...remainingPages.flatMap((result) => result.items || [])
+  ]
+}
+
 export default function BoxCustomize() {
   const { boxId } = useParams()
   const navigate = useNavigate()
@@ -42,6 +61,7 @@ export default function BoxCustomize() {
   const [errorMessage, setErrorMessage] = useState('')
   const [isAdding, setIsAdding] = useState(false)
   const [cartBoxQuantities, setCartBoxQuantities] = useState({})
+  const [targetStatus, setTargetStatus] = useState('')
   const checkoutButtonRef = useRef(null)
 
   useEffect(() => {
@@ -52,18 +72,21 @@ export default function BoxCustomize() {
       setErrorMessage('')
 
       try {
-        const [boxListResult, productResult, boxResult, cartResult] = await Promise.all([
-          marketplaceApi.listBoxes({ limit: 100 }),
-          marketplaceApi.listProducts({ limit: 100 }),
+        const [boxList, productList, boxResult, cartResult, profileResult] = await Promise.all([
+          getAllMarketplaceItems(marketplaceApi.listBoxes),
+          getAllMarketplaceItems(marketplaceApi.listProducts),
           boxId ? marketplaceApi.getBox(boxId) : Promise.resolve(null),
           hasAuthSession()
             ? cartApi.getCart().catch(() => null)
+            : Promise.resolve(null),
+          hasAuthSession()
+            ? profileApi.getProfile()
             : Promise.resolve(null)
         ])
 
         if (!isMounted) return
 
-        const nextProducts = productResult.items || []
+        const nextProducts = productList
         const availableProductIds = new Set(
           nextProducts
             .filter(isProductInStock)
@@ -73,11 +96,39 @@ export default function BoxCustomize() {
           .map(normalizeBoxProduct)
           .filter((product) => availableProductIds.has(product.id))
 
-        setBoxes(boxListResult.items || [])
+        const nextTargetStatus = profileResult?.targetStatus || ''
+        const allowedBoxes = boxList.filter((boxOption) => (
+          isBoxCompatibleWithTarget(boxOption, nextTargetStatus)
+        ))
+
+        setTargetStatus(nextTargetStatus)
+        setBoxes(allowedBoxes)
         setProducts(nextProducts)
+        setCartBoxQuantities(getCartBoxQuantities(cartResult))
+
+        if (!hasAuthSession()) {
+          setBox(null)
+          setSelectedItems([])
+          setErrorMessage('Vui lòng đăng nhập để tùy chỉnh box.')
+          return
+        }
+
+        if (!nextTargetStatus) {
+          setBox(null)
+          setSelectedItems([])
+          setErrorMessage('Vui lòng hoàn thành mục tiêu cá nhân trước khi tùy chỉnh box.')
+          return
+        }
+
+        if (boxResult && !isBoxCompatibleWithTarget(boxResult, nextTargetStatus)) {
+          setBox(null)
+          setSelectedItems([])
+          setErrorMessage('Bạn chỉ có thể tùy chỉnh box phù hợp với mục tiêu của mình.')
+          return
+        }
+
         setBox(boxResult)
         setSelectedItems(initialProducts)
-        setCartBoxQuantities(getCartBoxQuantities(cartResult))
       } catch (error) {
         if (isMounted) setErrorMessage(error.message || 'Không thể tải dữ liệu tùy chỉnh box.')
       } finally {
@@ -181,6 +232,11 @@ export default function BoxCustomize() {
   const handleBuyNow = async () => {
     if (!box?.id) {
       toast.error('Vui lòng chọn một box trước khi mua.')
+      return
+    }
+
+    if (!isBoxCompatibleWithTarget(box, targetStatus)) {
+      toast.error('Bạn chỉ có thể tùy chỉnh box phù hợp với mục tiêu của mình.')
       return
     }
 
