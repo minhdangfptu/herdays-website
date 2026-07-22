@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import toast from 'react-hot-toast';
 import {
   Box,
@@ -16,6 +16,13 @@ import { adminApi, cloudinaryApi } from '../../services/apiService.js';
 
 const PAGE_SIZE = 10;
 const ADMIN_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif";
+const BOX_TARGET_CATEGORIES = [
+  'Đang mong con',
+  'Đang trong thai kỳ',
+  'IVF',
+  'Chăm sóc sức khỏe',
+  'Theo dõi chu kỳ'
+];
 
 const emptyProductForm = {
   productName: '',
@@ -29,6 +36,7 @@ const emptyProductForm = {
 const emptyBoxForm = {
   boxName: '',
   thumbnail: '',
+  category: '',
   price: '',
   quantity: '',
   description: ''
@@ -55,6 +63,24 @@ const getProductRefId = (item) => {
   return String(ref.id || ref._id || ref);
 };
 
+const getAllProductOptions = async () => {
+  const firstPage = await adminApi.getSingleProducts({ page: 1, limit: 50 });
+  const totalPages = firstPage.pagination?.totalPages || 1;
+
+  if (totalPages === 1) return firstPage.products || [];
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) => (
+      adminApi.getSingleProducts({ page: index + 2, limit: 50 })
+    ))
+  );
+
+  return [
+    ...(firstPage.products || []),
+    ...remainingPages.flatMap((result) => result.products || [])
+  ];
+};
+
 function AdminProductsPage() {
   const [activeTab, setActiveTab] = useState('products');
   const [products, setProducts] = useState([]);
@@ -76,7 +102,9 @@ function AdminProductsPage() {
   const [productImageFile, setProductImageFile] = useState(null);
   const [boxImageFile, setBoxImageFile] = useState(null);
   const [boxProducts, setBoxProducts] = useState({});
+  const [boxProductCategoryFilter, setBoxProductCategoryFilter] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const boxProductScrollerRef = useRef(null);
 
   const isBoxTab = activeTab === 'boxes';
   const rows = isBoxTab ? boxes : products;
@@ -89,6 +117,12 @@ function AdminProductsPage() {
       .map(([productId, value]) => ({ productId, quantity: Number(value.quantity) || 1 }))
   ), [boxProducts]);
 
+  const filteredBoxProductOptions = useMemo(() => (
+    boxProductCategoryFilter
+      ? productOptions.filter((product) => product.category === boxProductCategoryFilter)
+      : productOptions
+  ), [boxProductCategoryFilter, productOptions]);
+
   useEffect(() => {
     const timer = window.setTimeout(() => {
       setPage(1);
@@ -99,8 +133,7 @@ function AdminProductsPage() {
   }, [search]);
 
   const fetchProductOptions = async () => {
-    const result = await adminApi.getSingleProducts({ page: 1, limit: 50 });
-    setProductOptions(result.products || []);
+    setProductOptions(await getAllProductOptions());
   };
 
   const fetchProductCategories = async () => {
@@ -144,12 +177,12 @@ function AdminProductsPage() {
     let isActive = true;
 
     Promise.all([
-      adminApi.getSingleProducts({ page: 1, limit: 50 }),
+      getAllProductOptions(),
       adminApi.getProductCategories()
     ])
-      .then(([productResult, categories]) => {
+      .then(([allProductOptions, categories]) => {
         if (!isActive) return;
-        setProductOptions(productResult.products || []);
+        setProductOptions(allProductOptions);
         setProductCategories(categories || []);
       })
       .catch(() => undefined);
@@ -183,6 +216,7 @@ function AdminProductsPage() {
     setBoxForm(emptyBoxForm);
     setBoxImageFile(null);
     setBoxProducts({});
+    setBoxProductCategoryFilter('');
   };
 
   const handleProductFieldChange = (field, value) => {
@@ -211,6 +245,13 @@ function AdminProductsPage() {
         quantity
       }
     }));
+  };
+
+  const handleScrollBoxProducts = (direction) => {
+    boxProductScrollerRef.current?.scrollBy({
+      left: direction * 460,
+      behavior: 'smooth'
+    });
   };
 
   const uploadThumbnailIfNeeded = async (file, currentUrl, type) => {
@@ -276,6 +317,7 @@ function AdminProductsPage() {
       const payload = {
         boxName: boxForm.boxName,
         thumbnail,
+        category: boxForm.category,
         price: Number(boxForm.price),
         quantity: Number(boxForm.quantity),
         description: boxForm.description,
@@ -306,6 +348,7 @@ function AdminProductsPage() {
       setBoxForm(emptyBoxForm);
       setBoxImageFile(null);
       setBoxProducts({});
+      setBoxProductCategoryFilter('');
       setIsBoxModalOpen(true);
     } else {
       closeBoxModal();
@@ -346,12 +389,14 @@ function AdminProductsPage() {
     setBoxForm({
       boxName: box.boxName || box.productName || '',
       thumbnail: box.thumbnail || '',
+      category: BOX_TARGET_CATEGORIES.includes(box.category) ? box.category : '',
       price: box.price ?? '',
       quantity: box.quantity ?? '',
       description: box.description || ''
     });
     setBoxImageFile(null);
     setBoxProducts(currentProducts);
+    setBoxProductCategoryFilter('');
     setIsBoxModalOpen(true);
   };
 
@@ -477,7 +522,7 @@ function AdminProductsPage() {
                   </td>
                   <td className="px-5 py-4 text-sm font-semibold text-slate-600">
                     {isBoxTab
-                      ? (item.productCategories || []).join(', ') || item.category || 'Tự động'
+                      ? item.category || 'Chưa phân loại'
                       : item.category || 'Chưa phân loại'}
                   </td>
                   <td className="max-w-[240px] px-5 py-4 text-sm text-slate-500">
@@ -565,7 +610,7 @@ function AdminProductsPage() {
       )}
 
       {isBoxModalOpen && (
-        <AdminModal title={boxModalTitle} onClose={closeBoxModal}>
+        <AdminModal title={boxModalTitle} onClose={closeBoxModal} maxWidthClassName="max-w-4xl">
           <form onSubmit={handleSaveBox} className="space-y-4">
             <FormInput label="Tên box" required value={boxForm.boxName} onChange={(value) => handleBoxFieldChange('boxName', value)} />
             <ImageUploadField
@@ -579,38 +624,113 @@ function AdminProductsPage() {
               <FormInput label="Giá" type="number" min="0" required value={boxForm.price} onChange={(value) => handleBoxFieldChange('price', value)} />
               <FormInput label="Số lượng box" type="number" min="0" required value={boxForm.quantity} onChange={(value) => handleBoxFieldChange('quantity', value)} />
             </div>
+            <FormSelect
+              label="Mục tiêu của box"
+              options={BOX_TARGET_CATEGORIES}
+              required
+              value={boxForm.category}
+              onChange={(value) => handleBoxFieldChange('category', value)}
+            />
             <FormTextarea label="Ghi chú" value={boxForm.description} onChange={(value) => handleBoxFieldChange('description', value)} />
 
             <div>
-              <p className="mb-2 text-sm font-bold text-slate-700">Sản phẩm trong box *</p>
-              <div className="max-h-56 overflow-y-auto rounded-lg border border-slate-200">
-                {productOptions.length === 0 ? (
-                  <p className="px-4 py-6 text-center text-sm font-semibold text-slate-400">Chưa có sản phẩm lẻ để chọn.</p>
-                ) : productOptions.map((product) => {
+              <div className="mb-3 flex items-end justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold text-slate-700">Sản phẩm trong box *</p>
+                  <p className="mt-1 text-xs font-semibold text-slate-400">Đã chọn {selectedBoxProducts.length} sản phẩm</p>
+                </div>
+                <div className="flex shrink-0 gap-2">
+                  <button
+                    type="button"
+                    aria-label="Cuộn sản phẩm sang trái"
+                    onClick={() => handleScrollBoxProducts(-1)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-pink-300 hover:text-pink-500"
+                  >
+                    <ChevronLeft size={18} />
+                  </button>
+                  <button
+                    type="button"
+                    aria-label="Cuộn sản phẩm sang phải"
+                    onClick={() => handleScrollBoxProducts(1)}
+                    className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-pink-300 hover:text-pink-500"
+                  >
+                    <ChevronRight size={18} />
+                  </button>
+                </div>
+              </div>
+
+              <div className="rounded-lg border border-slate-200 bg-slate-50/60 p-3">
+                <div className="mb-3 flex flex-wrap gap-2" aria-label="Lọc sản phẩm theo danh mục">
+                  {['', ...productCategories].map((category) => (
+                    <button
+                      key={category || 'all'}
+                      type="button"
+                      onClick={() => setBoxProductCategoryFilter(category)}
+                      className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                        boxProductCategoryFilter === category
+                          ? 'border-pink-500 bg-pink-500 text-white'
+                          : 'border-slate-200 bg-white text-slate-600 hover:border-pink-300 hover:text-pink-500'
+                      }`}
+                    >
+                      {category || 'Tất cả'}
+                    </button>
+                  ))}
+                </div>
+
+                {filteredBoxProductOptions.length === 0 ? (
+                  <p className="px-4 py-8 text-center text-sm font-semibold text-slate-400">
+                    {productOptions.length === 0 ? 'Chưa có sản phẩm lẻ để chọn.' : 'Không có sản phẩm trong danh mục này.'}
+                  </p>
+                ) : (
+                  <div
+                    ref={boxProductScrollerRef}
+                    className="flex max-w-full snap-x snap-mandatory gap-3 overflow-x-scroll scroll-smooth pb-3"
+                  >
+                    {filteredBoxProductOptions.map((product) => {
                   const item = boxProducts[product.id] || { selected: false, quantity: 1 };
                   return (
-                    <label key={product.id} className="flex items-center gap-3 border-b border-slate-100 px-4 py-3 last:border-b-0">
-                      <input
-                        type="checkbox"
-                        checked={item.selected}
-                        onChange={(event) => handleToggleBoxProduct(product.id, event.target.checked)}
-                        className="h-4 w-4 rounded border-slate-300 text-pink-500 focus:ring-pink-400"
+                    <article
+                      key={product.id}
+                      className={`w-52 shrink-0 snap-start rounded-lg border bg-white p-3 transition ${
+                        item.selected ? 'border-pink-300 ring-2 ring-pink-100' : 'border-slate-200'
+                      }`}
+                    >
+                      <img
+                        src={product.thumbnail}
+                        alt={product.productName}
+                        className="h-28 w-full rounded-md bg-slate-100 object-cover"
                       />
-                      <span className="min-w-0 flex-1">
-                        <span className="block truncate text-sm font-bold text-slate-800">{product.productName}</span>
-                        <span className="block truncate text-xs font-medium text-slate-400">{product.category || 'Chưa phân loại'}</span>
-                      </span>
-                      <input
-                        type="number"
-                        min="1"
-                        value={item.quantity}
-                        disabled={!item.selected}
-                        onChange={(event) => handleBoxProductQuantity(product.id, event.target.value)}
-                        className="h-9 w-20 rounded-md border border-slate-200 px-2 text-sm font-semibold text-slate-700 outline-none disabled:bg-slate-100 disabled:text-slate-400"
-                      />
-                    </label>
+                      <p className="mt-3 truncate text-sm font-bold text-slate-800" title={product.productName}>{product.productName}</p>
+                      <p className="mt-1 truncate text-xs font-semibold text-slate-400">{product.category || 'Chưa phân loại'}</p>
+
+                      <div className="mt-3 flex items-end justify-between gap-3">
+                        <label className="flex items-center gap-2 text-xs font-bold text-slate-600">
+                          <input
+                            type="checkbox"
+                            checked={item.selected}
+                            onChange={(event) => handleToggleBoxProduct(product.id, event.target.checked)}
+                            className="h-4 w-4 rounded border-slate-300 text-pink-500 focus:ring-pink-400"
+                          />
+                          Chọn
+                        </label>
+                        <label className="text-xs font-bold text-slate-500">
+                          SL
+                          <input
+                            type="number"
+                            min="1"
+                            value={item.quantity}
+                            disabled={!item.selected}
+                            aria-label={`Số lượng ${product.productName}`}
+                            onChange={(event) => handleBoxProductQuantity(product.id, event.target.value)}
+                            className="mt-1 block h-9 w-16 rounded-md border border-slate-200 px-2 text-sm font-semibold text-slate-700 outline-none focus:border-pink-300 disabled:bg-slate-100 disabled:text-slate-400"
+                          />
+                        </label>
+                      </div>
+                    </article>
                   );
-                })}
+                    })}
+                  </div>
+                )}
               </div>
             </div>
 
@@ -704,10 +824,10 @@ function FormTextarea({ label, value, onChange }) {
   );
 }
 
-function AdminModal({ title, children, onClose }) {
+function AdminModal({ title, children, onClose, maxWidthClassName = 'max-w-xl' }) {
   return (
     <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/30 px-4">
-      <div className="max-h-[90vh] w-full max-w-xl overflow-hidden rounded-lg bg-white shadow-xl">
+      <div className={`max-h-[90vh] w-full overflow-hidden rounded-lg bg-white shadow-xl ${maxWidthClassName}`}>
         <div className="flex items-center justify-between bg-pink-500 px-5 py-4 text-white">
           <h2 className="text-base font-bold">{title}</h2>
           <button type="button" onClick={onClose} aria-label="Đóng" className="rounded-md p-1 transition hover:bg-white/15">

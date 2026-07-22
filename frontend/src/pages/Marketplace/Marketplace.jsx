@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi, profileApi } from '../../services/apiService.js'
 import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
 import heroBanner from '../../assets/marketplace/hero_banner.png'
 import subBoxBanner from '../../assets/marketplace/sub_box.png'
@@ -23,12 +23,53 @@ const formatGoalLabel = (category) => (
   String(category || '').replace(/^(mục|muc)\s*(tiêu|tieu)\s*:\s*/i, '').trim()
 )
 
+const boxCategoriesByTargetStatus = {
+  tryingToConceive: ['Đang mong con'],
+  pregnant: ['Đang trong thai kỳ'],
+  ivf: ['IVF'],
+  normal: ['Chăm sóc sức khỏe', 'Thư giãn'],
+  periodTracking: ['Theo dõi chu kỳ', 'Chăm sóc kỳ kinh']
+}
+
+const targetStatusLabels = {
+  tryingToConceive: 'Đang mong con',
+  pregnant: 'Đang trong thai kỳ',
+  ivf: 'IVF',
+  normal: 'Chăm sóc sức khỏe',
+  periodTracking: 'Theo dõi chu kỳ',
+  partner: 'Người thân',
+  relatives: 'Người thân'
+}
+
+const canViewAllBoxes = (targetStatus) => (
+  targetStatus === 'partner' || targetStatus === 'relatives'
+)
+
+const getAllMarketplaceBoxes = async () => {
+  const firstPage = await marketplaceApi.listBoxes({ page: 1, limit: 50 })
+  const totalPages = firstPage.pagination?.totalPages || 1
+
+  if (totalPages === 1) return firstPage.items || []
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) => (
+      marketplaceApi.listBoxes({ page: index + 2, limit: 50 })
+    ))
+  )
+
+  return [
+    ...(firstPage.items || []),
+    ...remainingPages.flatMap((result) => result.items || [])
+  ]
+}
+
 function Marketplace() {
   const [boxes, setBoxes] = useState([])
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [addingBoxId, setAddingBoxId] = useState('')
   const [cartBoxQuantities, setCartBoxQuantities] = useState({})
+  const [targetStatus, setTargetStatus] = useState('')
   const boxImageRefs = useRef({})
   const navigate = useNavigate()
 
@@ -40,16 +81,20 @@ function Marketplace() {
       setErrorMessage('')
 
       try {
-        const [boxResult, cartResult] = await Promise.all([
-          marketplaceApi.listBoxes({ limit: 12 }),
+        const [allBoxes, cartResult, profileResult] = await Promise.all([
+          getAllMarketplaceBoxes(),
           hasAuthSession()
             ? cartApi.getCart().catch(() => null)
+            : Promise.resolve(null),
+          hasAuthSession()
+            ? profileApi.getProfile().catch(() => null)
             : Promise.resolve(null)
         ])
 
         if (!isMounted) return
-        setBoxes(boxResult.items || [])
+        setBoxes(allBoxes)
         setCartBoxQuantities(getCartBoxQuantities(cartResult))
+        setTargetStatus(profileResult?.targetStatus || '')
       } catch (error) {
         if (isMounted) setErrorMessage(error.message || 'Không thể tải marketplace.')
       } finally {
@@ -64,12 +109,17 @@ function Marketplace() {
     }
   }, [])
 
-  const categories = useMemo(() => {
-    const uniqueCategories = boxes.map((item) => item.category).filter(Boolean)
-    return [...new Set(uniqueCategories)].slice(0, 4)
-  }, [boxes])
+  const visibleBoxes = useMemo(() => {
+    if (!targetStatus || canViewAllBoxes(targetStatus)) return boxes
 
-  const firstBoxId = boxes[0]?.id
+    const targetCategories = boxCategoriesByTargetStatus[targetStatus]
+    if (!targetCategories) return boxes
+
+    return boxes.filter((box) => targetCategories.includes(formatGoalLabel(box.category)))
+  }, [boxes, targetStatus])
+
+  const goalLabel = targetStatusLabels[targetStatus] || ''
+  const firstBoxId = visibleBoxes[0]?.id
 
   const getAvailableBoxQuantity = (box) => (
     Math.max((Number(box.quantity) || 0) - (cartBoxQuantities[String(box.id)] || 0), 0)
@@ -175,14 +225,12 @@ function Marketplace() {
             Hãy lựa chọn box subcription phù hợp với nhu cầu của bạn và thêm vào giỏ hàng. 
           </p>
         </div>
-        {categories.length > 0 && (
+        {goalLabel && (
           <div className="marketplace-hero__goals" aria-label="Mục tiêu sản phẩm">
-            {categories.map((category) => (
-              <span className="marketplace-hero__goal" key={category}>
-                <span>Mục tiêu: </span>
-                {formatGoalLabel(category)}
-              </span>
-            ))}
+            <span className="marketplace-hero__goal">
+              <span>Mục tiêu: </span>
+              {goalLabel}
+            </span>
           </div>
         )}
       </section>
@@ -198,10 +246,10 @@ function Marketplace() {
               <Link to={firstBoxId ? `/box-customize/${firstBoxId}` : '/box-customize'}>Tạo box cá nhân hóa</Link>
             </div>
             <div className="marketplace-grid">
-              {boxes.length === 0 ? (
-                <p className="marketplace-status">Chưa có box nào.</p>
+              {visibleBoxes.length === 0 ? (
+                <p className="marketplace-status">Chưa có box phù hợp với mục tiêu của bạn.</p>
               ) : (
-                boxes.map((box) => renderBoxCard(box))
+                visibleBoxes.map((box) => renderBoxCard(box))
               )}
             </div>
           </section>
