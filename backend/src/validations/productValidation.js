@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import HttpError from '../utils/httpError.js';
+import { isProductCategory, PRODUCT_CATEGORIES } from '../constants/productCategories.js';
 
 const validateObjectId = (value, fieldName) => {
   if (!mongoose.isValidObjectId(value)) throw new HttpError(400, `${fieldName} is invalid`);
@@ -26,6 +27,7 @@ const validateProductName = (name) => {
 };
 
 const validatePrice = (price) => {
+  if (price === undefined || price === null || (typeof price === 'string' && price.trim() === '')) return null;
   const num = Number(price);
   if (Number.isNaN(num)) throw new HttpError(400, 'price must be a number');
   if (num < 0) throw new HttpError(400, 'price must be >= 0');
@@ -43,6 +45,9 @@ const validateCategory = (category) => {
   if (category === undefined || category === null || category === '') return null;
   const trimmed = String(category).trim();
   if (trimmed.length > 100) throw new HttpError(400, 'category must not exceed 100 characters');
+  if (!isProductCategory(trimmed)) {
+    throw new HttpError(400, `category must be one of: ${PRODUCT_CATEGORIES.join(', ')}`);
+  }
   return trimmed;
 };
 

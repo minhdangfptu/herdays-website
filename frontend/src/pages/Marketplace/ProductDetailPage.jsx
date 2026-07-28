@@ -1,28 +1,33 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { FiMinus, FiPlus, FiStar } from 'react-icons/fi'
 import { MdKeyboardArrowRight } from 'react-icons/md'
 import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import { Skeleton } from '../../components/Skeleton.jsx'
 import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
 import './ProductDetailPage.scss'
 
-const SUBSCRIPTIONS = ['1 tháng', '3 tháng', '6 tháng', '12 tháng']
+const formatCurrency = (value) => {
+  if (value === null || value === undefined || value === '') return 'Đang cập nhật'
 
-const formatCurrency = (value) =>
-  new Intl.NumberFormat('vi-VN', {
+  return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
     currency: 'VND',
     maximumFractionDigits: 0
   }).format(Number(value) || 0)
+}
 
 const getItemName = (item) => item?.boxName || item?.productName || item?.name || 'HerDays item'
 
 const getItemImage = (item) =>
-  item?.thumbnail || `https://placehold.co/520x520/f8c4d8/ffffff?text=${encodeURIComponent(getItemName(item))}`
+  item?.thumbnail || item?.image || `https://placehold.co/520x520/f8c4d8/ffffff?text=${encodeURIComponent(getItemName(item))}`
+
+const SUBSCRIPTIONS = ['1 tháng', '3 tháng', '6 tháng', '12 tháng']
 
 export default function ProductDetailPage() {
   const { type, itemId, productId } = useParams()
+  const location = useLocation()
   const navigate = useNavigate()
   const resolvedId = itemId || productId
   const [selectedSubscription, setSelectedSubscription] = useState(SUBSCRIPTIONS[2])
@@ -87,7 +92,7 @@ export default function ProductDetailPage() {
       id: product.productId,
       name: product.productName || 'Sản phẩm trong box',
       subtitle: product.category || item?.category || 'HerDays',
-      image: product.thumbnail,
+      thumbnail: product.thumbnail,
       price: product.price,
       quantity: product.quantity || 1
     }))
@@ -153,7 +158,54 @@ export default function ProductDetailPage() {
   }
 
   if (loading) {
-    return <div className="product-detail-page"><p className="product-detail-status">Đang tải chi tiết...</p></div>
+    return (
+      <div className="product-detail-page product-detail-page--loading" role="status" aria-label="Đang tải chi tiết">
+        <div className="product-detail-breadcrumb">
+          <Skeleton className="product-detail-skeleton product-detail-skeleton--crumb product-detail-skeleton--crumb-short" />
+          <Skeleton className="product-detail-skeleton product-detail-skeleton--arrow" />
+          <Skeleton className="product-detail-skeleton product-detail-skeleton--crumb" />
+          <Skeleton className="product-detail-skeleton product-detail-skeleton--arrow" />
+          <Skeleton className="product-detail-skeleton product-detail-skeleton--crumb-long" />
+        </div>
+        <div className="product-detail-container">
+          <div className="product-detail-content">
+            <div className="product-detail-image-section">
+              <div className="product-detail-image-frame">
+                <div className="product-detail-image-topline">
+                  <Skeleton className="product-detail-skeleton product-detail-skeleton--image-label" />
+                  <Skeleton className="product-detail-skeleton product-detail-skeleton--image-count" />
+                </div>
+                <Skeleton className="product-detail-skeleton product-detail-skeleton--main-image" />
+                <Skeleton className="product-detail-skeleton product-detail-skeleton--caption" />
+              </div>
+            </div>
+            <div className="product-detail-info-section product-detail-info-section--loading">
+              <Skeleton className="product-detail-skeleton product-detail-skeleton--kicker" />
+              <Skeleton className="product-detail-skeleton product-detail-skeleton--title" />
+              <Skeleton className="product-detail-skeleton product-detail-skeleton--rating" />
+              <Skeleton className="product-detail-skeleton product-detail-skeleton--price" />
+              <Skeleton className="product-detail-skeleton product-detail-skeleton--divider" />
+              <Skeleton className="product-detail-skeleton product-detail-skeleton--description" />
+              {type === 'box' && (
+                <div className="product-detail-skeleton-subscription">
+                  <Skeleton className="product-detail-skeleton product-detail-skeleton--subscription-label" />
+                  <div className="product-detail-skeleton-subscription-options">
+                    {SUBSCRIPTIONS.map((subscription) => (
+                      <Skeleton
+                        key={subscription}
+                        className="product-detail-skeleton product-detail-skeleton--subscription-option"
+                      />
+                    ))}
+                  </div>
+                </div>
+              )}
+              <Skeleton className="product-detail-skeleton product-detail-skeleton--divider" />
+              <Skeleton className="product-detail-skeleton product-detail-skeleton--actions" />
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   if (errorMessage || !item) {
@@ -169,6 +221,12 @@ export default function ProductDetailPage() {
   const availableQuantity = isBox
     ? Math.max((Number(item.quantity) || 0) - currentCartQuantity, 0)
     : Number(item.quantity) || 0
+  const ratingValue = Number(item.rating ?? item.averageRating)
+  const hasRating = Number.isFinite(ratingValue) && ratingValue > 0
+  const normalizedRating = Math.min(Math.max(ratingValue, 0), 5)
+  const productCategory = item.category || (isBox ? 'Subscription Box' : 'HerDays marketplace')
+  const parentBoxId = item.boxId || item.parentBoxId || item.box?.id || location.state?.boxId
+  const parentBoxName = item.boxName || item.parentBoxName || item.box?.boxName || location.state?.boxName
 
   return (
     <div className="product-detail-page">
@@ -183,27 +241,47 @@ export default function ProductDetailPage() {
       <div className="product-detail-container">
         <div className="product-detail-content">
           <div className="product-detail-image-section">
-            <img
-              ref={productImageRef}
-              src={getItemImage(item)}
-              alt={getItemName(item)}
-              className="product-detail-main-image"
-            />
+            <div className="product-detail-image-frame">
+              <div className="product-detail-image-topline">
+                <span className="product-detail-image-context">Hình ảnh</span>
+                <span className="product-detail-image-count">
+                  {isBox ? `${relatedProducts.length} sản phẩm` : 'HerDays'}
+                </span>
+              </div>
+              <img
+                ref={productImageRef}
+                src={getItemImage(item)}
+                alt={getItemName(item)}
+                className="product-detail-main-image"
+                width="600"
+                height="600"
+              />
+              <p className="product-detail-image-caption">
+                {isBox ? 'Một lựa chọn chăm sóc được sắp xếp cho bạn.' : 'Sản phẩm chăm sóc từ HerDays.'}
+              </p>
+            </div>
           </div>
 
           <div className="product-detail-info-section">
+            <p className="product-detail-kicker">{productCategory}</p>
             <h1 className="product-detail-title">{getItemName(item)}</h1>
 
-            <div className="product-detail-rating">
-              <div className="product-detail-stars">
-                {[...Array(5)].map((_, i) => (
-                  <FiStar
-                    key={i}
-                    className={`product-detail-star ${i < 4 ? 'product-detail-star-filled' : ''}`}
-                  />
-                ))}
-              </div>
-              <span className="product-detail-rating-text">4/5</span>
+            <div className={`product-detail-rating ${hasRating ? '' : 'product-detail-rating--empty'}`}>
+              {hasRating ? (
+                <>
+                  <div role="img" className="product-detail-stars" aria-label={`Đánh giá ${normalizedRating} trên 5`}>
+                    {[...Array(5)].map((_, i) => (
+                      <FiStar
+                        key={i}
+                        className={`product-detail-star ${i < Math.round(normalizedRating) ? 'product-detail-star-filled' : ''}`}
+                      />
+                    ))}
+                  </div>
+                  <span className="product-detail-rating-text">{normalizedRating}/5</span>
+                </>
+              ) : (
+                <span className="product-detail-rating-text">Chưa có đánh giá</span>
+              )}
             </div>
 
             <div className="product-detail-price-section">
@@ -217,22 +295,28 @@ export default function ProductDetailPage() {
 
             <hr className="product-detail-divider" />
 
-            <p className="product-detail-description">
-              {item.description || 'Sản phẩm HerDays được đồng bộ trực tiếp từ backend marketplace.'}
-            </p>
+            <div className="product-detail-description-section">
+              <h2 className="product-detail-description-heading">Mô tả</h2>
+              <div className="product-detail-description-block">
+                <p className="product-detail-description">
+                  {item.description || 'Sản phẩm HerDays được đồng bộ trực tiếp từ backend marketplace.'}
+                </p>
+              </div>
+            </div>
 
             {isBox && (
               <div className="product-detail-subscription">
-                <label className="product-detail-subscription-label">Đăng ký định kỳ</label>
+                <span className="product-detail-subscription-label">Đăng ký định kỳ</span>
                 <div className="product-detail-subscription-options">
-                  {SUBSCRIPTIONS.map((sub) => (
+                  {SUBSCRIPTIONS.map((subscription) => (
                     <button
-                      key={sub}
+                      key={subscription}
                       type="button"
-                      onClick={() => setSelectedSubscription(sub)}
-                      className={`product-detail-subscription-btn ${selectedSubscription === sub ? 'product-detail-subscription-btn-active' : ''}`}
+                      className={`product-detail-subscription-btn ${selectedSubscription === subscription ? 'product-detail-subscription-btn-active' : ''}`}
+                      aria-pressed={selectedSubscription === subscription}
+                      onClick={() => setSelectedSubscription(subscription)}
                     >
-                      {sub}
+                      {subscription}
                     </button>
                   ))}
                 </div>
@@ -246,6 +330,7 @@ export default function ProductDetailPage() {
                 <button
                   type="button"
                   onClick={() => updateQuantity(quantity - 1)}
+                  aria-label="Giảm số lượng"
                   className="product-detail-quantity-btn"
                   disabled={!isBox || quantity <= 1}
                 >
@@ -255,11 +340,13 @@ export default function ProductDetailPage() {
                   type="number"
                   value={quantity}
                   readOnly
+                  aria-label="Số lượng box"
                   className="product-detail-quantity-input"
                 />
                 <button
                   type="button"
                   onClick={() => updateQuantity(quantity + 1)}
+                  aria-label="Tăng số lượng"
                   className="product-detail-quantity-btn"
                   disabled={!isBox || quantity >= availableQuantity}
                 >
@@ -275,32 +362,73 @@ export default function ProductDetailPage() {
                 {isAdding ? 'Đang thêm...' : isBox ? 'Thêm vào giỏ hàng' : 'Sản phẩm lẻ'}
               </button>
             </div>
+
+            {!isBox && (
+              <div className="product-detail-single-note">
+                <p>Đây là sản phẩm lẻ, bạn cần mua theo box.</p>
+                {parentBoxId && parentBoxName && (
+                  <Link
+                    to={`/product-detail/box/${parentBoxId}`}
+                    className="product-detail-single-note-link"
+                  >
+                    Quay lại Box “{parentBoxName}”
+                  </Link>
+                )}
+                <Link to="/marketplace" className="product-detail-single-note-link">
+                  Quay lại trang danh sách subcription box
+                </Link>
+              </div>
+            )}
           </div>
         </div>
 
         {isBox && (
           <div className="product-detail-related-section">
             <div className="product-detail-related-header">
-              <h2 className="product-detail-related-title">Sản phẩm có trong Box</h2>
+              <div className="product-detail-related-header-copy">
+                <h2 className="product-detail-related-title">Sản phẩm có trong Box</h2>
+                <span className="product-detail-related-scroll-hint">Cuộn để khám phá</span>
+              </div>
               <Link to={`/box-customize/${item.id}`} className="product-detail-related-customize">
                 Tùy chỉnh
               </Link>
             </div>
 
-            <div className="product-detail-related-grid">
+            <div
+              className="product-detail-related-grid"
+              role="region"
+              aria-label="Danh sách sản phẩm trong box"
+            >
               {relatedProducts.length === 0 ? (
                 <p className="product-detail-status">Box này chưa có sản phẩm con.</p>
               ) : (
-                relatedProducts.map((relatedProduct) => (
-                  <div key={relatedProduct.id} className="product-detail-related-card">
+                relatedProducts.map((relatedProduct, index) => (
+                  <Link
+                    key={relatedProduct.id}
+                    to={`/product-detail/${relatedProduct.id}`}
+                    state={{ boxId: item.id, boxName: getItemName(item) }}
+                    className="product-detail-related-card"
+                  >
                     <div className="product-detail-related-image">
-                      <img src={getItemImage(relatedProduct)} alt={relatedProduct.name} />
+                      <img
+                        src={getItemImage(relatedProduct)}
+                        alt={relatedProduct.name}
+                        loading="lazy"
+                        width="300"
+                        height="300"
+                      />
                     </div>
                     <div className="product-detail-related-info">
-                      <p className="product-detail-related-subtitle">{relatedProduct.subtitle}</p>
-                      <h4 className="product-detail-related-name">{relatedProduct.name}</h4>
+                      <div className="product-detail-related-topline">
+                        <p className="product-detail-related-subtitle">{relatedProduct.subtitle}</p>
+                        <span className="product-detail-related-quantity">
+                          {String(index + 1).padStart(2, '0')} · ×{relatedProduct.quantity}
+                        </span>
+                      </div>
+                      <h3 className="product-detail-related-name">{relatedProduct.name}</h3>
+                      <span className="product-detail-related-price">{formatCurrency(relatedProduct.price)}</span>
                     </div>
-                  </div>
+                  </Link>
                 ))
               )}
             </div>

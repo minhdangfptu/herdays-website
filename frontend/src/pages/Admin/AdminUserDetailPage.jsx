@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { useNavigate, useParams } from 'react-router-dom'
 
 import { adminApi } from '../../services/apiService.js'
+import { Skeleton } from '../../components/Skeleton.jsx'
 
 const ADMIN_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif"
 
@@ -261,7 +262,11 @@ function AdminUserDetailPage() {
       </div>
 
       {isLoading ? (
-        <div className="rounded-xl border border-slate-100 bg-slate-50 p-8 text-center font-semibold text-slate-500">Đang tải chi tiết người dùng...</div>
+        <div className="space-y-5 rounded-xl border border-slate-100 bg-slate-50 p-8" role="status" aria-label="Đang tải chi tiết người dùng">
+          <Skeleton className="h-8 w-1/3" />
+          <Skeleton className="h-40 w-full" />
+          <Skeleton className="h-24 w-full" />
+        </div>
       ) : !user ? (
         <div className="rounded-xl border border-slate-100 bg-slate-50 p-8 text-center font-semibold text-slate-500">Không tìm thấy người dùng.</div>
       ) : (

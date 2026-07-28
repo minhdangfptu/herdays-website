@@ -33,6 +33,14 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
+.admin-layout button:not(:disabled) {
+  cursor: pointer;
+}
+
+.admin-layout button:disabled {
+  cursor: not-allowed;
+}
+
 * {
   box-sizing: border-box;
 }

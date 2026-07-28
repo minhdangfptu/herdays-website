@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 
 import { adminApi } from '../../services/apiService.js';
+import { TableSkeleton } from '../../components/Skeleton.jsx';
 
 const PAGE_SIZE = 10;
 const ADMIN_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif";
@@ -328,7 +329,9 @@ function AdminOrdersPage() {
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td className="px-5 py-10 text-center font-semibold text-slate-400" colSpan={9}>Đang tải đơn hàng...</td>
+                  <td className="px-5 py-6" colSpan={9}>
+                    <TableSkeleton columns={9} rows={6} />
+                  </td>
                 </tr>
               ) : errorMessage ? (
                 <tr>

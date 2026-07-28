@@ -6,6 +6,7 @@ import { Briefcase, Calendar, Eye, Heart, Mail, MapPin, Package, Phone, X } from
 import DeleteAccountModal from "../../components/DeleteAccountModal";
 import toast from "react-hot-toast";
 import { orderApi, profileApi } from "../../services/apiService.js";
+import { Skeleton, TableSkeleton } from "../../components/Skeleton.jsx";
 import avatarDefault from "../../assets/avatar_default.png";
 import "./UserProfile.scss";
 
@@ -89,7 +90,7 @@ function OrderDetailModal({ order, isLoading, onClose }) {
           <div>
             <p className="text-xs font-bold uppercase tracking-wider text-[#ed77a5]">Chi tiết đơn hàng</p>
             <h2 id="order-detail-title" className="mt-1 text-xl font-extrabold text-slate-900">
-              {isLoading ? "Đang tải..." : getOrderCode(order)}
+              {isLoading ? <Skeleton className="h-6 w-28" /> : getOrderCode(order)}
             </h2>
           </div>
           <button
@@ -103,7 +104,11 @@ function OrderDetailModal({ order, isLoading, onClose }) {
         </div>
 
         {isLoading ? (
-          <p className="px-6 py-12 text-center text-sm font-semibold text-slate-400">Đang tải thông tin đơn hàng...</p>
+          <div className="space-y-4 p-6" role="status" aria-label="Đang tải thông tin đơn hàng">
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-32 w-full" />
+            <Skeleton className="h-24 w-full" />
+          </div>
         ) : order ? (
           <div className="space-y-6 p-6">
             <div className="grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-2">
@@ -451,9 +456,9 @@ export default function UserProfile() {
     <main className="contact-us bg-gray-50 py-5 px-4 font-roboto">
       <div className="max-w-[1100px] mx-auto">
         {isLoading && (
-          <p className="mb-4 rounded-lg bg-white px-4 py-3 text-sm font-medium text-gray-600 shadow-sm">
-            Đang tải hồ sơ...
-          </p>
+          <div className="mb-4 rounded-lg bg-white px-4 py-3 shadow-sm" role="status" aria-label="Đang tải hồ sơ">
+            <Skeleton className="h-5 w-48" />
+          </div>
         )}
 
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
@@ -630,7 +635,9 @@ export default function UserProfile() {
               <tbody className="divide-y divide-gray-100">
                 {isOrdersLoading ? (
                   <tr>
-                    <td colSpan={6} className="px-5 py-10 text-center text-sm font-semibold text-gray-400">Đang tải đơn hàng...</td>
+                    <td colSpan={6} className="px-5 py-6">
+                      <TableSkeleton columns={6} rows={5} />
+                    </td>
                   </tr>
                 ) : ordersError ? (
                   <tr>

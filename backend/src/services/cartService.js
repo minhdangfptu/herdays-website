@@ -17,6 +17,64 @@ const assertStockAvailable = (box, quantity) => {
   }
 };
 
+const normalizeCustomizedProducts = (box, customizedProducts) => {
+  const customizableItems = box.products.filter((item) => item.isCustomizable === true);
+  const selectedItems = customizedProducts === undefined
+    ? customizableItems.map((item) => ({
+      productId: item.productId._id || item.productId,
+      quantity: item.quantity
+    }))
+    : customizedProducts;
+
+  if (!Array.isArray(selectedItems)) {
+    throw new HttpError(400, 'customizedProducts must be an array');
+  }
+
+  const allowed = new Map(customizableItems.map((item) => [
+    item.productId._id?.toString() || item.productId.toString(),
+    item
+  ]));
+  const selectedById = new Map();
+
+  selectedItems.forEach((item) => {
+    const productId = item?.productId || item?.id;
+    const key = productId?.toString();
+    const boxItem = allowed.get(key);
+    const quantity = Number(item?.quantity);
+
+    if (!boxItem) throw new HttpError(400, 'A selected product is not customizable in this box');
+    if (!Number.isInteger(quantity) || quantity < 1) {
+      throw new HttpError(400, 'Customized product quantity must be an integer >= 1');
+    }
+
+    selectedById.set(key, (selectedById.get(key) || 0) + quantity);
+  });
+
+  const requiredByCategory = new Map();
+  const fixedByCategory = new Map();
+  box.products.forEach((item) => {
+    const category = item.productId.category || 'Sản phẩm khác';
+    requiredByCategory.set(category, (requiredByCategory.get(category) || 0) + item.quantity);
+    if (item.isCustomizable !== true) {
+      fixedByCategory.set(category, (fixedByCategory.get(category) || 0) + item.quantity);
+    }
+  });
+
+  const selectedByCategory = new Map(fixedByCategory);
+  selectedById.forEach((quantity, productId) => {
+    const category = allowed.get(productId).productId.category || 'Sản phẩm khác';
+    selectedByCategory.set(category, (selectedByCategory.get(category) || 0) + quantity);
+  });
+
+  for (const [category, requiredQuantity] of requiredByCategory) {
+    if ((selectedByCategory.get(category) || 0) !== requiredQuantity) {
+      throw new HttpError(400, 'Please select the required product quantities for each category');
+    }
+  }
+
+  return [...selectedById.entries()].map(([productId, quantity]) => ({ productId, quantity }));
+};
+
 export const getCart = async (userId) => {
   let cart = await Cart.findOne({ userId }).populate('items.boxId');
   if (!cart) {
@@ -26,15 +84,16 @@ export const getCart = async (userId) => {
   return cart;
 };
 
-export const addToCart = async (userId, boxId, quantity = 1) => {
+export const addToCart = async (userId, boxId, quantity = 1, customizedProducts) => {
   const requestedQuantity = normalizeCartQuantity(quantity);
 
   if (!mongoose.Types.ObjectId.isValid(boxId)) {
     throw new HttpError(400, 'Invalid boxId');
   }
 
-  const box = await Box.findById(boxId);
+  const box = await Box.findById(boxId).populate('products.productId', 'category');
   if (!box) throw new HttpError(404, 'Box not found');
+  const normalizedCustomizedProducts = normalizeCustomizedProducts(box, customizedProducts);
 
   let cart = await Cart.findOne({ userId });
   if (!cart) {
@@ -47,8 +106,13 @@ export const addToCart = async (userId, boxId, quantity = 1) => {
 
   if (existingItem) {
     existingItem.quantity = nextQuantity;
+    existingItem.customizedProducts = normalizedCustomizedProducts;
   } else {
-    cart.items.push({ boxId, quantity: requestedQuantity });
+    cart.items.push({
+      boxId,
+      quantity: requestedQuantity,
+      customizedProducts: normalizedCustomizedProducts
+    });
   }
 
   await cart.save();

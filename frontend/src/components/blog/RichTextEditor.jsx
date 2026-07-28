@@ -10,6 +10,7 @@ import {
 import { useCallback, useEffect, useRef, useState } from 'react'
 
 import { cloudinaryApi } from '../../services/apiService.js'
+import { Skeleton } from '../Skeleton.jsx'
 import '../../pages/Blog/Blog.scss'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
@@ -418,7 +419,11 @@ function RichTextEditor({ value, onChange }) {
         onMouseUp={saveSelection}
         suppressContentEditableWarning
       />
-      {isUploading && <p className="text-sm font-medium text-slate-500">Đang tải ảnh...</p>}
+      {isUploading && (
+        <div role="status" aria-label="Đang tải ảnh">
+          <Skeleton className="h-4 w-24" />
+        </div>
+      )}
       {errorMessage && <p className="text-sm font-medium text-red-600" role="alert">{errorMessage}</p>}
     </div>
   )

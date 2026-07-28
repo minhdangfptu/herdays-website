@@ -55,6 +55,9 @@ const TRANSLATIONS = {
   'failed to fetch': 'Vui lòng kiểm tra kết nối và thử lại sau.',
 
   // Cart
+  'A selected product is not customizable in this box': 'Sáº£n pháº©m Ä‘Ă£ chá»n khĂ´ng thá»ƒ thay Ä‘á»•i trong box nĂ y.',
+  'Customized product quantity must be an integer >= 1': 'Sá»‘ lÆ°á»£ng sáº£n pháº©m thay Ä‘á»•i pháº£i lĂ  sá»‘ nguyĂªn tá»« 1 trá»Ÿ lĂªn.',
+  'Please select the required product quantities for each category': 'Vui lĂ²ng chá»n Ä‘Ăºng sá»‘ lÆ°á»£ng sáº£n pháº©m trong tá»«ng danh má»¥c.',
   'Box is out of stock': 'Box nay da het hang.',
   'Requested quantity exceeds available stock': 'Số lượng hàng vượt quá hàng có sẵn.',
   'Quantity must be an integer': 'Số lượng phải là số nguyên.',

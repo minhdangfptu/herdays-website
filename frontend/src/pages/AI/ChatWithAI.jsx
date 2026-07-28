@@ -13,6 +13,7 @@ import {
 } from 'react-icons/fi';
 
 import { blogApi, chatApi, hasAuthSession } from '../../services/apiService.js';
+import { Skeleton } from '../../components/Skeleton.jsx';
 import './ChatWithAI.scss';
 
 const BLOG_SUGGESTION_LIMIT = 3;
@@ -372,7 +373,13 @@ export default function ChatWithAI() {
           <div className="chat-ai-section">
             <h4 className="chat-ai-section-title">Trò chuyện gần đây</h4>
             <div className="chat-ai-history-list">
-              {isLoadingHistory && <p className="chat-ai-history-empty">Đang tải...</p>}
+              {isLoadingHistory && (
+                <div className="space-y-2" role="status" aria-label="Đang tải lịch sử hội thoại">
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              )}
               {!isLoadingHistory && conversationHistory.length === 0 && (
                 <p className="chat-ai-history-empty">Chưa có hội thoại.</p>
               )}
@@ -503,7 +510,11 @@ export default function ChatWithAI() {
               {message.type === 'user' && <div className="chat-ai-message-avatar">H</div>}
             </div>
           ))}
-          {isSending && <div className="chat-ai-typing">HerBotAI đang trả lời...</div>}
+          {isSending && (
+            <div className="chat-ai-typing" role="status" aria-label="HerBotAI đang trả lời">
+              <Skeleton className="h-4 w-32" />
+            </div>
+          )}
         </div>
 
         <div className="chat-ai-input-area">
