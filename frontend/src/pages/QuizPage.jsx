@@ -3,6 +3,7 @@ import toast from 'react-hot-toast';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 import QuizLayout from '../components/Quiz/QuizLayout';
+import { Skeleton } from '../components/Skeleton.jsx';
 import {
   CheckboxGridStep,
   DatePickerStep,
@@ -260,7 +261,14 @@ function QuizPage() {
 
   const renderInteractiveArea = () => {
     if (isLoading) {
-      return <p className="rounded-full bg-white/90 px-6 py-3 font-semibold text-[#F176A9] shadow-sm">Đang tải câu hỏi...</p>;
+      return (
+        <div className="w-full max-w-2xl space-y-4 rounded-3xl bg-white/90 p-6 shadow-sm" role="status" aria-label="Đang tải câu hỏi">
+          <Skeleton className="h-8 w-3/4" />
+          <Skeleton className="h-16 w-full" />
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-12 w-full" />
+        </div>
+      );
     }
 
     if (errorMessage && !currentQuestion) {

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { FaUsers, FaShoppingCart, FaFileAlt, FaCheckCircle, FaSearch } from 'react-icons/fa';
 
 import { adminApi, blogApi } from '../../services/apiService.js';
+import { Skeleton } from '../../components/Skeleton.jsx';
 import './AdminHome.scss';
 
 const getTotal = (pagination) => (
@@ -157,7 +158,7 @@ export default function AdminHome() {
           <div className="admin-home-title-section">
             <h1 className="admin-home-title">Tổng quan</h1>
             <p className="admin-home-subtitle">
-              {isLoading ? 'Đang tải số liệu...' : 'Tổng quan hệ thống HERDAYS'}
+              {isLoading ? <Skeleton className="h-4 w-48" /> : 'Tổng quan hệ thống HERDAYS'}
             </p>
             {errorMessage && <p className="admin-home-subtitle">{errorMessage}</p>}
           </div>
@@ -181,9 +182,11 @@ export default function AdminHome() {
                 </div>
                 <div className="admin-home-stat-content">
                   <p className="admin-home-stat-label">{stat.label}</p>
-                  <h3 className="admin-home-stat-value">{stat.value}</h3>
+                  <h3 className="admin-home-stat-value">
+                    {isLoading ? <Skeleton className="h-8 w-20" /> : stat.value}
+                  </h3>
                   <p className={`admin-home-stat-change admin-home-stat-change-${stat.changeColor}`}>
-                    {stat.change}
+                    {isLoading ? <Skeleton className="h-4 w-28" /> : stat.change}
                   </p>
                 </div>
               </div>
@@ -211,8 +214,8 @@ export default function AdminHome() {
                 {userManagementData.map((row) => (
                   <tr key={row.info}>
                     <td>{row.info}</td>
-                    <td>{row.number}</td>
-                    <td>{row.notes}</td>
+                    <td>{isLoading ? <Skeleton className="h-4 w-12" /> : row.number}</td>
+                    <td>{isLoading ? <Skeleton className="h-4 w-24" /> : row.notes}</td>
                   </tr>
                 ))}
               </tbody>
@@ -232,7 +235,7 @@ export default function AdminHome() {
                 {marketplaceData.map((row) => (
                   <tr key={row.info}>
                     <td>{row.info}</td>
-                    <td>{row.number}</td>
+                    <td>{isLoading ? <Skeleton className="h-4 w-12" /> : row.number}</td>
                   </tr>
                 ))}
               </tbody>
@@ -261,7 +264,16 @@ export default function AdminHome() {
             </div>
           </div>
           <div className="admin-home-posts-list">
-            {visiblePosts.length === 0 && (
+            {isLoading && Array.from({ length: 3 }, (_, index) => (
+              <div className="admin-home-post-item" key={index}>
+                <div className="admin-home-post-info space-y-2">
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="h-4 w-5/6" />
+                  <Skeleton className="h-3 w-1/4" />
+                </div>
+              </div>
+            ))}
+            {!isLoading && visiblePosts.length === 0 && (
               <div className="admin-home-post-item">
                 <div className="admin-home-post-info">
                   <h4 className="admin-home-post-title">Chưa có bài viết</h4>
@@ -269,7 +281,7 @@ export default function AdminHome() {
                 </div>
               </div>
             )}
-            {visiblePosts.map((post) => (
+            {!isLoading && visiblePosts.map((post) => (
               <div key={post._id} className="admin-home-post-item">
                 <div className="admin-home-post-info">
                   <h4 className="admin-home-post-title">{post.title}</h4>

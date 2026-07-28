@@ -1,6 +1,7 @@
 import Product from '../models/productModel.js';
 import Box from '../models/boxModel.js';
 import HttpError from '../utils/httpError.js';
+import { PRODUCT_CATEGORIES } from '../constants/productCategories.js';
 
 const mapProduct = (p) => ({
   id: p._id,
@@ -22,6 +23,7 @@ const mapBoxProduct = (item) => {
   return {
     productId,
     quantity: item.quantity,
+    isCustomizable: item.isCustomizable === true,
     productName: product?.productName,
     category: product?.category,
     thumbnail: product?.thumbnail,
@@ -115,10 +117,7 @@ export const listAll = async ({ search, category, sort = '-createdAt', page = 1,
 };
 
 export const listProductCategories = async () => {
-  const categories = await Product.distinct('category', {
-    category: { $type: 'string', $ne: '' }
-  });
-  return categories.sort((first, second) => first.localeCompare(second, 'vi'));
+  return PRODUCT_CATEGORIES;
 };
 
 export const listProducts = async ({ search, category, sort = '-createdAt', page = 1, limit = 10 } = {}) => {

@@ -252,7 +252,7 @@ $font-herdays: 'Lamoric Rowen', cursive;
 
 .features-right {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: $spacing-2xl;
 
   @media (max-width: 768px) {
@@ -438,6 +438,12 @@ $font-herdays: 'Lamoric Rowen', cursive;
 .subscription-card-custom {
   background-color: $primary-pink;
 
+  .subscription-card-content {
+    display: flex;
+    min-height: 218px;
+    flex-direction: column;
+  }
+
   .subscription-card-image {
     background-color: rgba(255, 255, 255, 0.2);
 
@@ -471,7 +477,7 @@ $font-herdays: 'Lamoric Rowen', cursive;
   cursor: pointer;
   font-weight: 700;
   font-size: 14px;
-  margin-top: $spacing-md;
+  margin-top: auto;
   @include flex-center;
   transition: opacity 0.3s ease;
 
@@ -506,10 +512,66 @@ $font-herdays: 'Lamoric Rowen', cursive;
 }
 
 .subscription-card-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: $dark-gray;
+  min-height: 28px;
+  font-size: 20px;
+  font-weight: 800;
+  color: $primary-pink;
+  line-height: 1.3;
   margin: 0 0 $spacing-md 0;
+}
+
+.subscription-card-description {
+  min-height: 39px;
+  margin: 0 0 $spacing-md;
+  overflow: hidden;
+  color: $light-gray;
+  font-size: 13px;
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.subscription-card-skeleton {
+  pointer-events: none;
+}
+
+.subscription-card-skeleton-image,
+.subscription-card-skeleton-category,
+.subscription-card-skeleton-title,
+.subscription-card-skeleton-description,
+.subscription-card-skeleton-price {
+  display: block;
+  background: #fce5f0;
+}
+
+.subscription-card-skeleton-image {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 0;
+}
+
+.subscription-card-skeleton-category {
+  width: 42%;
+  height: 12px;
+  margin-bottom: $spacing-sm;
+}
+
+.subscription-card-skeleton-title {
+  width: 66%;
+  height: 22px;
+  margin-bottom: $spacing-md;
+}
+
+.subscription-card-skeleton-description {
+  width: 100%;
+  height: 54px;
+  margin-bottom: $spacing-md;
+}
+
+.subscription-card-skeleton-price {
+  width: 34%;
+  height: 20px;
 }
 
 .subscription-card-stars {

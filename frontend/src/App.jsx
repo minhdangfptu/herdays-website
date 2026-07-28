@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import Header from "./components/Header.jsx";
@@ -51,6 +51,9 @@ import {
   hasAuthSession,
   profileApi
 } from "./services/apiService.js";
+import { PageTransition } from "./motion/MotionPrimitives.jsx";
+import { SmoothScroll } from "./motion/SmoothScroll.jsx";
+import { getLenis } from "./motion/lenisInstance.js";
 
 function RequireAuth({ children, role }) {
   if (!hasAuthSession()) return <Navigate to="/login" replace />;
@@ -86,6 +89,22 @@ function SessionLoading() {
       Đang khôi phục phiên đăng nhập...
     </main>
   );
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true, force: true });
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
+  return null;
 }
 
 function AdminLayout() {
@@ -132,64 +151,12 @@ function HeaderFooterLayout() {
   );
 }
 
-function App() {
-  const [session, setSession] = useState(() => {
-    const hasStoredSession = hasAuthSession();
-    return {
-      isLoading: hasStoredSession,
-      role: hasStoredSession ? localStorage.getItem("userRole") || "" : ""
-    };
-  });
-
-  useEffect(() => {
-    let isMounted = true;
-    let isRestoring = true;
-
-    const updateSessionFromStorage = () => {
-      if (!isMounted || isRestoring) return;
-      setSession({
-        isLoading: false,
-        role: hasAuthSession() ? localStorage.getItem("userRole") || "" : ""
-      });
-    };
-
-    const restoreSession = async () => {
-      if (!hasAuthSession()) {
-        isRestoring = false;
-        if (isMounted) setSession({ isLoading: false, role: "" });
-        return;
-      }
-
-      try {
-        const profile = await profileApi.getProfile();
-        const role = profile.accountClass || "";
-        if (role) localStorage.setItem("userRole", role);
-        if (isMounted) setSession({ isLoading: false, role });
-      } catch {
-        clearAuthSession();
-        if (isMounted) setSession({ isLoading: false, role: "" });
-      } finally {
-        isRestoring = false;
-      }
-    };
-
-    window.addEventListener("auth-state-change", updateSessionFromStorage);
-    window.addEventListener("storage", updateSessionFromStorage);
-    restoreSession();
-
-    return () => {
-      isMounted = false;
-      window.removeEventListener("auth-state-change", updateSessionFromStorage);
-      window.removeEventListener("storage", updateSessionFromStorage);
-    };
-  }, []);
-
-  if (session.isLoading) return <SessionLoading />;
+function AppRoutes({ session }) {
+  const location = useLocation();
 
   return (
-    <BrowserRouter>
-      <Toaster position="top-center" reverseOrder={false} />
-      <Routes>
+    <PageTransition>
+      <Routes location={location}>
         <Route path="/error-404" element={<Error404 />} />
         <Route
           path="/login"
@@ -316,6 +283,70 @@ function App() {
         </Route>
         <Route path="*" element={<Navigate to="/error-404" replace />} />
       </Routes>
+    </PageTransition>
+  );
+}
+
+function App() {
+  const [session, setSession] = useState(() => {
+    const hasStoredSession = hasAuthSession();
+    return {
+      isLoading: hasStoredSession,
+      role: hasStoredSession ? localStorage.getItem("userRole") || "" : ""
+    };
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    let isRestoring = true;
+
+    const updateSessionFromStorage = () => {
+      if (!isMounted || isRestoring) return;
+      setSession({
+        isLoading: false,
+        role: hasAuthSession() ? localStorage.getItem("userRole") || "" : ""
+      });
+    };
+
+    const restoreSession = async () => {
+      if (!hasAuthSession()) {
+        isRestoring = false;
+        if (isMounted) setSession({ isLoading: false, role: "" });
+        return;
+      }
+
+      try {
+        const profile = await profileApi.getProfile();
+        const role = profile.accountClass || "";
+        if (role) localStorage.setItem("userRole", role);
+        if (isMounted) setSession({ isLoading: false, role });
+      } catch {
+        clearAuthSession();
+        if (isMounted) setSession({ isLoading: false, role: "" });
+      } finally {
+        isRestoring = false;
+      }
+    };
+
+    window.addEventListener("auth-state-change", updateSessionFromStorage);
+    window.addEventListener("storage", updateSessionFromStorage);
+    restoreSession();
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("auth-state-change", updateSessionFromStorage);
+      window.removeEventListener("storage", updateSessionFromStorage);
+    };
+  }, []);
+
+  if (session.isLoading) return <SessionLoading />;
+
+  return (
+    <BrowserRouter>
+      <Toaster position="top-center" reverseOrder={false} />
+      <SmoothScroll />
+      <ScrollToTop />
+      <AppRoutes session={session} />
     </BrowserRouter>
   );
 }

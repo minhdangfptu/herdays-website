@@ -1,12 +1,14 @@
-@import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&display=swap");
 
-$font-dancing: 'Dancing Script', cursive;
+$font-dancing: "Dancing Script", cursive;
+$content-max-width: 1280px;
+$content-gutter: 2rem;
 
 .marketplace-page {
   min-height: 100vh;
   background: #fff7fa;
   color: #333;
-  font-family: 'Roboto', sans-serif;
+  font-family: "Roboto", sans-serif;
 }
 
 // Hero Banner
@@ -26,9 +28,12 @@ $font-dancing: 'Dancing Script', cursive;
 
   .hero-banner-content {
     position: absolute;
-    top: 50%;
-    left: calc((100vw - 1100px) / 2 + 24px);
-    transform: translateY(-50%);
+    inset-block: 0;
+    left: calc((100vw - $content-max-width) / 2 + $content-gutter);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
     text-align: left;
     max-width: 400px;
 
@@ -50,7 +55,7 @@ $font-dancing: 'Dancing Script', cursive;
     margin: 0 0 10px;
     font-size: 64px;
     font-weight: 800;
-    color: #F176A9;
+    color: #f176a9;
     line-height: 1.15;
   }
 
@@ -70,10 +75,17 @@ $font-dancing: 'Dancing Script', cursive;
     font-weight: 700;
     font-size: 0.95rem;
     text-decoration: none;
-    transition: background 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
 
     &:hover {
       background: #d4628e;
+      box-shadow: 0 6px 14px rgba(241, 118, 169, 0.16);
+    }
+
+    &:active {
     }
   }
 
@@ -104,12 +116,12 @@ $font-dancing: 'Dancing Script', cursive;
 
 .marketplace-hero {
   display: flex;
-  max-width: 1100px;
-  margin: 28px auto 28px;
+  max-width: $content-max-width;
+  margin: 28px auto;
   align-items: flex-end;
   justify-content: space-between;
   gap: 24px;
-  padding: 0 24px;
+  padding: 0 $content-gutter;
 
   @media (max-width: 720px) {
     padding: 0 16px;
@@ -154,12 +166,10 @@ $font-dancing: 'Dancing Script', cursive;
   line-height: 1.25;
   white-space: nowrap;
 
-  
   span {
     color: #ed77a5;
     font-size: 0.78rem;
     text-transform: uppercase;
-    
   }
 }
 
@@ -186,11 +196,11 @@ $font-dancing: 'Dancing Script', cursive;
 
 .marketplace-categories {
   display: flex;
-  max-width: 1100px;
+  max-width: $content-max-width;
   margin: 0 auto 28px;
   flex-wrap: wrap;
   gap: 10px;
-  padding: 0 24px;
+  padding: 0 $content-gutter;
 
   span {
     border: 1px solid rgba(237, 119, 165, 0.26);
@@ -204,7 +214,7 @@ $font-dancing: 'Dancing Script', cursive;
 }
 
 .marketplace-status {
-  max-width: 1100px;
+  max-width: $content-max-width;
   margin: 28px auto;
   color: #5f6670;
   font-weight: 600;
@@ -215,7 +225,7 @@ $font-dancing: 'Dancing Script', cursive;
 }
 
 .marketplace-section {
-  max-width: 1100px;
+  max-width: $content-max-width;
   margin: 0 auto 34px;
 }
 
@@ -224,7 +234,7 @@ $font-dancing: 'Dancing Script', cursive;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
-  padding: 0 24px 18px;
+  padding: 0 $content-gutter 18px;
 
   h2 {
     margin: 0;
@@ -241,16 +251,25 @@ $font-dancing: 'Dancing Script', cursive;
     font-size: 0.92rem;
     font-weight: 700;
     text-decoration: none;
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
+
+    &:hover {
+      background-color: #d4628e;
+      box-shadow: 0 6px 14px rgba(241, 118, 169, 0.16);
+    }
   }
 }
 
 .marketplace-grid {
   display: grid;
-  max-width: 1100px;
+  max-width: $content-max-width;
   margin: 0 auto;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 22px;
-  padding: 0 24px;
+  padding: 0 $content-gutter;
 }
 
 .marketplace-product {
@@ -282,29 +301,51 @@ $font-dancing: 'Dancing Script', cursive;
   padding: 18px;
 
   h2 {
-    min-height: 48px;
+    min-height: 58px;
     margin: 0 0 8px;
-    color: #2f343a;
-    font-size: 1.08rem;
+    color: #111;
+    font-size: 1.5rem;
+    font-weight: 800;
     line-height: 1.35;
   }
 
-  button {
-    width: 100%;
-    border: 0;
-    border-radius: 8px;
-    padding: 11px 14px;
-    background: #ed77a5;
-    color: #fff;
-    font: inherit;
-    font-weight: 700;
-    cursor: pointer;
-  }
+}
 
-  button:disabled {
-    background: #d8a8bb;
-    cursor: not-allowed;
-  }
+.marketplace-product__actions {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 10px;
+  margin-top: auto;
+}
+
+.marketplace-product__actions button {
+  display: inline-flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  border: 0;
+  border-radius: 8px;
+  padding: 11px 10px;
+  background: #ed77a5;
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.2;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.marketplace-product__actions button:hover:not(:disabled) {
+  background: #d4628e;
+  box-shadow: 0 6px 14px rgba(241, 118, 169, 0.16);
+}
+
+.marketplace-product__actions button:disabled {
+  background: #d8a8bb;
+  cursor: not-allowed;
 }
 
 .marketplace-product__button-link {
@@ -312,19 +353,36 @@ $font-dancing: 'Dancing Script', cursive;
   width: 100%;
   align-items: center;
   justify-content: center;
+  border: 1px solid transparent;
   border-radius: 8px;
   padding: 11px 14px;
   background: #fff0f6;
   color: #ed77a5;
+  gap: 7px;
+  font-size: 0.9rem;
   font-weight: 700;
+  line-height: 1.2;
   text-decoration: none;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+
+  &:hover {
+    border-color: rgba(208, 94, 142, 0.35);
+    background: #ffe8f3;
+    color: #d05e8e;
+    box-shadow: 0 4px 10px rgba(241, 118, 169, 0.12);
+  }
 }
 
 .marketplace-product__category {
   margin: 0 0 8px;
-  color: #9b4a69;
+  color: #ed77a5;
   font-size: 0.78rem;
   font-weight: 700;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
 }
 
@@ -372,7 +430,7 @@ $font-dancing: 'Dancing Script', cursive;
   .footer-banner-content {
     position: absolute;
     top: 50%;
-    left: calc((100vw - 1100px) / 2 + 24px);
+    left: calc((100vw - $content-max-width) / 2 + $content-gutter);
     transform: translateY(-50%);
     text-align: left;
     max-width: 480px;
@@ -412,10 +470,17 @@ $font-dancing: 'Dancing Script', cursive;
     font-weight: 700;
     font-size: 0.95rem;
     text-decoration: none;
-    transition: background 0.2s ease;
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease,
+      box-shadow 0.2s ease;
 
     &:hover {
       background: #d4628e;
+      box-shadow: 0 6px 14px rgba(241, 118, 169, 0.16);
+    }
+
+    &:active {
     }
   }
 
@@ -445,7 +510,6 @@ $font-dancing: 'Dancing Script', cursive;
 }
 
 @media (max-width: 720px) {
-
   .marketplace-hero {
     display: block;
   }
@@ -463,5 +527,15 @@ $font-dancing: 'Dancing Script', cursive;
 
   .marketplace-cart-link {
     margin-top: 18px;
+  }
+
+  .marketplace-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 721px) and (max-width: 1024px) {
+  .marketplace-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }

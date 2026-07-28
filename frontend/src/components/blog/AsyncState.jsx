@@ -1,10 +1,11 @@
-export function LoadingState({ label = 'Đang tải dữ liệu...' }) {
+import { Skeleton } from '../Skeleton.jsx'
+
+export function LoadingState({ label = 'Loading' }) {
   return (
-    <div className="grid min-h-64 place-items-center" role="status">
-      <div className="text-center text-slate-500">
-        <span className="mx-auto mb-3 block size-9 animate-spin rounded-full border-4 border-pink-100 border-t-pink-500" />
-        {label}
-      </div>
+    <div className="space-y-4 rounded-2xl border border-pink-100 bg-white p-6" role="status" aria-label={label}>
+      <Skeleton className="h-8 w-2/3" />
+      <Skeleton className="h-4 w-1/3" />
+      <Skeleton className="h-40 w-full" />
     </div>
   )
 }

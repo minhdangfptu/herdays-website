@@ -1,0 +1,34 @@
+/* Hallmark · component: motion primitives · genre: playful · theme: HerDays
+ * states: default · hover · focus · active · disabled · loading · error · success
+ * contrast: pass
+ */
+.site-route-motion {
+  min-width: 0;
+  transform-origin: center top;
+}
+
+.motion-card {
+  transform: translateZ(0);
+}
+
+.motion-card:focus-visible,
+.site-route-motion :where(a, button, [role='button']):focus-visible {
+  outline: 3px solid var(--motion-focus-ring);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 150ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .site-route-motion,
+  .motion-card {
+    transform: none !important;
+  }
+}

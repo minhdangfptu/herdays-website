@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { FiMinus, FiPlus, FiTrash2 } from 'react-icons/fi';
 import { cartApi, hasAuthSession } from '../../services/apiService.js';
+import { Skeleton } from '../../components/Skeleton.jsx'
 import './Cart.scss';
 
 const formatCurrency = (value) =>
@@ -140,7 +141,12 @@ export default function Cart() {
       <div className="cart-container">
         <h1 className="cart-title">Giỏ hàng</h1>
 
-        {loading && <p className="cart-status">Đang tải giỏ hàng...</p>}
+        {loading && (
+          <div className="space-y-5" role="status" aria-label="Đang tải giỏ hàng">
+            <Skeleton className="h-6 w-1/3" />
+            <Skeleton className="h-72 w-full rounded-2xl" />
+          </div>
+        )}
         {errorMessage && <p className="cart-status cart-status--error">{errorMessage}</p>}
 
         {!loading && !errorMessage && (

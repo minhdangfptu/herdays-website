@@ -392,10 +392,10 @@ export const cartApi = {
     const response = await request('/cart', { isAuthenticated: true })
     return response.data
   },
-  addItem: async ({ boxId, quantity }) => {
+  addItem: async ({ boxId, quantity, customizedProducts }) => {
     const response = await request('/cart', {
       method: 'POST',
-      body: { boxId, quantity },
+      body: { boxId, quantity, customizedProducts },
       isAuthenticated: true
     })
     notifyCartChanged(response.data)

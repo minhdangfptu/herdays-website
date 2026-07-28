@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FiChevronRight } from 'react-icons/fi';
 import { Search } from 'lucide-react';
+import { motion } from 'motion/react';
 
 import { EmptyState, ErrorState, LoadingState } from '../../components/blog/AsyncState.jsx';
 import { blogApi, hasAuthSession, profileApi } from '../../services/apiService.js';
@@ -9,6 +10,7 @@ import blogTopicBanner from '../../assets/blog_topic_banner.png';
 import './BlogTopicsPage.scss';
 
 const SECTION_POST_LIMIT = 3;
+const MotionLink = motion(Link);
 
 const targetStatusTopicSlugs = {
   tryingToConceive: 'chuan-bi-mang-thai-thu-thai',
@@ -60,9 +62,14 @@ const sortTopics = (topics) => [...topics].sort((a, b) => {
 });
 
 const BlogCard = ({ post, topic, size = 'medium' }) => (
-  <Link
+  <MotionLink
     className={`blog-topics-card blog-topics-card--${size}`}
     to={`/blog/${topic._id}/posts/${post._id}`}
+    initial={{ opacity: 0, y: 14 }}
+    whileInView={{ opacity: 1, y: 0 }}
+    whileHover={{ y: -4 }}
+    viewport={{ once: true, amount: 0.08 }}
+    transition={{ duration: 0.42, ease: [0.16, 1, 0.3, 1] }}
   >
     <div className="blog-topics-card__image">
       <img src={getPostImage(post, topic)} alt={post.title} />
@@ -77,7 +84,7 @@ const BlogCard = ({ post, topic, size = 'medium' }) => (
         <span className="blog-topics-card__date">{formatDate(post.createdAt)}</span>
       </div>
     </div>
-  </Link>
+  </MotionLink>
 );
 
 const BlogSection = ({ title, subtitle, topic, posts, featured = false }) => {

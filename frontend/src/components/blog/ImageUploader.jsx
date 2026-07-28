@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 
 import { cloudinaryApi } from '../../services/apiService.js'
+import { Skeleton } from '../Skeleton.jsx'
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
 
@@ -56,7 +57,7 @@ function ImageUploader({ label, multiple = false, maxFiles = 1, onUploaded, disa
         onClick={() => inputRef.current?.click()}
         disabled={disabled || isUploading}
       >
-        {isUploading ? 'Đang tải ảnh...' : label}
+          {isUploading ? <Skeleton className="h-4 w-24 bg-pink-200" /> : label}
       </button>
       {errorMessage && <p className="mt-2 text-sm font-medium text-red-600" role="alert">{errorMessage}</p>}
     </div>

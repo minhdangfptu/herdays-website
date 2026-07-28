@@ -1,63 +1,79 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi, profileApi } from '../../services/apiService.js'
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { Settings, ShoppingCart } from "lucide-react";
+import toast from "react-hot-toast";
+import {
+  cartApi,
+  getCartBoxQuantities,
+  hasAuthSession,
+  marketplaceApi,
+  profileApi,
+} from "../../services/apiService.js";
 import {
   canAccessAllBoxes,
   isBoxCompatibleWithTarget,
-  targetStatusLabels
-} from '../../utils/boxTarget.js'
-import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
-import heroBanner from '../../assets/marketplace/hero_banner.png'
-import subBoxBanner from '../../assets/marketplace/sub_box.png'
-import './Marketplace.scss'
+  targetStatusLabels,
+} from "../../utils/boxTarget.js";
+import { CardGridSkeleton } from "../../components/Skeleton.jsx";
+import { ShimmerButton } from "../../components/magic-ui/ShimmerButton.jsx";
+import { MotionCard, Reveal } from "../../motion/MotionPrimitives.jsx";
+import {
+  flyToCart,
+  getCartTargetElement,
+  getFlyToCartSourceRect,
+} from "../../utils/flyToCart.js";
+import heroBanner from "../../assets/marketplace/hero_banner.png";
+import subBoxBanner from "../../assets/marketplace/sub_box.png";
+import "./Marketplace.scss";
 
 const formatCurrency = (value) =>
-  new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    maximumFractionDigits: 0
-  }).format(Number(value) || 0)
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0);
 
-const getItemName = (item) => item.boxName || item.productName || 'Sản phẩm HerDays'
+const getItemName = (item) =>
+  item.boxName || item.productName || "Sản phẩm HerDays";
 
 const getItemImage = (item) =>
-  item.thumbnail || `https://placehold.co/480x360/f8c4d8/ffffff?text=${encodeURIComponent(getItemName(item))}`
+  item.thumbnail ||
+  `https://placehold.co/480x360/f8c4d8/ffffff?text=${encodeURIComponent(getItemName(item))}`;
 
 const getAllMarketplaceBoxes = async () => {
-  const firstPage = await marketplaceApi.listBoxes({ page: 1, limit: 50 })
-  const totalPages = firstPage.pagination?.totalPages || 1
+  const firstPage = await marketplaceApi.listBoxes({ page: 1, limit: 50 });
+  const totalPages = firstPage.pagination?.totalPages || 1;
 
-  if (totalPages === 1) return firstPage.items || []
+  if (totalPages === 1) return firstPage.items || [];
 
   const remainingPages = await Promise.all(
     Array.from({ length: totalPages - 1 }, (_, index) => (
       marketplaceApi.listBoxes({ page: index + 2, limit: 50 })
     ))
-  )
+  );
 
   return [
     ...(firstPage.items || []),
-    ...remainingPages.flatMap((result) => result.items || [])
-  ]
-}
+    ...remainingPages.flatMap((result) => result.items || []),
+  ];
+};
 
 function Marketplace() {
-  const [boxes, setBoxes] = useState([])
-  const [loading, setLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [addingBoxId, setAddingBoxId] = useState('')
-  const [cartBoxQuantities, setCartBoxQuantities] = useState({})
-  const [targetStatus, setTargetStatus] = useState('')
-  const boxImageRefs = useRef({})
-  const navigate = useNavigate()
+  const [boxes, setBoxes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [addingBoxId, setAddingBoxId] = useState("");
+  const [cartBoxQuantities, setCartBoxQuantities] = useState({});
+  const [targetStatus, setTargetStatus] = useState("");
+  const boxImageRefs = useRef({});
+  const navigate = useNavigate();
 
   useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
 
     const loadMarketplace = async () => {
-      setLoading(true)
-      setErrorMessage('')
+      setLoading(true);
+      setErrorMessage("");
 
       try {
         const [allBoxes, cartResult, profileResult] = await Promise.all([
@@ -67,83 +83,91 @@ function Marketplace() {
             : Promise.resolve(null),
           hasAuthSession()
             ? profileApi.getProfile().catch(() => null)
-            : Promise.resolve(null)
-        ])
+            : Promise.resolve(null),
+        ]);
 
-        if (!isMounted) return
-        setBoxes(allBoxes)
-        setCartBoxQuantities(getCartBoxQuantities(cartResult))
-        setTargetStatus(profileResult?.targetStatus || '')
+        if (!isMounted) return;
+        setBoxes(allBoxes);
+        setCartBoxQuantities(getCartBoxQuantities(cartResult));
+        setTargetStatus(profileResult?.targetStatus || "");
       } catch (error) {
-        if (isMounted) setErrorMessage(error.message || 'Không thể tải marketplace.')
+        if (isMounted)
+          setErrorMessage(error.message || "Không thể tải marketplace.");
       } finally {
-        if (isMounted) setLoading(false)
+        if (isMounted) setLoading(false);
       }
-    }
+    };
 
-    loadMarketplace()
+    loadMarketplace();
 
     return () => {
-      isMounted = false
-    }
-  }, [])
+      isMounted = false;
+    };
+  }, []);
 
   const visibleBoxes = useMemo(() => {
-    if (!targetStatus || canAccessAllBoxes(targetStatus)) return boxes
-    return boxes.filter((box) => isBoxCompatibleWithTarget(box, targetStatus))
-  }, [boxes, targetStatus])
+    if (!targetStatus || canAccessAllBoxes(targetStatus)) return boxes;
+    return boxes.filter((box) => isBoxCompatibleWithTarget(box, targetStatus));
+  }, [boxes, targetStatus]);
 
-  const goalLabel = targetStatusLabels[targetStatus] || ''
-  const firstBoxId = visibleBoxes[0]?.id
+  const goalLabel = targetStatusLabels[targetStatus] || "";
+  const firstBoxId = visibleBoxes[0]?.id;
 
-  const getAvailableBoxQuantity = (box) => (
-    Math.max((Number(box.quantity) || 0) - (cartBoxQuantities[String(box.id)] || 0), 0)
-  )
+  const getAvailableBoxQuantity = (box) =>
+    Math.max(
+      (Number(box.quantity) || 0) - (cartBoxQuantities[String(box.id)] || 0),
+      0,
+    );
 
   const handleAddToCart = async (box) => {
     if (!hasAuthSession()) {
-      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.')
-      navigate('/login')
-      return
+      toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+      navigate("/login");
+      return;
     }
 
-    const boxId = box.id
+    const boxId = box.id;
     if (getAvailableBoxQuantity(box) <= 0) {
-      toast.error('Box này đã đạt tới số lượng có thể thêm.')
-      return
+      toast.error("Box này đã đạt tới số lượng có thể thêm.");
+      return;
     }
 
-    setAddingBoxId(boxId)
-    const flySourceRect = getFlyToCartSourceRect(boxImageRefs.current[boxId])
+    setAddingBoxId(boxId);
+    const flySourceRect = getFlyToCartSourceRect(boxImageRefs.current[boxId]);
 
     try {
-      const cart = await cartApi.addItem({ boxId, quantity: 1 })
+      const cart = await cartApi.addItem({ boxId, quantity: 1 });
       const flyAnimation = flyToCart({
         sourceRect: flySourceRect,
         targetElement: getCartTargetElement(),
         imageUrl: getItemImage(box),
-        label: getItemName(box)
-      })
-      setCartBoxQuantities(getCartBoxQuantities(cart))
-      await flyAnimation
-      toast.success('Đã thêm box vào giỏ hàng.')
+        label: getItemName(box),
+      });
+      setCartBoxQuantities(getCartBoxQuantities(cart));
+      await flyAnimation;
+      toast.success("Đã thêm box vào giỏ hàng.");
     } catch (error) {
-      toast.error(error.message || 'Không thể thêm box vào giỏ hàng.')
+      toast.error(error.message || "Không thể thêm box vào giỏ hàng.");
     } finally {
-      setAddingBoxId('')
+      setAddingBoxId("");
     }
-  }
+  };
 
   const renderBoxCard = (box) => {
-    const detailPath = `/product-detail/box/${box.id}`
-    const availableQuantity = getAvailableBoxQuantity(box)
+    const detailPath = `/product-detail/box/${box.id}`;
+    const availableQuantity = getAvailableBoxQuantity(box);
 
     return (
-      <article className="marketplace-product" key={`box-${box.id}`}>
+      <MotionCard
+        as="article"
+        className="marketplace-product"
+        key={`box-${box.id}`}
+        delay={0.04 * (boxes.indexOf(box) % 4)}
+      >
         <Link className="marketplace-product__image" to={detailPath}>
           <img
             ref={(node) => {
-              if (node) boxImageRefs.current[box.id] = node
+              if (node) boxImageRefs.current[box.id] = node;
             }}
             src={getItemImage(box)}
             alt={getItemName(box)}
@@ -151,55 +175,75 @@ function Marketplace() {
         </Link>
         <div className="marketplace-product__content">
           <p className="marketplace-product__category">
-            {box.category || 'Subscription Box'}
+            {box.category || "Subscription Box"}
           </p>
           <h2>{getItemName(box)}</h2>
           <p className="marketplace-product__description">
-            {box.description || 'Box chăm sóc sức khỏe được thiết kế cho nhu cầu cá nhân.'}
+            {box.description ||
+              "Box chăm sóc sức khỏe được thiết kế cho nhu cầu cá nhân."}
           </p>
           <div className="marketplace-product__meta">
             <strong>{formatCurrency(box.price)}</strong>
-            <span>{availableQuantity > 0 ? `Còn ${availableQuantity}` : 'Hết hàng'}</span>
+            <span>
+              {availableQuantity > 0 ? `Còn ${availableQuantity}` : "Hết hàng"}
+            </span>
           </div>
-          <Link
-            className="marketplace-product__button-link"
-            to={`/box-customize/${box.id}`}
-          >
-            Tùy chỉnh box này
-          </Link>
-          <button
-            type="button"
-            disabled={addingBoxId === box.id || availableQuantity <= 0}
-            onClick={() => handleAddToCart(box)}
-          >
-            {addingBoxId === box.id ? 'Đang thêm...' : 'Thêm vào giỏ'}
-          </button>
+          <div className="marketplace-product__actions">
+            <Link
+              className="marketplace-product__button-link"
+              to={`/box-customize/${box.id}`}
+            >
+              <Settings size={17} strokeWidth={2.2} aria-hidden="true" />
+              Tùy chỉnh
+            </Link>
+            <button
+              type="button"
+              disabled={addingBoxId === box.id || availableQuantity <= 0}
+              onClick={() => handleAddToCart(box)}
+            >
+              <ShoppingCart size={17} strokeWidth={2.2} aria-hidden="true" />
+              {addingBoxId === box.id ? "Đang thêm..." : "Thêm vào giỏ"}
+            </button>
+          </div>
         </div>
-      </article>
-    )
-  }
+      </MotionCard>
+    );
+  };
 
   return (
     <main className="marketplace-page">
       <section className="marketplace-hero-banner">
-        <img src={heroBanner} alt="HerDays Box Subscription" className="hero-banner-image" />
-        <div className="hero-banner-content">
+        <img
+          src={heroBanner}
+          alt="HerDays Box Subscription"
+          className="hero-banner-image"
+        />
+        <Reveal className="hero-banner-content">
           <p className="hero-banner-eyebrow">HerDays Marketplace</p>
           <h2 className="hero-banner-title">Box Subscription</h2>
-          <p className="hero-banner-subtitle">Item "must-have" cho hội chị em</p>
-          <Link to={firstBoxId ? `/product-detail/box/${firstBoxId}` : '/marketplace'} className="hero-banner-btn">
+          <p className="hero-banner-subtitle">
+            Item "must-have" cho hội chị em
+          </p>
+          <ShimmerButton
+            as={Link}
+            to={
+              firstBoxId ? `/product-detail/box/${firstBoxId}` : "/marketplace"
+            }
+            className="hero-banner-btn"
+          >
             Mua ngay
-          </Link>
-        </div>
+          </ShimmerButton>
+        </Reveal>
       </section>
 
       <section className="marketplace-hero">
-        <div>
+        <Reveal>
           <h1>Chọn box và sản phẩm chăm sóc phù hợp với hành trình của bạn</h1>
           <p>
-            Hãy lựa chọn box subcription phù hợp với nhu cầu của bạn và thêm vào giỏ hàng. 
+            Hãy lựa chọn box subcription phù hợp với nhu cầu của bạn và thêm vào
+            giỏ hàng.
           </p>
-        </div>
+        </Reveal>
         {goalLabel && (
           <div className="marketplace-hero__goals" aria-label="Mục tiêu sản phẩm">
             <span className="marketplace-hero__goal">
@@ -210,16 +254,30 @@ function Marketplace() {
         )}
       </section>
 
-      {loading && <p className="marketplace-status">Đang tải marketplace...</p>}
-      {errorMessage && <p className="marketplace-status marketplace-status--error">{errorMessage}</p>}
+      {loading && (
+        <section className="marketplace-section" aria-label="Đang tải marketplace">
+          <CardGridSkeleton count={3} />
+        </section>
+      )}
+      {errorMessage && (
+        <p className="marketplace-status marketplace-status--error">
+          {errorMessage}
+        </p>
+      )}
 
       {!loading && !errorMessage && (
         <>
           <section className="marketplace-section" aria-label="Danh sách box">
-            <div className="marketplace-section__header">
+            <Reveal className="marketplace-section__header">
               <h2>Subscription Box</h2>
-              <Link to={firstBoxId ? `/box-customize/${firstBoxId}` : '/box-customize'}>Tạo box cá nhân hóa</Link>
-            </div>
+              <Link
+                to={
+                  firstBoxId ? `/box-customize/${firstBoxId}` : "/box-customize"
+                }
+              >
+                Tạo box cá nhân hóa
+              </Link>
+            </Reveal>
             <div className="marketplace-grid">
               {visibleBoxes.length === 0 ? (
                 <p className="marketplace-status">Chưa có box phù hợp với mục tiêu của bạn.</p>
@@ -232,21 +290,29 @@ function Marketplace() {
       )}
 
       <section className="marketplace-footer-banner">
-        <img src={subBoxBanner} alt="HerDays Subscription Box" className="footer-banner-image" />
+        <img
+          src={subBoxBanner}
+          alt="HerDays Subscription Box"
+          className="footer-banner-image"
+        />
         <div className="footer-banner-content">
           <h2 className="footer-banner-title">
             <span className="lamoric-text">HerDays</span> Subscription Box
           </h2>
           <p className="footer-banner-subtitle">
-            Các Subscription Box được cá nhân hóa dựa trên từng giai đoạn sức khỏe của người dùng.
+            Các Subscription Box được cá nhân hóa dựa trên từng giai đoạn sức
+            khỏe của người dùng.
           </p>
-          <Link to={firstBoxId ? `/box-customize/${firstBoxId}` : '/box-customize'} className="footer-banner-btn">
+          <Link
+            to={firstBoxId ? `/box-customize/${firstBoxId}` : "/box-customize"}
+            className="footer-banner-btn"
+          >
             Tạo box cá nhân hóa
           </Link>
         </div>
       </section>
     </main>
-  )
+  );
 }
 
-export default Marketplace
+export default Marketplace;

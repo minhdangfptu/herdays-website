@@ -63,7 +63,11 @@ const validateBoxProducts = (products) => {
         throw new HttpError(400, `products.${index}.quantity must be an integer >= 1`);
       }
 
-      return { productId, quantity };
+      return {
+        productId,
+        quantity,
+        isCustomizable: item.isCustomizable === true || item.type === 'customizable'
+      };
     });
 };
 

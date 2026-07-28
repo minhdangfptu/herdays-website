@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import toast from 'react-hot-toast'
 import { RefreshCw } from 'lucide-react'
 import { cartApi, hasAuthSession, notifyCartChanged, orderApi } from '../../services/apiService.js'
+import { Skeleton } from '../../components/Skeleton.jsx'
 import './Checkout.scss'
 
 const formatCurrency = (value) =>
@@ -189,7 +190,15 @@ export default function Checkout() {
           </p>
         </div>
 
-        {loading && <p className="herdays-checkout-status">Đang tải sản phẩm thanh toán...</p>}
+        {loading && (
+          <div className="space-y-5" role="status" aria-label="Đang tải sản phẩm thanh toán">
+            <Skeleton className="h-8 w-1/3" />
+            <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+              <Skeleton className="h-72 w-full rounded-2xl" />
+              <Skeleton className="h-72 w-full rounded-2xl" />
+            </div>
+          </div>
+        )}
         {errorMessage && <p className="herdays-checkout-status herdays-checkout-status--error">{errorMessage}</p>}
 
         {!loading && !errorMessage && (
