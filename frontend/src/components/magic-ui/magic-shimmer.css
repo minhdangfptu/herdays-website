@@ -1,0 +1,62 @@
+/* Magic UI-inspired Shimmer Button · adapted to HerDays tokens */
+.magic-shimmer-button {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.magic-shimmer-button::before {
+  position: absolute;
+  z-index: 0;
+  inset: -2px;
+  border-radius: inherit;
+  padding: 2px;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    transparent 245deg,
+    var(--magic-shimmer-color) 286deg,
+    transparent 325deg,
+    transparent 360deg
+  );
+  content: '';
+  pointer-events: none;
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+}
+
+.magic-shimmer-button__content {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .magic-shimmer-button::before {
+    animation: magic-shimmer-spin var(--magic-shimmer-duration) linear infinite;
+  }
+}
+
+.magic-shimmer-button:disabled::before,
+.magic-shimmer-button[aria-disabled='true']::before {
+  animation-play-state: paused;
+  opacity: 0;
+}
+
+@keyframes magic-shimmer-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .magic-shimmer-button::before {
+    animation: none;
+    opacity: 0.55;
+  }
+}

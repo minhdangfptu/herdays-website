@@ -28,9 +28,12 @@ $content-gutter: 2rem;
 
   .hero-banner-content {
     position: absolute;
-    top: 50%;
+    inset-block: 0;
     left: calc((100vw - $content-max-width) / 2 + $content-gutter);
-    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
     text-align: left;
     max-width: 400px;
 
@@ -300,7 +303,7 @@ $content-gutter: 2rem;
   h2 {
     min-height: 58px;
     margin: 0 0 8px;
-    color: #173f67;
+    color: #111;
     font-size: 1.5rem;
     font-weight: 800;
     line-height: 1.35;

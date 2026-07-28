@@ -1,0 +1,9 @@
+{
+  "date": "2026-07-28",
+  "fontStack": "Be Vietnam Pro with existing page-level fallbacks",
+  "palette": "HerDays pink, white and neutral gray",
+  "motion": "motion ^12.43.0",
+  "framework": "React 19 + Vite + React Router + Tailwind 4",
+  "spacing": "Existing page-level SCSS spacing preserved",
+  "preserved": ["font stack", "palette", "existing layout and business logic"]
+}

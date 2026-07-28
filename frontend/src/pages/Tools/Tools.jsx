@@ -6,6 +6,7 @@ import "./Tools.scss";
 import "./ToolsCalculate.scss";
 import { TOOLS, getToolById } from "./toolsConfig";
 import { Skeleton } from "../../components/Skeleton.jsx";
+import { MotionCard, Reveal } from "../../motion/MotionPrimitives.jsx";
 import ovulationImage from "../../assets/tool_pics_new/Tính Ngày Rụng Trứng.png";
 import betaHcgImage from "../../assets/tool_pics_new/Tính thời gian nhân đôi Beta hCG.png";
 import pregnancyTestImage from "../../assets/tool_pics_new/Tính ngày thử thai.png";
@@ -522,12 +523,13 @@ function ToolsListing() {
   return (
     <div className="tools-page">
       <div className="tools-container">
-        <h1 className="tools-title">Công cụ</h1>
+        <Reveal as="h1" className="tools-title">Công cụ</Reveal>
         <div className="tools-grid">
           {TOOLS.map((tool) => (
-            <div
+            <MotionCard
               key={tool.id}
               className="tools-card"
+              delay={0.04 * (TOOLS.indexOf(tool) % 5)}
               onClick={() => navigate(`/tools/${tool.id}`)}
               role="button"
               tabIndex={0}
@@ -540,7 +542,7 @@ function ToolsListing() {
               </div>
               <h3 className="tools-card-name">{tool.name}</h3>
               <p className="tools-card-description">{tool.description}</p>
-            </div>
+            </MotionCard>
           ))}
         </div>
       </div>

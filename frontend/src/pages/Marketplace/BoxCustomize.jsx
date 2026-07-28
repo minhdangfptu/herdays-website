@@ -15,6 +15,9 @@ import {
 } from 'react-icons/md'
 import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
 import { Skeleton } from '../../components/Skeleton.jsx'
+import { ShimmerButton } from '../../components/magic-ui/ShimmerButton.jsx'
+import { MotionCard } from '../../motion/MotionPrimitives.jsx'
+import { getLenis } from '../../motion/lenisInstance.js'
 import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
 import './BoxCustomize.scss'
 
@@ -284,7 +287,16 @@ export default function BoxCustomize() {
 
   const scrollToCategory = (category) => {
     setActiveCategory(category)
-    categorySectionRefs.current[category]?.scrollIntoView({
+    const target = categorySectionRefs.current[category]
+    if (!target) return
+
+    const lenis = getLenis()
+    if (lenis) {
+      lenis.scrollTo(target, { offset: -188, duration: 0.7 })
+      return
+    }
+
+    target.scrollIntoView({
       behavior: 'smooth',
       block: 'start'
     })
@@ -489,6 +501,7 @@ export default function BoxCustomize() {
                   className="box-picker-menu"
                   role="listbox"
                   aria-label="Danh sách box có thể tùy chỉnh"
+                  data-lenis-prevent
                 >
                   {boxes.length === 0 ? (
                     <p className="box-picker-empty">Chưa có box để lựa chọn.</p>
@@ -542,7 +555,7 @@ export default function BoxCustomize() {
                   </span>
                 </div>
 
-                <div className="category-stepper-list">
+                <div className="category-stepper-list" data-lenis-prevent>
                   {categoryNames.map((category) => {
                     const selectedCount = selectedCategoryTotals[category] || 0
                     const isComplete = selectedCount === categoryLimits[category]
@@ -617,9 +630,11 @@ export default function BoxCustomize() {
                           const isSelected = selectedQuantity > 0
                           const isOutOfStock = !isProductInStock(product)
                           return (
-                            <article
+                            <MotionCard
+                              as="article"
                               key={product.id}
                               className={`product-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'is-out-of-stock' : ''}`}
+                              delay={0.03 * (categoryProducts.indexOf(product) % 4)}
                             >
                               <div className="product-image">
                                 <img src={getProductImage(product)} alt={product.productName} />
@@ -652,7 +667,7 @@ export default function BoxCustomize() {
                                   </div>
                                 </div>
                               </div>
-                            </article>
+                            </MotionCard>
                           )
                         })}
                       </div>
@@ -698,15 +713,14 @@ export default function BoxCustomize() {
               <span className="bar-required">Còn {incompleteCategories.length} danh mục chưa đủ</span>
             )}
             <span className="bar-stock">{availableBoxQuantity > 0 ? `Còn ${availableBoxQuantity}` : 'Hết hàng'}</span>
-            <button
+            <ShimmerButton
               ref={checkoutButtonRef}
               className="bar-checkout-btn"
-              type="button"
               disabled={isAdding || !box?.id || availableBoxQuantity <= 0 || !isSelectionComplete}
               onClick={handleBuyNow}
             >
               {isAdding ? 'Đang thêm...' : 'Mua ngay'}
-            </button>
+            </ShimmerButton>
           </div>
         </div>
       </div>

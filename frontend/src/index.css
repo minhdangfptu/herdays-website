@@ -1,5 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap');
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
+@import "../tokens.css";
+@import "./motion/motion.css";
+@import "./components/magic-ui/magic-shimmer.css";
 
 .admin-layout {
   --admin-sidebar-width: 240px;
@@ -47,12 +51,14 @@
 
 html {
   min-width: 320px;
+  overflow-x: clip;
 }
 
 body {
   min-width: 320px;
   min-height: 100vh;
   margin: 0;
+  overflow-x: clip;
 }
 
 button,

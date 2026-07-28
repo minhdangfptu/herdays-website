@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { CircleUserRound, Lock, LogOut, ShoppingBag, Star, UserRound } from "lucide-react";
+import { AnimatePresence, motion } from "motion/react";
 import toast from "react-hot-toast";
 import "./Header.scss";
 import logoTrang from "../assets/home/logo_trang.png";
@@ -223,8 +224,16 @@ const Header = () => {
                     <CircleUserRound color="white" size={24} strokeWidth={2} />
                   </button>
 
-                  {isProfileMenuOpen && (
-                    <div className="header-profile-dropdown" role="menu">
+                  <AnimatePresence initial={false}>
+                    {isProfileMenuOpen && (
+                      <motion.div
+                        className="header-profile-dropdown"
+                        role="menu"
+                        initial={{ opacity: 0, y: -6, scale: 0.98 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -4, scale: 0.98 }}
+                        transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+                      >
                       <Link
                         className="header-profile-dropdown__item"
                         role="menuitem"
@@ -263,8 +272,9 @@ const Header = () => {
                         <LogOut size={18} strokeWidth={2} />
                         <span>Đăng xuất</span>
                       </button>
-                    </div>
-                  )}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
                 </div>
               </div>
             ) : (

@@ -20,6 +20,7 @@ import nvt from "../../assets/home/nvt.jpg";
 import herbotAi from "../../assets/home/herbot_ai.png";
 import contactImg from "../../assets/home/contact.png";
 import { hasAuthSession, marketplaceApi } from "../../services/apiService.js";
+import { MotionCard, Reveal } from "../../motion/MotionPrimitives.jsx";
 
 const formatCurrency = (value) =>
   new Intl.NumberFormat("vi-VN", {
@@ -117,7 +118,7 @@ const HomePage = () => {
     <main className="home-page">
       {/* Hero Section */}
       <section className="hero-section">
-        <div className="hero-content">
+        <Reveal className="hero-content">
           <h1 className="hero-title">
             Chăm sóc sức khoẻ <br /> phái đẹp bằng công nghệ AI
           </h1>
@@ -125,7 +126,7 @@ const HomePage = () => {
             Nền tảng ứng dụng AI giúp bạn thấu hiểu cơ thể, chủ động theo dõi
             chu kỳ, chuẩn bị mang thai và quản lý lộ trình thai kỳ hiệu quả.
           </p>
-        </div>
+        </Reveal>
       </section>
 
       {/* Features Section */}
@@ -142,7 +143,7 @@ const HomePage = () => {
             </h2>
           </div>
           <div className="features-right">
-            <div className="feature-card">
+            <MotionCard className="feature-card" delay={0.12}>
               <h3 className="feature-card-title">Cá nhân hóa bằng AI</h3>
               <p className="feature-card-description">
                 Hệ thống tự động phân tích dữ liệu sức khỏe và đưa ra các gợi ý
@@ -155,8 +156,8 @@ const HomePage = () => {
               >
                 Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
               </button>
-            </div>
-            <div className="feature-card">
+            </MotionCard>
+            <MotionCard className="feature-card" delay={0.16}>
               <h3 className="feature-card-title">Dự đoán hành trình</h3>
               <p className="feature-card-description">
                 Giải pháp toàn diện đáp ứng mọi nhu cầu từ theo dõi chu kỳ kinh
@@ -170,8 +171,8 @@ const HomePage = () => {
               >
                 Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
               </button>
-            </div>
-            <div className="feature-card">
+            </MotionCard>
+            <MotionCard className="feature-card" delay={0.04}>
               <h3 className="feature-card-title">Marketplace tiện ích</h3>
               <p className="feature-card-description">
                 Cung cấp mô hình Subscription Box giúp người dùng chủ động lựa
@@ -185,8 +186,8 @@ const HomePage = () => {
               >
                 Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
               </button>
-            </div>
-            <div className="feature-card">
+            </MotionCard>
+            <MotionCard className="feature-card" delay={0.08}>
               <h3 className="feature-card-title">Bài viết chuẩn y khoa</h3>
               <p className="feature-card-description">
                 Cung cấp những kiến thức hữu ích, dễ hiểu và được chọn lọc về sức khỏe
@@ -200,14 +201,14 @@ const HomePage = () => {
               >
                 Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
               </button>
-            </div>
+            </MotionCard>
           </div>
         </div>
       </section>
 
       {/* Subscription Box Section */}
       <section className="subscription-section">
-        <div className="subscription-header">
+        <Reveal className="subscription-header">
           <h2 className="subscription-title">
             <span className="brand-name">HerDays</span> Subscription Box
           </h2>
@@ -215,7 +216,7 @@ const HomePage = () => {
             Các Subscription Box được cá nhân hóa dựa trên tính trạng sức khỏe
             của người dùng
           </p>
-        </div>
+        </Reveal>
         <div className="subscription-cards-grid">
           {subscriptionBoxesLoading &&
             Array.from({ length: 4 }, (_, index) => (
@@ -230,9 +231,10 @@ const HomePage = () => {
               </div>
             ))}
           {!subscriptionBoxesLoading && subscriptionBoxes.map((box) => (
-            <div
+            <MotionCard
               key={box.id}
               className="subscription-card"
+              delay={0.04 * (subscriptionBoxes.indexOf(box) % 4)}
             >
               <div className="subscription-card-image">
                 <img src={getBoxImage(box)} alt={getBoxName(box)} />
@@ -257,9 +259,9 @@ const HomePage = () => {
                   <FaPlus />
                 </button>
               </div>
-            </div>
+            </MotionCard>
           ))}
-          {!subscriptionBoxesLoading && <div className="subscription-card subscription-card-custom">
+          {!subscriptionBoxesLoading && <MotionCard className="subscription-card subscription-card-custom" delay={0.16}>
             <div className="subscription-card-image">
               <img
                 src={custom}
@@ -285,7 +287,7 @@ const HomePage = () => {
                 Bắt đầu ngay
               </button>
             </div>
-          </div>}
+          </MotionCard>}
         </div>
         <div className="subscription-footer">
           <button

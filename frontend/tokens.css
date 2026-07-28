@@ -1,0 +1,12 @@
+/* Hallmark · motion system · tone: playful · anchor hue: HerDays pink */
+:root {
+  --motion-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --motion-ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --motion-duration-micro: 120ms;
+  --motion-duration-short: 220ms;
+  --motion-duration-long: 420ms;
+  --motion-focus-ring: oklch(0.52 0.17 350 / 0.55);
+  --magic-shimmer-color: oklch(0.98 0.04 350 / 0.92);
+  --magic-shimmer-duration: 3.4s;
+}

@@ -9,6 +9,8 @@ import {
   marketplaceApi,
 } from "../../services/apiService.js";
 import { CardGridSkeleton } from "../../components/Skeleton.jsx";
+import { ShimmerButton } from "../../components/magic-ui/ShimmerButton.jsx";
+import { MotionCard, Reveal } from "../../motion/MotionPrimitives.jsx";
 import {
   flyToCart,
   getCartTargetElement,
@@ -131,7 +133,12 @@ function Marketplace() {
     const availableQuantity = getAvailableBoxQuantity(box);
 
     return (
-      <article className="marketplace-product" key={`box-${box.id}`}>
+      <MotionCard
+        as="article"
+        className="marketplace-product"
+        key={`box-${box.id}`}
+        delay={0.04 * (boxes.indexOf(box) % 4)}
+      >
         <Link className="marketplace-product__image" to={detailPath}>
           <img
             ref={(node) => {
@@ -174,7 +181,7 @@ function Marketplace() {
             </button>
           </div>
         </div>
-      </article>
+      </MotionCard>
     );
   };
 
@@ -186,31 +193,32 @@ function Marketplace() {
           alt="HerDays Box Subscription"
           className="hero-banner-image"
         />
-        <div className="hero-banner-content">
+        <Reveal className="hero-banner-content">
           <p className="hero-banner-eyebrow">HerDays Marketplace</p>
           <h2 className="hero-banner-title">Box Subscription</h2>
           <p className="hero-banner-subtitle">
             Item "must-have" cho hội chị em
           </p>
-          <Link
+          <ShimmerButton
+            as={Link}
             to={
               firstBoxId ? `/product-detail/box/${firstBoxId}` : "/marketplace"
             }
             className="hero-banner-btn"
           >
             Mua ngay
-          </Link>
-        </div>
+          </ShimmerButton>
+        </Reveal>
       </section>
 
       <section className="marketplace-hero">
-        <div>
+        <Reveal>
           <h1>Chọn box và sản phẩm chăm sóc phù hợp với hành trình của bạn</h1>
           <p>
             Hãy lựa chọn box subcription phù hợp với nhu cầu của bạn và thêm vào
             giỏ hàng.
           </p>
-        </div>
+        </Reveal>
         {/* {categories.length > 0 && (
           <div className="marketplace-hero__goals" aria-label="Mục tiêu sản phẩm">
             {categories.map((category) => (
@@ -237,7 +245,7 @@ function Marketplace() {
       {!loading && !errorMessage && (
         <>
           <section className="marketplace-section" aria-label="Danh sách box">
-            <div className="marketplace-section__header">
+            <Reveal className="marketplace-section__header">
               <h2>Subscription Box</h2>
               <Link
                 to={
@@ -246,7 +254,7 @@ function Marketplace() {
               >
                 Tạo box cá nhân hóa
               </Link>
-            </div>
+            </Reveal>
             <div className="marketplace-grid">
               {boxes.length === 0 ? (
                 <p className="marketplace-status">Chưa có box nào.</p>

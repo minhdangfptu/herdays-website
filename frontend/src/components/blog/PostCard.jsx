@@ -1,10 +1,14 @@
 import { Link } from 'react-router-dom'
+import { MotionCard } from '../../motion/MotionPrimitives.jsx'
 
 function PostCard({ post, topicId }) {
   const authorName = post.authorId?.fullName || 'HERDAYS'
 
   return (
-    <article className="group overflow-hidden rounded-3xl border border-pink-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg">
+    <MotionCard
+      as="article"
+      className="group overflow-hidden rounded-3xl border border-pink-100 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+    >
       {post.thumbnail ? (
         <img className="aspect-[16/9] w-full object-cover" src={post.thumbnail} alt="" loading="lazy" />
       ) : (
@@ -22,7 +26,7 @@ function PostCard({ post, topicId }) {
           Đọc bài viết →
         </Link>
       </div>
-    </article>
+    </MotionCard>
   )
 }
 
