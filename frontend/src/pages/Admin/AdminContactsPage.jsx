@@ -12,6 +12,7 @@ import {
 import toast from 'react-hot-toast'
 
 import { adminApi } from '../../services/apiService.js'
+import { TableSkeleton } from '../../components/Skeleton.jsx'
 
 const PAGE_SIZE = 8
 const ADMIN_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif"
@@ -311,7 +312,9 @@ function AdminContactsPage() {
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td className="px-6 py-10 text-center font-semibold text-slate-400" colSpan={7}>Đang tải liên hệ...</td>
+                  <td className="px-6 py-6" colSpan={7}>
+                    <TableSkeleton columns={7} rows={6} />
+                  </td>
                 </tr>
               ) : contacts.length === 0 ? (
                 <tr>

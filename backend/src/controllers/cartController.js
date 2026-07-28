@@ -15,8 +15,8 @@ export const getCart = async (req, res, next) => {
 
 export const addToCart = async (req, res, next) => {
   try {
-    const { boxId, quantity = 1 } = req.body;
-    const cart = await cartService.addToCart(req.user.id, boxId, quantity);
+    const { boxId, quantity = 1, customizedProducts } = req.body;
+    const cart = await cartService.addToCart(req.user.id, boxId, quantity, customizedProducts);
     sendSuccess(res, {
       message: 'Thêm vào giỏ hàng thành công',
       data: cart

@@ -28,7 +28,8 @@ const Footer = () => {
       links: [
         { name: "Mua sắm", href: "/marketplace", requireAuth: false },
         { name: "Blog - Bài viết", href: "/blog", requireAuth: false },
-        { name: "Herbot", href: "/chat-with-herbot", requireAuth: true },
+        { name: "HerBotAI", href: "/chat-with-herbot", requireAuth: true },
+        { name: "Công cụ", href: "/tools", requireAuth: true },
       ],
     },
     {
@@ -36,7 +37,11 @@ const Footer = () => {
       links: [
         { name: "Thu thập dữ liệu", href: "/collect-data", requireAuth: false },
         { name: "Chính sách bảo mật", href: "/policy", requireAuth: false },
-        { name: "Điều khoản sử dụng", href: "/term-of-use", requireAuth: false },
+        {
+          name: "Điều khoản sử dụng",
+          href: "/term-of-use",
+          requireAuth: false,
+        },
       ],
     },
     {
@@ -50,10 +55,26 @@ const Footer = () => {
   ];
 
   const socialLinks = [
-    { icon: FaFacebook, href: "https://www.facebook.com/herdaysvn", label: "Facebook" },
-    { icon: FaInstagram, href: "https://www.facebook.com/herdaysvn", label: "Instagram" },
-    { icon: FaTiktok, href: "https://www.facebook.com/herdaysvn", label: "TikTok" },
-    { icon: FaFacebookMessenger, href: "https://www.facebook.com/herdaysvn", label: "Messenger" },
+    {
+      icon: FaFacebook,
+      href: "https://www.facebook.com/herdaysvn",
+      label: "Facebook",
+    },
+    {
+      icon: FaInstagram,
+      href: "https://www.facebook.com/herdaysvn",
+      label: "Instagram",
+    },
+    {
+      icon: FaTiktok,
+      href: "https://www.facebook.com/herdaysvn",
+      label: "TikTok",
+    },
+    {
+      icon: FaFacebookMessenger,
+      href: "https://www.facebook.com/herdaysvn",
+      label: "Messenger",
+    },
   ];
 
   return (
@@ -97,7 +118,11 @@ const Footer = () => {
                   {section.links.map((link, linkIndex) => (
                     <li key={linkIndex}>
                       <a
-                        href={link.requireAuth && !isLoggedIn ? undefined : link.href}
+                        href={
+                          link.requireAuth && !isLoggedIn
+                            ? undefined
+                            : link.href
+                        }
                         onClick={(e) => {
                           if (link.requireAuth && !isLoggedIn) {
                             e.preventDefault();
@@ -131,7 +156,7 @@ const Footer = () => {
       <div className="footer-bottom">
         <p>&copy; {currentYear} HerDays. Bảo lưu mọi quyền</p>
       </div>
-    </footer> 
+    </footer>
   );
 };
 

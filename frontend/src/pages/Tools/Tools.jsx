@@ -1,33 +1,35 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import "./Tools.scss";
 import "./ToolsCalculate.scss";
 import { TOOLS, getToolById } from "./toolsConfig";
-import tool1 from "../../assets/tool/tioool-01.png";
-import tool2 from "../../assets/tool/tioool-02.png";
-import tool3 from "../../assets/tool/tioool-03.png";
-import tool4 from "../../assets/tool/tioool-04.png";
-import tool5 from "../../assets/tool/tioool-05.png";
-import tool6 from "../../assets/tool/tioool-06.png";
-import tool7 from "../../assets/tool/tioool-07.png";
-import tool8 from "../../assets/tool/tioool-08.png";
-import tool9 from "../../assets/tool/tioool-09.png";
-import tool10 from "../../assets/tool/tioool-10.png";
+import { Skeleton } from "../../components/Skeleton.jsx";
+import { MotionCard, Reveal } from "../../motion/MotionPrimitives.jsx";
+import ovulationImage from "../../assets/tool_pics_new/Tính Ngày Rụng Trứng.png";
+import betaHcgImage from "../../assets/tool_pics_new/Tính thời gian nhân đôi Beta hCG.png";
+import pregnancyTestImage from "../../assets/tool_pics_new/Tính ngày thử thai.png";
+import menstrualCycleImage from "../../assets/tool_pics_new/Tính chu kỳ kinh nguyệt.png";
+import periodImage from "../../assets/tool_pics_new/Dự đoán kỳ kinh.png";
+import implantationImage from "../../assets/tool_pics_new/Tính ngày phôi làm tổ.png";
+import pregnancyWeeksMonthsImage from "../../assets/tool_pics_new/Chuyển đổi tuần sang tháng thai kỳ.png";
+import dueDateImage from "../../assets/tool_pics_new/Tính ngày dự sinh.png";
+import ivfImage from "../../assets/tool_pics_new/Tính ngày dự sinh IVF.png";
+import ultrasoundImage from "../../assets/tool_pics_new/Tính ngày dự sinh theo siêu âm.png";
 import bannerImage from "../../assets/tools-calculate-banner.png";
 
 const IMAGE_MAP = {
-  tool1,
-  tool2,
-  tool3,
-  tool4,
-  tool5,
-  tool6,
-  tool7,
-  tool8,
-  tool9,
-  tool10,
+  ovulation: ovulationImage,
+  "beta-hcg": betaHcgImage,
+  "pregnancy-test": pregnancyTestImage,
+  "menstrual-cycle": menstrualCycleImage,
+  period: periodImage,
+  implantation: implantationImage,
+  "pregnancy-weeks-months": pregnancyWeeksMonthsImage,
+  "due-date": dueDateImage,
+  ivf: ivfImage,
+  ultrasound: ultrasoundImage,
 };
 
 // ── Hero content per tool (Vietnamese) ──────────────────────────────────────
@@ -322,14 +324,28 @@ function CalculatorContent({ tool, toolId }) {
   const Component = tool?.component;
   const [toolResult, setToolResult] = useState(null);
   const [isLoadingResult, setIsLoadingResult] = useState(false);
+  const loadingTimerRef = useRef(null);
+
+  useEffect(() => {
+    return () => {
+      if (loadingTimerRef.current) {
+        window.clearTimeout(loadingTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleToolResult = (result) => {
     setIsLoadingResult(true);
     setToolResult(null);
 
-    window.setTimeout(() => {
+    if (loadingTimerRef.current) {
+      window.clearTimeout(loadingTimerRef.current);
+    }
+
+    loadingTimerRef.current = window.setTimeout(() => {
       setToolResult(result);
       setIsLoadingResult(false);
+      loadingTimerRef.current = null;
     }, 2000);
   };
 
@@ -343,11 +359,10 @@ function CalculatorContent({ tool, toolId }) {
       <div className="tools-calculate-results-col">
         <h3 className="tools-calculate-results-title">Kết quả</h3>
         {isLoadingResult ? (
-          <div className="tools-calculate-results-card tools-calculate-results-loading">
-            <div className="tools-calculate-loading-spinner" />
-            <p className="tools-calculate-loading-text">
-              Đang tính toán kết quả của bạn...
-            </p>
+          <div className="tools-calculate-results-card tools-calculate-results-loading" role="status" aria-label="Đang tính toán kết quả">
+            <Skeleton className="h-8 w-2/3" />
+            <Skeleton className="h-24 w-full" />
+            <Skeleton className="h-5 w-1/2" />
           </div>
         ) : toolResult ? (
           <div className="tools-calculate-results-card">
@@ -465,16 +480,56 @@ function CalculatorView() {
 // ── Tools Listing Page View ──────────────────────────────────────────────────
 function ToolsListing() {
   const navigate = useNavigate();
+  const [isLoadingTools, setIsLoadingTools] = useState(true);
+  const loadingTimerRef = useRef(null);
+
+  useEffect(() => {
+    loadingTimerRef.current = window.setTimeout(() => {
+      setIsLoadingTools(false);
+      loadingTimerRef.current = null;
+    }, 2000);
+
+    return () => {
+      if (loadingTimerRef.current) {
+        window.clearTimeout(loadingTimerRef.current);
+      }
+    };
+  }, []);
+
+  if (isLoadingTools) {
+    return (
+      <div className="tools-page" role="status" aria-label="Đang tải danh sách công cụ">
+        <div className="tools-container">
+          <Skeleton className="mx-auto mb-[50px] h-14 w-64" />
+          <div className="tools-grid">
+            {Array.from({ length: TOOLS.length }, (_, index) => (
+              <div className="tools-card" aria-hidden="true" key={index}>
+                <div className="tools-card-image">
+                  <Skeleton className="h-full w-full rounded-xl bg-[#e8d5e8]" />
+                </div>
+                <Skeleton className="h-5 w-3/4" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-5/6" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="tools-page">
       <div className="tools-container">
-        <h1 className="tools-title">Công cụ</h1>
+        <Reveal as="h1" className="tools-title">Công cụ</Reveal>
         <div className="tools-grid">
           {TOOLS.map((tool) => (
-            <div
+            <MotionCard
               key={tool.id}
               className="tools-card"
+              delay={0.04 * (TOOLS.indexOf(tool) % 5)}
               onClick={() => navigate(`/tools/${tool.id}`)}
               role="button"
               tabIndex={0}
@@ -483,11 +538,11 @@ function ToolsListing() {
               }
             >
               <div className="tools-card-image">
-                <img src={IMAGE_MAP[tool.image]} alt={tool.name} />
+                <img src={IMAGE_MAP[tool.id]} alt={tool.name} />
               </div>
               <h3 className="tools-card-name">{tool.name}</h3>
               <p className="tools-card-description">{tool.description}</p>
-            </div>
+            </MotionCard>
           ))}
         </div>
       </div>

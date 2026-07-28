@@ -4,6 +4,7 @@ import toast from 'react-hot-toast'
 import { useNavigate } from 'react-router-dom'
 
 import { adminApi } from '../../services/apiService.js'
+import { TableSkeleton } from '../../components/Skeleton.jsx'
 
 const PAGE_SIZE = 8
 const ADMIN_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif"
@@ -228,7 +229,9 @@ function AdminUsersPage() {
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td className="px-6 py-10 text-center font-semibold text-slate-400" colSpan={5}>Đang tải người dùng...</td>
+                  <td className="px-6 py-6" colSpan={5}>
+                    <TableSkeleton columns={5} rows={6} />
+                  </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>

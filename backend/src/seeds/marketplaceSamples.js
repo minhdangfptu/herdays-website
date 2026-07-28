@@ -11,7 +11,7 @@ const sampleProducts = [
     price: 129000,
     quantity: 25,
     description: 'Dầu massage giúp làm ấm vùng bụng và tạo cảm giác dễ chịu trong những ngày nhạy cảm.',
-    category: 'Chăm sóc kỳ kinh'
+    category: 'Sức khỏe'
   },
   {
     productName: 'Túi chườm bụng mini',
@@ -19,7 +19,7 @@ const sampleProducts = [
     price: 99000,
     quantity: 40,
     description: 'Túi chườm nhỏ gọn, phù hợp mang theo khi đi học, đi làm hoặc du lịch.',
-    category: 'Giảm đau'
+    category: 'Sức khỏe'
   },
   {
     productName: 'Trà gừng mật ong',
@@ -27,7 +27,7 @@ const sampleProducts = [
     price: 79000,
     quantity: 60,
     description: 'Gói trà gừng mật ong dùng hằng ngày để giữ ấm cơ thể.',
-    category: 'Đồ uống'
+    category: 'Dinh dưỡng'
   },
   {
     productName: 'Khăn ướt dịu nhẹ',
@@ -43,7 +43,7 @@ const sampleProducts = [
     price: 149000,
     quantity: 30,
     description: 'Nến thơm hương oải hương dịu nhẹ, giúp không gian thư giãn hơn trước giờ ngủ.',
-    category: 'Thư giãn'
+    category: 'Tiện ích'
   },
   {
     productName: 'Mặt nạ ngủ lụa mềm',
@@ -51,7 +51,7 @@ const sampleProducts = [
     price: 89000,
     quantity: 45,
     description: 'Mặt nạ ngủ bằng vải lụa mềm mại, hạn chế ánh sáng và tạo cảm giác dễ chịu khi nghỉ ngơi.',
-    category: 'Giấc ngủ'
+    category: 'Tiện ích'
   },
   {
     productName: 'Trà hoa cúc túi lọc',
@@ -59,7 +59,7 @@ const sampleProducts = [
     price: 69000,
     quantity: 60,
     description: 'Trà hoa cúc thanh nhẹ, phù hợp dùng vào buổi tối để thư giãn sau một ngày dài.',
-    category: 'Đồ uống'
+    category: 'Dinh dưỡng'
   },
   {
     productName: 'Xịt thơm gối hương dịu nhẹ',
@@ -67,7 +67,7 @@ const sampleProducts = [
     price: 119000,
     quantity: 35,
     description: 'Xịt thơm gối với hương dịu nhẹ, giúp tạo không gian nghỉ ngơi thoải mái và dễ chịu.',
-    category: 'Thư giãn'
+    category: 'Tiện ích'
   }
 ];
 
@@ -78,7 +78,7 @@ const sampleBoxes = [
     price: 329000,
     quantity: 15,
     description: 'Box mẫu gồm các sản phẩm chăm sóc cơ bản cho kỳ kinh, có thể dùng để demo customize box.',
-    category: 'Chăm sóc kỳ kinh',
+    category: 'Sức khỏe',
     items: [
       { productName: 'Dầu ấm thư giãn HerDays', quantity: 1 },
       { productName: 'Túi chườm bụng mini', quantity: 1 },
@@ -92,7 +92,7 @@ const sampleBoxes = [
     price: 359000,
     quantity: 20,
     description: 'Bộ sản phẩm giúp tạo không gian thư giãn, chăm sóc giấc ngủ và phục hồi năng lượng mỗi tối.',
-    category: 'Thư giãn',
+    category: 'Tiện ích',
     items: [
       { productName: 'Nến thơm oải hương HerDays', quantity: 1 },
       { productName: 'Mặt nạ ngủ lụa mềm', quantity: 1 },

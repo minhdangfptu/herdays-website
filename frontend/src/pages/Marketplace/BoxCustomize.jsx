@@ -1,8 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import toast from 'react-hot-toast'
-import { MdKeyboardArrowRight } from 'react-icons/md'
+import {
+  MdCategory,
+  MdCheck,
+  MdCleanHands,
+  MdHealthAndSafety,
+  MdKeyboardArrowDown,
+  MdKeyboardArrowRight,
+  MdLock,
+  MdMedicalServices,
+  MdMedication,
+  MdRestaurant
+} from 'react-icons/md'
 import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
+import { Skeleton } from '../../components/Skeleton.jsx'
+import { ShimmerButton } from '../../components/magic-ui/ShimmerButton.jsx'
+import { MotionCard } from '../../motion/MotionPrimitives.jsx'
+import { getLenis } from '../../motion/lenisInstance.js'
 import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
 import './BoxCustomize.scss'
 
@@ -28,8 +43,58 @@ const normalizeBoxProduct = (item) => ({
   productName: item.productName || 'Sản phẩm trong box',
   category: item.category || 'Trong box',
   thumbnail: item.thumbnail,
-  quantity: item.quantity || 1
+  quantity: item.quantity || 1,
+  isCustomizable: item.isCustomizable === true
 })
+
+const getCategoryIcon = (category) => {
+  const normalizedCategory = String(category || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+
+  if (normalizedCategory.includes('dinh duong')) return MdRestaurant
+  if (normalizedCategory.includes('dich vu')) return MdMedicalServices
+  if (normalizedCategory.includes('theo doi') || normalizedCategory.includes('suc khoe')) {
+    return MdHealthAndSafety
+  }
+  if (normalizedCategory.includes('vitamin') || normalizedCategory.includes('khoang chat')) {
+    return MdMedication
+  }
+  if (normalizedCategory.includes('ve sinh') || normalizedCategory.includes('ca nhan')) {
+    return MdCleanHands
+  }
+
+  return MdCategory
+}
+
+function FixedProductsSection({ products }) {
+  if (products.length === 0) return null
+
+  return (
+    <section className="fixed-products-section" aria-labelledby="fixed-products-title">
+      <div className="fixed-products-heading">
+        <div>
+          <span className="fixed-products-icon"><MdLock aria-hidden="true" /></span>
+          <div>
+            <h2 id="fixed-products-title">Sản phẩm cố định</h2>
+            <p>Những sản phẩm này luôn có sẵn trong box và không thể thay đổi.</p>
+          </div>
+        </div>
+        <strong>{products.length} sản phẩm</strong>
+      </div>
+      <div className="fixed-products-list">
+        {products.map((product) => (
+          <div className="fixed-product-item" key={product.id}>
+            <img src={getProductImage(product)} alt="" />
+            <span>{product.productName}</span>
+            <MdCheck aria-label="Đã có trong box" />
+          </div>
+        ))}
+      </div>
+    </section>
+  )
+}
 
 export default function BoxCustomize() {
   const { boxId } = useParams()
@@ -42,7 +107,12 @@ export default function BoxCustomize() {
   const [errorMessage, setErrorMessage] = useState('')
   const [isAdding, setIsAdding] = useState(false)
   const [cartBoxQuantities, setCartBoxQuantities] = useState({})
+  const [activeCategory, setActiveCategory] = useState('')
+  const [isBoxPickerOpen, setIsBoxPickerOpen] = useState(false)
+  const [highlightedBoxId, setHighlightedBoxId] = useState(boxId || '')
   const checkoutButtonRef = useRef(null)
+  const categorySectionRefs = useRef({})
+  const boxPickerRef = useRef(null)
 
   useEffect(() => {
     let isMounted = true
@@ -92,18 +162,44 @@ export default function BoxCustomize() {
     }
   }, [boxId])
 
+  const productsById = useMemo(() => (
+    new Map(products.map((product) => [String(product.id), product]))
+  ), [products])
+
+  const fixedProducts = useMemo(() => (
+    (box?.products || [])
+      .map(normalizeBoxProduct)
+      .filter((product) => !product.isCustomizable)
+  ), [box])
+
+  const customizableProducts = useMemo(() => (
+    (box?.products || [])
+      .map(normalizeBoxProduct)
+      .filter((product) => product.isCustomizable)
+      .map((boxProduct) => ({
+        ...boxProduct,
+        ...productsById.get(boxProduct.id),
+        id: boxProduct.id,
+        category: boxProduct.category,
+        productName: boxProduct.productName,
+        thumbnail: boxProduct.thumbnail,
+        boxQuantity: boxProduct.quantity
+      }))
+  ), [box, productsById])
+
   const groupedProducts = useMemo(() => (
-    products.reduce((acc, product) => {
+    customizableProducts.reduce((acc, product) => {
       const category = product.category || 'Sản phẩm khác'
       if (!acc[category]) acc[category] = []
       acc[category].push(product)
       return acc
     }, {})
-  ), [products])
+  ), [customizableProducts])
 
   const categoryLimits = useMemo(() => (
     (box?.products || []).reduce((limits, item) => {
       const product = normalizeBoxProduct(item)
+      if (!product.isCustomizable) return limits
       limits[product.category] = (limits[product.category] || 0) + product.quantity
       return limits
     }, {})
@@ -115,11 +211,66 @@ export default function BoxCustomize() {
     Object.entries(groupedProducts).filter(([category]) => requiredCategories.includes(category))
   ), [groupedProducts, requiredCategories])
 
+  const categoryNames = useMemo(
+    () => customizableProductGroups.map(([category]) => category),
+    [customizableProductGroups]
+  )
+
+  const currentActiveCategory = categoryNames.includes(activeCategory)
+    ? activeCategory
+    : categoryNames[0] || ''
+
+  useEffect(() => {
+    if (categoryNames.length === 0) return undefined
+
+    const observer = new IntersectionObserver((entries) => {
+      const visibleEntry = entries
+        .filter((entry) => entry.isIntersecting)
+        .sort((first, second) => second.intersectionRatio - first.intersectionRatio)[0]
+
+      if (visibleEntry?.target.dataset.category) {
+        setActiveCategory(visibleEntry.target.dataset.category)
+      }
+    }, {
+      rootMargin: '-18% 0px -62% 0px',
+      threshold: [0.2, 0.45, 0.7]
+    })
+
+    categoryNames.forEach((category) => {
+      const section = categorySectionRefs.current[category]
+      if (section) observer.observe(section)
+    })
+
+    return () => observer.disconnect()
+  }, [categoryNames])
+
+  useEffect(() => {
+    if (!isBoxPickerOpen) return undefined
+
+    const handlePointerDown = (event) => {
+      if (!boxPickerRef.current?.contains(event.target)) setIsBoxPickerOpen(false)
+    }
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape') setIsBoxPickerOpen(false)
+    }
+
+    document.addEventListener('pointerdown', handlePointerDown)
+    document.addEventListener('keydown', handleKeyDown)
+
+    return () => {
+      document.removeEventListener('pointerdown', handlePointerDown)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isBoxPickerOpen])
+
   const selectedCategoryTotals = useMemo(() => (
-    selectedItems.reduce((totals, item) => {
-      totals[item.category] = (totals[item.category] || 0) + item.quantity
-      return totals
-    }, {})
+    selectedItems
+      .filter((item) => item.isCustomizable)
+      .reduce((totals, item) => {
+        totals[item.category] = (totals[item.category] || 0) + item.quantity
+        return totals
+      }, {})
   ), [selectedItems])
 
   const incompleteCategories = useMemo(() => (
@@ -128,11 +279,79 @@ export default function BoxCustomize() {
     ))
   ), [categoryLimits, requiredCategories, selectedCategoryTotals])
 
-  const isSelectionComplete = requiredCategories.length > 0 && incompleteCategories.length === 0
+  const isSelectionComplete = Boolean(box?.id) && (box?.products || []).length > 0 && incompleteCategories.length === 0
 
   const selectedProductCount = useMemo(() => (
     selectedItems.reduce((total, item) => total + item.quantity, 0)
   ), [selectedItems])
+
+  const scrollToCategory = (category) => {
+    setActiveCategory(category)
+    const target = categorySectionRefs.current[category]
+    if (!target) return
+
+    const lenis = getLenis()
+    if (lenis) {
+      lenis.scrollTo(target, { offset: -188, duration: 0.7 })
+      return
+    }
+
+    target.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    })
+  }
+
+  const activeCategoryIndex = Math.max(categoryNames.indexOf(currentActiveCategory), 0)
+
+  const moveToCategory = (category, direction) => {
+    const categoryIndex = categoryNames.indexOf(category)
+    const nextCategory = categoryNames[categoryIndex + direction]
+    if (nextCategory) scrollToCategory(nextCategory)
+  }
+
+  const selectBox = (nextBoxId) => {
+    setHighlightedBoxId(nextBoxId)
+    setIsBoxPickerOpen(false)
+    if (nextBoxId && String(nextBoxId) !== String(boxId || '')) {
+      navigate(`/box-customize/${nextBoxId}`)
+    }
+  }
+
+  const handleBoxPickerKeyDown = (event) => {
+    if (!isBoxPickerOpen && ['Enter', ' ', 'ArrowDown'].includes(event.key)) {
+      event.preventDefault()
+      setHighlightedBoxId(boxId || boxes[0]?.id || '')
+      setIsBoxPickerOpen(true)
+      return
+    }
+
+    if (!isBoxPickerOpen || boxes.length === 0) return
+
+    const currentIndex = boxes.findIndex((boxOption) => (
+      String(boxOption.id) === String(highlightedBoxId)
+    ))
+
+    if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+      event.preventDefault()
+      const direction = event.key === 'ArrowDown' ? 1 : -1
+      const nextIndex = Math.min(
+        Math.max(currentIndex + direction, 0),
+        boxes.length - 1
+      )
+      setHighlightedBoxId(boxes[nextIndex].id)
+    }
+
+    if (event.key === 'Home' || event.key === 'End') {
+      event.preventDefault()
+      setHighlightedBoxId(event.key === 'Home' ? boxes[0].id : boxes[boxes.length - 1].id)
+    }
+
+    if (event.key === 'Enter' && highlightedBoxId) {
+      event.preventDefault()
+      selectBox(highlightedBoxId)
+    }
+  }
 
   const updateProductQuantity = (product, change) => {
     const productId = String(product.id)
@@ -169,7 +388,8 @@ export default function BoxCustomize() {
         productName: product.productName,
         category,
         thumbnail: product.thumbnail,
-        quantity: 1
+        quantity: 1,
+        isCustomizable: true
       }]
     })
   }
@@ -177,6 +397,10 @@ export default function BoxCustomize() {
   const availableBoxQuantity = box
     ? Math.max((Number(box.quantity) || 0) - (cartBoxQuantities[String(box.id)] || 0), 0)
     : 0
+
+  const selectedBoxName = box?.boxName || boxes.find((boxOption) => (
+    String(boxOption.id) === String(boxId || '')
+  ))?.boxName || 'Chọn một box'
 
   const handleBuyNow = async () => {
     if (!box?.id) {
@@ -207,7 +431,15 @@ export default function BoxCustomize() {
     const flySourceRect = getFlyToCartSourceRect(checkoutButtonRef.current)
 
     try {
-      const cart = await cartApi.addItem({ boxId: box.id, quantity: 1 })
+      const customizableIds = new Set(customizableProducts.map((product) => product.id))
+      const customizedProducts = selectedItems
+        .filter((item) => customizableIds.has(item.id) && item.quantity > 0)
+        .map((item) => ({ productId: item.id, quantity: item.quantity }))
+      const cart = await cartApi.addItem({
+        boxId: box.id,
+        quantity: 1,
+        customizedProducts
+      })
       const flyAnimation = flyToCart({
         sourceRect: flySourceRect,
         targetElement: getCartTargetElement(),
@@ -237,102 +469,234 @@ export default function BoxCustomize() {
         </div>
 
         <div className="box-header">
-          <h1 className="box-title">{box?.boxName || 'HerDays Box của bạn'}</h1>
+          <h1 className="box-title">Tùy chỉnh box của bạn</h1>
           <p className="box-subtitle">
-            {box?.description || 'Chọn sản phẩm từ marketplace để xem cấu hình box cá nhân hóa.'}
+            Chọn những sản phẩm chăm sóc phù hợp với nhu cầu của bạn để tạo nên một box dành riêng cho hành trình của mình.
           </p>
           <label className="box-picker">
-            <span>Chọn box muốn tùy chỉnh</span>
-            <select
-              value={boxId || ''}
-              onChange={(event) => {
-                const nextBoxId = event.target.value
-                if (nextBoxId) navigate(`/box-customize/${nextBoxId}`)
-              }}
-            >
-              <option value="">-- Chọn một box --</option>
-              {boxes.map((boxOption) => (
-                <option key={boxOption.id} value={boxOption.id}>
-                  {boxOption.boxName}
-                </option>
-              ))}
-            </select>
+            <span className="box-picker-label">Chọn box muốn tùy chỉnh</span>
+            <div className={`box-picker-control ${isBoxPickerOpen ? 'is-open' : ''}`} ref={boxPickerRef}>
+              <button
+                type="button"
+                className="box-picker-trigger"
+                aria-haspopup="listbox"
+                aria-expanded={isBoxPickerOpen}
+                aria-controls="box-picker-listbox"
+                aria-activedescendant={isBoxPickerOpen && highlightedBoxId
+                  ? `box-picker-option-${String(highlightedBoxId).replace(/[^a-zA-Z0-9_-]/g, '-')}`
+                  : undefined}
+                onClick={() => {
+                  setHighlightedBoxId(boxId || boxes[0]?.id || '')
+                  setIsBoxPickerOpen((isOpen) => !isOpen)
+                }}
+                onKeyDown={handleBoxPickerKeyDown}
+              >
+                <span className="box-picker-trigger-value">{selectedBoxName}</span>
+                <MdKeyboardArrowDown aria-hidden="true" />
+              </button>
+
+              {isBoxPickerOpen && (
+                <div
+                  id="box-picker-listbox"
+                  className="box-picker-menu"
+                  role="listbox"
+                  aria-label="Danh sách box có thể tùy chỉnh"
+                  data-lenis-prevent
+                >
+                  {boxes.length === 0 ? (
+                    <p className="box-picker-empty">Chưa có box để lựa chọn.</p>
+                  ) : boxes.map((boxOption) => {
+                    const isSelected = String(boxOption.id) === String(boxId || '')
+                    const isHighlighted = String(boxOption.id) === String(highlightedBoxId)
+                    const optionId = `box-picker-option-${String(boxOption.id).replace(/[^a-zA-Z0-9_-]/g, '-')}`
+
+                    return (
+                      <button
+                        key={boxOption.id}
+                        id={optionId}
+                        type="button"
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`box-picker-option ${isSelected ? 'is-selected' : ''} ${isHighlighted ? 'is-highlighted' : ''}`}
+                        onMouseEnter={() => setHighlightedBoxId(boxOption.id)}
+                        onClick={() => selectBox(boxOption.id)}
+                      >
+                        <span>{boxOption.boxName}</span>
+                        {isSelected && <MdCheck aria-hidden="true" />}
+                      </button>
+                    )
+                  })}
+                </div>
+              )}
+            </div>
           </label>
         </div>
 
-        {loading && <p className="box-customize-status">Đang tải sản phẩm...</p>}
+        {loading && (
+          <div className="space-y-5" role="status" aria-label="Đang tải sản phẩm">
+            <Skeleton className="h-8 w-2/3" />
+            <Skeleton className="h-40 w-full rounded-2xl" />
+            <Skeleton className="h-40 w-full rounded-2xl" />
+          </div>
+        )}
         {errorMessage && <p className="box-customize-status box-customize-status--error">{errorMessage}</p>}
 
         {!loading && !errorMessage && (
-          <div className="box-selection-card">
-            <div className="selection-card-body">
-              {!box ? (
-                <p className="box-customize-status">Vui lòng chọn một box để bắt đầu tùy chỉnh.</p>
-              ) : customizableProductGroups.length === 0 ? (
-                <p className="box-customize-status">Box này chưa có danh mục sản phẩm để tùy chỉnh.</p>
-              ) : (
-                customizableProductGroups.map(([category, categoryProducts]) => (
-                  <div key={category} className="category-section">
-                    <div className="category-divider">
-                      <span>{category}</span>
-                      <strong>
-                        Đã chọn {selectedCategoryTotals[category] || 0}/{categoryLimits[category]}
-                      </strong>
+          <>
+            {box && customizableProductGroups.length > 0 && (
+              <nav className="category-stepper" aria-label="Tiến trình chọn sản phẩm">
+                <div className="category-stepper-heading">
+                  <div>
+                    <span>Tiến trình lựa chọn</span>
+                    <strong>{selectedProductCount} sản phẩm đã chọn</strong>
+                  </div>
+                  <span className="category-stepper-position">
+                    Phần {activeCategoryIndex + 1}/{categoryNames.length}
+                  </span>
+                </div>
+
+                <div className="category-stepper-list" data-lenis-prevent>
+                  {categoryNames.map((category) => {
+                    const selectedCount = selectedCategoryTotals[category] || 0
+                    const isComplete = selectedCount === categoryLimits[category]
+                    const isActive = category === currentActiveCategory
+                    const CategoryIcon = getCategoryIcon(category)
+
+                    return (
+                      <button
+                        key={category}
+                        type="button"
+                        className={`category-step ${isActive ? 'is-active' : ''} ${isComplete ? 'is-complete' : ''}`}
+                        aria-current={isActive ? 'step' : undefined}
+                        onClick={() => scrollToCategory(category)}
+                      >
+                        <span className="category-step-icon">
+                          <CategoryIcon aria-hidden="true" />
+                          {isComplete && <span className="category-step-complete-mark">✓</span>}
+                        </span>
+                        <span className="category-step-content">
+                          <strong>{category}</strong>
+                          <small>{selectedCount}/{categoryLimits[category]} sản phẩm</small>
+                        </span>
+                      </button>
+                    )
+                  })}
+                </div>
+              </nav>
+            )}
+
+            <div className="box-selection-card">
+              <div className="selection-card-body">
+                {!box ? (
+                  <p className="box-customize-status">Vui lòng chọn một box để bắt đầu tùy chỉnh.</p>
+                ) : customizableProductGroups.length === 0 ? (
+                  <>
+                    <FixedProductsSection products={fixedProducts} />
+                    <p className="box-customize-status">Box này chưa có sản phẩm thay đổi.</p>
+                  </>
+                ) : (
+                  <>
+                    <FixedProductsSection products={fixedProducts} />
+
+                    <div className="customizable-products-heading">
+                      <span className="customizable-products-icon"><MdCategory aria-hidden="true" /></span>
+                      <div>
+                        <h2>Sản phẩm thay đổi</h2>
+                        <p>Điều chỉnh số lượng trong danh sách sản phẩm được phép thay đổi của box.</p>
+                      </div>
                     </div>
 
-                    <div className="product-grid">
-                      {categoryProducts.map((product) => {
-                        const selectedQuantity = selectedItems.find(
-                          (item) => item.id === String(product.id)
-                        )?.quantity || 0
-                        const isSelected = selectedQuantity > 0
-                        const isOutOfStock = !isProductInStock(product)
-                        const isCategoryFull = (selectedCategoryTotals[category] || 0) >= categoryLimits[category]
-                        return (
-                          <article
-                            key={product.id}
-                            className={`product-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'is-out-of-stock' : ''}`}
-                          >
-                            <div className="product-image">
-                              <img src={getProductImage(product)} alt={product.productName} />
-                            </div>
-                            <div className="product-info">
-                              <h3 className="product-name">{product.productName}</h3>
-                              <p className="product-description">
-                                {product.description || 'Chưa có mô tả sản phẩm.'}
-                              </p>
-                              <div className="product-meta">
-                                <span className="product-tag">{product.quantity > 0 ? `Còn ${product.quantity}` : 'Hết hàng'}</span>
-                                <div className="product-quantity-selector" aria-label={`Số lượng ${product.productName}`}>
-                                  <button
-                                    type="button"
-                                    disabled={selectedQuantity <= 0}
-                                    onClick={() => updateProductQuantity(product, -1)}
-                                    aria-label={`Giảm ${product.productName}`}
-                                  >
-                                    −
-                                  </button>
-                                  <strong>{selectedQuantity}</strong>
-                                  <button
-                                    type="button"
-                                    disabled={isOutOfStock || isCategoryFull || selectedQuantity >= Number(product.quantity)}
-                                    onClick={() => updateProductQuantity(product, 1)}
-                                    aria-label={`Tăng ${product.productName}`}
-                                  >
-                                    +
-                                  </button>
+                    {customizableProductGroups.map(([category, categoryProducts]) => (
+                      <div
+                        key={category}
+                        ref={(element) => {
+                          categorySectionRefs.current[category] = element
+                        }}
+                        data-category={category}
+                        className="category-section"
+                      >
+                      <div className="category-divider">
+                        <span>{category}</span>
+                        <strong>
+                          Đã chọn {selectedCategoryTotals[category] || 0}/{categoryLimits[category]}
+                        </strong>
+                      </div>
+
+                      <div className="product-grid">
+                        {categoryProducts.map((product) => {
+                          const selectedQuantity = selectedItems.find(
+                            (item) => item.id === String(product.id)
+                          )?.quantity || 0
+                          const isSelected = selectedQuantity > 0
+                          const isOutOfStock = !isProductInStock(product)
+                          return (
+                            <MotionCard
+                              as="article"
+                              key={product.id}
+                              className={`product-card ${isSelected ? 'selected' : ''} ${isOutOfStock ? 'is-out-of-stock' : ''}`}
+                              delay={0.03 * (categoryProducts.indexOf(product) % 4)}
+                            >
+                              <div className="product-image">
+                                <img src={getProductImage(product)} alt={product.productName} />
+                              </div>
+                              <div className="product-info">
+                                <h3 className="product-name">{product.productName}</h3>
+                                <p className="product-description">
+                                  {product.description || 'Chưa có mô tả sản phẩm.'}
+                                </p>
+                                <div className="product-meta">
+                                  <span className="product-tag">{product.quantity > 0 ? `Còn ${product.quantity}` : 'Hết hàng'}</span>
+                                  <div className="product-quantity-selector" aria-label={`Số lượng ${product.productName}`}>
+                                    <button
+                                      type="button"
+                                      disabled={selectedQuantity <= 0}
+                                      onClick={() => updateProductQuantity(product, -1)}
+                                      aria-label={`Giảm ${product.productName}`}
+                                    >
+                                      −
+                                    </button>
+                                    <strong>{selectedQuantity}</strong>
+                                    <button
+                                      type="button"
+                                      disabled={isOutOfStock || (selectedCategoryTotals[category] || 0) >= categoryLimits[category] || selectedQuantity >= Number(product.quantity)}
+                                      onClick={() => updateProductQuantity(product, 1)}
+                                      aria-label={`Tăng ${product.productName}`}
+                                    >
+                                      +
+                                    </button>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </article>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ))
-              )}
+                            </MotionCard>
+                          )
+                        })}
+                      </div>
+
+                      <div className="category-navigation" aria-label={`Điều hướng ${category}`}>
+                        <button
+                          type="button"
+                          className="category-navigation-button category-navigation-button--previous"
+                          disabled={categoryNames.indexOf(category) === 0}
+                          onClick={() => moveToCategory(category, -1)}
+                        >
+                          ← Phần trước
+                        </button>
+                        <button
+                          type="button"
+                          className="category-navigation-button category-navigation-button--next"
+                          disabled={categoryNames.indexOf(category) === categoryNames.length - 1}
+                          onClick={() => moveToCategory(category, 1)}
+                        >
+                          Tiếp theo →
+                        </button>
+                      </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
             </div>
-          </div>
+          </>
         )}
       </div>
 
@@ -349,15 +713,14 @@ export default function BoxCustomize() {
               <span className="bar-required">Còn {incompleteCategories.length} danh mục chưa đủ</span>
             )}
             <span className="bar-stock">{availableBoxQuantity > 0 ? `Còn ${availableBoxQuantity}` : 'Hết hàng'}</span>
-            <button
+            <ShimmerButton
               ref={checkoutButtonRef}
               className="bar-checkout-btn"
-              type="button"
               disabled={isAdding || !box?.id || availableBoxQuantity <= 0 || !isSelectionComplete}
               onClick={handleBuyNow}
             >
               {isAdding ? 'Đang thêm...' : 'Mua ngay'}
-            </button>
+            </ShimmerButton>
           </div>
         </div>
       </div>

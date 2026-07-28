@@ -42,6 +42,10 @@ const boxSchema = new mongoose.Schema(
             type: Number,
             min: 1,
             default: 1
+          },
+          isCustomizable: {
+            type: Boolean,
+            default: false
           }
         }
       ],

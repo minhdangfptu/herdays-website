@@ -46,6 +46,7 @@ const mapOrderItem = (item, itemMap = new Map()) => {
     itemId: item.itemId,
     isBox: item.isBox,
     quantity: item.quantity,
+    customizedProducts: item.customizedProducts || [],
     price: item.price,
     itemName: detail?.itemName || null,
     thumbnail: detail?.thumbnail || null,
@@ -176,6 +177,7 @@ export const createOrderFromCart = async (userId, { paymentMethod = 'bank_transf
           itemId: box._id,
           isBox: true,
           quantity: cartItem.quantity,
+          customizedProducts: cartItem.customizedProducts || [],
           price: box.price
         };
       });

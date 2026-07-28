@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import {
@@ -8,11 +8,9 @@ import {
   FaPlus,
   FaEnvelope,
 } from "react-icons/fa";
+import { Skeleton } from "../../components/Skeleton.jsx";
 import "./HomePage.scss";
 import logomau from "../../assets/home/logo_mau.png";
-import boxDau from "../../assets/home/box/box_dau.png";
-import boxBau1 from "../../assets/home/box/box_bau_1.png";
-import boxBau2 from "../../assets/home/box/box_bau_2.png";
 import custom from "../../assets/home/box/custom.png";
 import expertBg from "../../assets/home/expert_background_card.png";
 import nhv from "../../assets/home/nhv.png";
@@ -21,12 +19,29 @@ import tvm from "../../assets/home/tvm.png";
 import nvt from "../../assets/home/nvt.jpg";
 import herbotAi from "../../assets/home/herbot_ai.png";
 import contactImg from "../../assets/home/contact.png";
-import { hasAuthSession } from "../../services/apiService.js";
+import { hasAuthSession, marketplaceApi } from "../../services/apiService.js";
+import { MotionCard, Reveal } from "../../motion/MotionPrimitives.jsx";
+
+const formatCurrency = (value) =>
+  new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0);
+
+const getBoxName = (box) => box.boxName || box.name || "Subscription Box";
+
+const getBoxImage = (box) =>
+  box.thumbnail ||
+  box.image ||
+  `https://placehold.co/480x480/f8c4d8/ffffff?text=${encodeURIComponent(getBoxName(box))}`;
 
 const HomePage = () => {
   const navigate = useNavigate();
   const expertsRef = useRef(null);
   const [newsletterEmail, setNewsletterEmail] = useState("");
+  const [subscriptionBoxes, setSubscriptionBoxes] = useState([]);
+  const [subscriptionBoxesLoading, setSubscriptionBoxesLoading] = useState(true);
 
   const requireAuth = (target) => {
     if (!hasAuthSession()) {
@@ -44,35 +59,25 @@ const HomePage = () => {
     setNewsletterEmail("");
   };
 
-  const subscriptionBoxes = [
-    {
-      id: 1,
-      name: "Box Dâu",
-      category: "Theo dõi chu kỳ",
-      price: "363.638 đ",
-      image: boxDau,
-    },
-    {
-      id: 2,
-      name: "Box Mầm",
-      category: "Đang mang thai",
-      price: "363.638 đ",
-      image: boxBau1,
-    },
-    {
-      id: 3,
-      name: "Box Bầu",
-      category: "Đang mang thai",
-      price: "363.638 đ",
-      image: boxBau2,
-    },
-    {
-      id: 4,
-      name: "Tự tạo hộp chăm sóc sức khoẻ của riêng bạn",
-      category: `Hộp chăm sóc sức khoẻ cá nhân hoá`,
-      image: custom,
-    },
-  ];
+  useEffect(() => {
+    let isMounted = true;
+
+    marketplaceApi
+      .listBoxes({ limit: 4 })
+      .then((result) => {
+        if (isMounted) setSubscriptionBoxes(result.items || []);
+      })
+      .catch(() => {
+        if (isMounted) setSubscriptionBoxes([]);
+      })
+      .finally(() => {
+        if (isMounted) setSubscriptionBoxesLoading(false);
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const experts = [
     {
@@ -113,7 +118,7 @@ const HomePage = () => {
     <main className="home-page">
       {/* Hero Section */}
       <section className="hero-section">
-        <div className="hero-content">
+        <Reveal className="hero-content">
           <h1 className="hero-title">
             Chăm sóc sức khoẻ <br /> phái đẹp bằng công nghệ AI
           </h1>
@@ -121,7 +126,7 @@ const HomePage = () => {
             Nền tảng ứng dụng AI giúp bạn thấu hiểu cơ thể, chủ động theo dõi
             chu kỳ, chuẩn bị mang thai và quản lý lộ trình thai kỳ hiệu quả.
           </p>
-        </div>
+        </Reveal>
       </section>
 
       {/* Features Section */}
@@ -138,7 +143,7 @@ const HomePage = () => {
             </h2>
           </div>
           <div className="features-right">
-            <div className="feature-card">
+            <MotionCard className="feature-card" delay={0.12}>
               <h3 className="feature-card-title">Cá nhân hóa bằng AI</h3>
               <p className="feature-card-description">
                 Hệ thống tự động phân tích dữ liệu sức khỏe và đưa ra các gợi ý
@@ -151,8 +156,8 @@ const HomePage = () => {
               >
                 Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
               </button>
-            </div>
-            <div className="feature-card">
+            </MotionCard>
+            <MotionCard className="feature-card" delay={0.16}>
               <h3 className="feature-card-title">Dự đoán hành trình</h3>
               <p className="feature-card-description">
                 Giải pháp toàn diện đáp ứng mọi nhu cầu từ theo dõi chu kỳ kinh
@@ -162,12 +167,12 @@ const HomePage = () => {
               <button
                 type="button"
                 className="feature-link"
-                onClick={() => requireAuth("/home")}
+                onClick={() => requireAuth("/tools")}
               >
                 Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
               </button>
-            </div>
-            <div className="feature-card">
+            </MotionCard>
+            <MotionCard className="feature-card" delay={0.04}>
               <h3 className="feature-card-title">Marketplace tiện ích</h3>
               <p className="feature-card-description">
                 Cung cấp mô hình Subscription Box giúp người dùng chủ động lựa
@@ -181,14 +186,29 @@ const HomePage = () => {
               >
                 Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
               </button>
-            </div>
+            </MotionCard>
+            <MotionCard className="feature-card" delay={0.08}>
+              <h3 className="feature-card-title">Bài viết chuẩn y khoa</h3>
+              <p className="feature-card-description">
+                Cung cấp những kiến thức hữu ích, dễ hiểu và được chọn lọc về sức khỏe
+                phụ nữ, giúp bạn chủ động cập nhật thông tin và đưa ra lựa chọn phù hợp
+                cho hành trình của mình.
+              </p>
+              <button
+                type="button"
+                className="feature-link"
+                onClick={() => navigate("/blog")}
+              >
+                Tìm hiểu thêm <FaChevronRight className="feature-link-icon" />
+              </button>
+            </MotionCard>
           </div>
         </div>
       </section>
 
       {/* Subscription Box Section */}
       <section className="subscription-section">
-        <div className="subscription-header">
+        <Reveal className="subscription-header">
           <h2 className="subscription-title">
             <span className="brand-name">HerDays</span> Subscription Box
           </h2>
@@ -196,49 +216,84 @@ const HomePage = () => {
             Các Subscription Box được cá nhân hóa dựa trên tính trạng sức khỏe
             của người dùng
           </p>
-        </div>
+        </Reveal>
         <div className="subscription-cards-grid">
-          {subscriptionBoxes.map((box, index) => (
-            <div
+          {subscriptionBoxesLoading &&
+            Array.from({ length: 4 }, (_, index) => (
+              <div className="subscription-card subscription-card-skeleton" key={`subscription-skeleton-${index}`}>
+                <Skeleton className="subscription-card-skeleton-image" />
+                <div className="subscription-card-content">
+                  <Skeleton className="subscription-card-skeleton-category" />
+                  <Skeleton className="subscription-card-skeleton-title" />
+                  <Skeleton className="subscription-card-skeleton-description" />
+                  <Skeleton className="subscription-card-skeleton-price" />
+                </div>
+              </div>
+            ))}
+          {!subscriptionBoxesLoading && subscriptionBoxes.map((box) => (
+            <MotionCard
               key={box.id}
-              className={`subscription-card${index === subscriptionBoxes.length - 1 ? " subscription-card-custom" : ""}`}
+              className="subscription-card"
+              delay={0.04 * (subscriptionBoxes.indexOf(box) % 4)}
             >
               <div className="subscription-card-image">
-                <img src={box.image} alt={box.name} />
+                <img src={getBoxImage(box)} alt={getBoxName(box)} />
               </div>
               <div className="subscription-card-content">
-                <p className="subscription-card-category">{box.category}</p>
-                <h3 className="subscription-card-title">{box.name}</h3>
+                <p className="subscription-card-category">{box.category || "Subscription Box"}</p>
+                <h3 className="subscription-card-title">{getBoxName(box)}</h3>
+                <p className="subscription-card-description">
+                  {box.description || "Sản phẩm được tuyển chọn cho hành trình chăm sóc sức khỏe của bạn."}
+                </p>
                 <div className="subscription-card-stars">
                   {[...Array(5)].map((_, i) => (
                     <FaStar key={i} className="star-icon" />
                   ))}
                 </div>
-                <p className="subscription-card-price">{box.price}</p>
-                {index === subscriptionBoxes.length - 1 ? (
-                  <button
-                    className="subscription-card-custom-btn"
-                    onClick={() => requireAuth("/upgrade-account")}
-                  >
-                    Bắt đầu ngay
-                  </button>
-                ) : (
-                  <button
-                    className="subscription-card-button"
-                    onClick={() => requireAuth("/upgrade-account")}
-                  >
-                    <FaPlus />
-                  </button>
-                )}
+                <p className="subscription-card-price">{formatCurrency(box.price)}</p>
+                <button
+                  className="subscription-card-button"
+                  onClick={() => requireAuth("/marketplace")}
+                  aria-label={`Xem ${getBoxName(box)}`}
+                >
+                  <FaPlus />
+                </button>
               </div>
-            </div>
+            </MotionCard>
           ))}
+          {!subscriptionBoxesLoading && <MotionCard className="subscription-card subscription-card-custom" delay={0.16}>
+            <div className="subscription-card-image">
+              <img
+                src={custom}
+                alt="Tự tạo hộp chăm sóc sức khỏe của riêng bạn"
+              />
+            </div>
+            <div className="subscription-card-content">
+              <p className="subscription-card-category">
+                Hộp chăm sóc sức khỏe cá nhân hóa
+              </p>
+              <h3 className="subscription-card-title">
+                Tự tạo hộp chăm sóc sức khỏe của riêng bạn
+              </h3>
+              <div className="subscription-card-stars">
+                {[...Array(5)].map((_, i) => (
+                  <FaStar key={i} className="star-icon" />
+                ))}
+              </div>
+              <button
+                className="subscription-card-custom-btn"
+                onClick={() => requireAuth("/box-customize/")}
+              >
+                Bắt đầu ngay
+              </button>
+            </div>
+          </MotionCard>}
         </div>
         <div className="subscription-footer">
           <button
             type="button"
             className="subscription-link"
-            onClick={() => requireAuth("/home")}
+            onClick={() => requireAuth("/marketplace")}
           >
             Tìm hiểu thêm →
           </button>
@@ -304,7 +359,7 @@ const HomePage = () => {
             <FaChevronRight />
           </button>
         </div>
-        <div style={{ marginTop: "20px" }} className="subscription-footer">
+        {/* <div style={{ marginTop: "20px" }} className="subscription-footer">
           <button
             type="button"
             className="subscription-link"
@@ -312,7 +367,7 @@ const HomePage = () => {
           >
             Tìm hiểu thêm →
           </button>
-        </div>
+        </div> */}
       </section>
 
       {/* AI Assistant Section */}

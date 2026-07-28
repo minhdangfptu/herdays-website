@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { BrowserRouter, Navigate, Outlet, Route, Routes } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import Header from "./components/Header.jsx";
@@ -47,6 +47,9 @@ import ProductDetailPage from "./pages/Marketplace/ProductDetailPage.jsx";
 import BlogSearchPostPage from "./pages/Blog/BlogSearchPostPage.jsx";
 import Tools from "./pages/Tools/Tools.jsx";
 import { hasAuthSession } from "./services/apiService.js";
+import { PageTransition } from "./motion/MotionPrimitives.jsx";
+import { SmoothScroll } from "./motion/SmoothScroll.jsx";
+import { getLenis } from "./motion/lenisInstance.js";
 
 function RequireAuth({ children }) {
   return hasAuthSession() ? children : <Navigate to="/login" replace />;
@@ -55,6 +58,22 @@ function RequireAuth({ children }) {
 function RequireAdmin({ children }) {
   const isAdmin = localStorage.getItem("userRole") === "admin";
   return isAdmin ? children : <Navigate to="/blog" replace />;
+}
+
+function ScrollToTop() {
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    const lenis = getLenis();
+    if (lenis) {
+      lenis.scrollTo(0, { immediate: true, force: true });
+      return;
+    }
+
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, [pathname]);
+
+  return null;
 }
 
 function AdminLayout() {
@@ -101,11 +120,12 @@ function HeaderFooterLayout() {
   );
 }
 
-function App() {
+function AppRoutes() {
+  const location = useLocation();
+
   return (
-    <BrowserRouter>
-      <Toaster position="top-center" reverseOrder={false} />
-      <Routes>
+    <PageTransition>
+      <Routes location={location}>
         <Route path="/error-404" element={<Error404 />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
@@ -170,6 +190,17 @@ function App() {
         </Route>
         <Route path="*" element={<Navigate to="/error-404" replace />} />
       </Routes>
+    </PageTransition>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Toaster position="top-center" reverseOrder={false} />
+      <SmoothScroll />
+      <ScrollToTop />
+      <AppRoutes />
     </BrowserRouter>
   );
 }

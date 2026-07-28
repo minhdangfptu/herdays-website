@@ -16,6 +16,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { orderApi, profileApi } from '../../services/apiService.js';
+import { Skeleton } from '../../components/Skeleton.jsx';
 import './QRPayment.scss';
 
 const QR_EXPIRES_SECONDS = 10 * 60;
@@ -322,14 +323,18 @@ export default function QRPayment() {
                 )}
               </div>
 
-              <textarea
-                className="min-h-[82px] w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:ring-4 focus:ring-pink-50 disabled:bg-slate-50 disabled:text-slate-500"
-                value={shippingAddress}
-                disabled={!isAddressEditing || isAddressLoading || isSavingAddress}
-                maxLength={255}
-                placeholder={isAddressLoading ? 'Đang tải địa chỉ...' : 'Nhập địa chỉ nhận hàng của bạn'}
-                onChange={(event) => setShippingAddress(event.target.value)}
-              />
+              {isAddressLoading ? (
+                <Skeleton className="h-[82px] w-full rounded-xl" />
+              ) : (
+                <textarea
+                  className="min-h-[82px] w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:ring-4 focus:ring-pink-50 disabled:bg-slate-50 disabled:text-slate-500"
+                  value={shippingAddress}
+                  disabled={!isAddressEditing || isSavingAddress}
+                  maxLength={255}
+                  placeholder="Nhập địa chỉ nhận hàng của bạn"
+                  onChange={(event) => setShippingAddress(event.target.value)}
+                />
+              )}
               {addressError && <p className="mt-2 text-xs font-semibold text-red-500">{addressError}</p>}
             </div>
           </div>
