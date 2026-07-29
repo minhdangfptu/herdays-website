@@ -47,17 +47,35 @@ const getBoxImage = (box) =>
   box?.thumbnail ||
   `https://placehold.co/360x360/f8c4d8/ffffff?text=${encodeURIComponent(getBoxName(box))}`;
 
-const isProductInStock = (product) => Number(product?.quantity) > 0;
+const isProductInStock = (product) =>
+  Number(product?.stockQuantity ?? product?.quantity) > 0;
 
 const normalizeBoxProduct = (item) => ({
   id: String(item.productId),
   productName: item.productName || "Sản phẩm trong box",
+  unit: item.unit || "",
   category: item.category || "Trong box",
   thumbnail: item.thumbnail,
   price: Number(item.price) || 0,
   quantity: item.quantity || 1,
   isCustomizable: item.isCustomizable === true,
+  selectionGroup: item.selectionGroup || null,
 });
+
+const selectionGroupLabels = {
+  "box-dau-bvs-ngay": "Băng vệ sinh ngày · Chọn 1 sản phẩm",
+  "box-dau-bvs-dem": "Băng vệ sinh đêm · Chọn 1 sản phẩm",
+  "box-dau-thuc-pham-chuc-nang": "Thực phẩm chức năng · Chọn 1 sản phẩm",
+  "box-mam-que-thu-rung-trung": "Que thử rụng trứng · Chọn 1 sản phẩm",
+  "box-mam-ddvs-mini": "Dung dịch vệ sinh mini · Chọn 1 sản phẩm",
+  "box-mam-thuc-pham-chuc-nang": "Thực phẩm chức năng · Chọn 1 sản phẩm",
+  "box-bau-ddvs-mini": "Dung dịch vệ sinh mini · Chọn 1 sản phẩm",
+  "box-bau-sua-khong-duong": "Sữa không đường · Chọn 1 sản phẩm",
+  "box-bau-thuc-pham-chuc-nang": "Thực phẩm chức năng · Chọn 1 sản phẩm",
+};
+
+const getSelectionGroupLabel = (selectionGroup) =>
+  selectionGroupLabels[selectionGroup] || `${selectionGroup} · Chọn 1 sản phẩm`;
 
 const getCategoryIcon = (category) => {
   const normalizedCategory = String(category || "")
@@ -89,8 +107,25 @@ const getCategoryIcon = (category) => {
   return MdCategory;
 };
 
-function FixedProductsSection({ products }) {
+function FixedProductsSection({ products, selectedItems, onSelect }) {
   if (products.length === 0) return null;
+
+  const groupedProducts = products.reduce((groups, product) => {
+    const group = product.selectionGroup || "__always_fixed__";
+    if (!groups[group]) groups[group] = [];
+    groups[group].push(product);
+    return groups;
+  }, {});
+  const choiceGroups = Object.entries(groupedProducts).filter(
+    ([selectionGroup]) => selectionGroup !== "__always_fixed__",
+  );
+  const alwaysFixedProducts = groupedProducts.__always_fixed__ || [];
+
+  const selectedIds = new Set(
+    selectedItems
+      .filter((item) => item.isCustomizable !== true)
+      .map((item) => String(item.id)),
+  );
 
   return (
     <section
@@ -105,20 +140,73 @@ function FixedProductsSection({ products }) {
           <div>
             <h2 id="fixed-products-title">Sản phẩm cố định</h2>
             <p>
-              Những sản phẩm này luôn có sẵn trong box và không thể thay đổi.
+              Sản phẩm cố định luôn thuộc box; một số nhóm cho phép chọn 1 sản phẩm.
             </p>
           </div>
         </div>
         <strong>{products.length} sản phẩm</strong>
       </div>
       <div className="fixed-products-list">
-        {products.map((product) => (
-          <div className="fixed-product-item" key={product.id}>
-            <img src={getProductImage(product)} alt="" />
-            <span>{product.productName}</span>
-            <MdCheck aria-label="Đã có trong box" />
+        {choiceGroups.map(([selectionGroup, groupProducts]) => {
+          return (
+            <div
+              className="fixed-product-group is-choice-group"
+              key={selectionGroup}
+            >
+              <h3 className="fixed-product-group-title">
+                {getSelectionGroupLabel(selectionGroup)}
+              </h3>
+              <div className="fixed-product-group-list">
+                {groupProducts.map((product) => {
+                  const isSelected = selectedIds.has(String(product.id));
+                  const isAvailable = isProductInStock(product);
+
+                  return (
+                    <label
+                      className={`fixed-product-item fixed-product-choice ${isSelected ? "is-selected" : ""} ${!isAvailable ? "is-unavailable" : ""}`}
+                      key={product.id}
+                    >
+                      <input
+                        type="radio"
+                        name={selectionGroup}
+                        checked={isSelected}
+                        disabled={!isAvailable}
+                        onChange={() => onSelect(product)}
+                      />
+                      <img src={getProductImage(product)} alt="" />
+                      <span className="fixed-product-name">
+                        {product.productName}
+                        {product.unit ? ` · ${product.unit}` : ""}
+                      </span>
+                      <span className="fixed-product-quantity">×{product.quantity}</span>
+                      <MdCheck aria-label="Đã chọn" />
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+        {alwaysFixedProducts.length > 0 && (
+          <div className="fixed-product-group is-always-fixed">
+            <h3 className="fixed-product-group-title">
+              Sản phẩm luôn có sẵn trong box
+            </h3>
+            <div className="fixed-product-group-list">
+              {alwaysFixedProducts.map((product) => (
+                <div className="fixed-product-item" key={product.id}>
+                  <img src={getProductImage(product)} alt="" />
+                  <span className="fixed-product-name">
+                    {product.productName}
+                    {product.unit ? ` · ${product.unit}` : ""}
+                  </span>
+                  <span className="fixed-product-quantity">×{product.quantity}</span>
+                  <MdCheck aria-label="Đã có trong box" />
+                </div>
+              ))}
+            </div>
           </div>
-        ))}
+        )}
       </div>
     </section>
   );
@@ -168,9 +256,18 @@ export default function BoxCustomize() {
             .filter(isProductInStock)
             .map((product) => String(product.id)),
         );
-        const initialProducts = (boxResult?.products || [])
+        const initialProducts = [];
+        const selectedGroups = new Set();
+        (boxResult?.products || [])
           .map(normalizeBoxProduct)
-          .filter((product) => availableProductIds.has(product.id));
+          .forEach((product) => {
+            if (!availableProductIds.has(product.id)) return;
+            if (product.selectionGroup) {
+              if (selectedGroups.has(product.selectionGroup)) return;
+              selectedGroups.add(product.selectionGroup);
+            }
+            initialProducts.push(product);
+          });
 
         setBoxes(boxListResult.items || []);
         setProducts(nextProducts);
@@ -203,8 +300,34 @@ export default function BoxCustomize() {
     () =>
       (box?.products || [])
         .map(normalizeBoxProduct)
-        .filter((product) => !product.isCustomizable),
-    [box],
+        .filter((product) => !product.isCustomizable)
+        .map((boxProduct) => {
+          const catalogProduct = productsById.get(boxProduct.id);
+          return {
+            ...boxProduct,
+            ...catalogProduct,
+            id: boxProduct.id,
+            category: boxProduct.category,
+            productName: boxProduct.productName,
+            thumbnail: boxProduct.thumbnail,
+            quantity: boxProduct.quantity,
+            stockQuantity: catalogProduct?.quantity ?? 0,
+          };
+        }),
+    [box, productsById],
+  );
+
+  const fixedSelectionGroups = useMemo(
+    () =>
+      Object.entries(
+        fixedProducts.reduce((groups, product) => {
+          if (!product.selectionGroup) return groups;
+          if (!groups[product.selectionGroup]) groups[product.selectionGroup] = [];
+          groups[product.selectionGroup].push(product);
+          return groups;
+        }, {}),
+      ),
+    [fixedProducts],
   );
 
   const customizableProducts = useMemo(
@@ -345,10 +468,22 @@ export default function BoxCustomize() {
     [categoryLimits, requiredCategories, selectedCategoryTotals],
   );
 
+  const incompleteSelectionGroups = useMemo(
+    () =>
+      fixedSelectionGroups.filter(([, groupProducts]) => {
+        const selectedCount = groupProducts.filter((product) =>
+          selectedItems.some((item) => item.id === product.id),
+        ).length;
+        return selectedCount !== 1;
+      }),
+    [fixedSelectionGroups, selectedItems],
+  );
+
   const isSelectionComplete =
     Boolean(box?.id) &&
     (box?.products || []).length > 0 &&
-    incompleteCategories.length === 0;
+    incompleteCategories.length === 0 &&
+    incompleteSelectionGroups.length === 0;
 
   const selectedProductCount = useMemo(
     () => selectedItems.reduce((total, item) => total + item.quantity, 0),
@@ -484,6 +619,7 @@ export default function BoxCustomize() {
         {
           id: productId,
           productName: product.productName,
+          unit: product.unit || "",
           category,
           thumbnail: product.thumbnail,
           quantity: 1,
@@ -491,6 +627,21 @@ export default function BoxCustomize() {
         },
       ];
     });
+  };
+
+  const selectFixedProduct = (product) => {
+    if (!product.selectionGroup || !isProductInStock(product)) return;
+
+    setSelectedItems((current) => [
+      ...current.filter(
+        (item) => item.selectionGroup !== product.selectionGroup,
+      ),
+      {
+        ...product,
+        quantity: product.quantity,
+        isCustomizable: false,
+      },
+    ]);
   };
 
   const availableBoxQuantity = box
@@ -518,12 +669,14 @@ export default function BoxCustomize() {
     }
 
     if (!isSelectionComplete) {
-      const missingText =
-        incompleteCategories.length > 0
-          ? `: ${incompleteCategories.join(", ")}`
-          : "";
+      const missingText = [
+        ...incompleteCategories,
+        ...incompleteSelectionGroups.map(([selectionGroup]) =>
+          getSelectionGroupLabel(selectionGroup),
+        ),
+      ].join(", ");
       toast.error(
-        `Vui lòng chọn đúng số lượng sản phẩm cho mỗi danh mục${missingText}.`,
+        `Vui lòng hoàn tất lựa chọn sản phẩm${missingText ? `: ${missingText}` : ""}.`,
       );
       return;
     }
@@ -538,11 +691,14 @@ export default function BoxCustomize() {
     const flySourceRect = getFlyToCartSourceRect(checkoutButtonRef.current);
 
     try {
-      const customizableIds = new Set(
-        customizableProducts.map((product) => product.id),
-      );
+      const selectableIds = new Set([
+        ...customizableProducts.map((product) => product.id),
+        ...fixedProducts
+          .filter((product) => product.selectionGroup)
+          .map((product) => product.id),
+      ]);
       const customizedProducts = selectedItems
-        .filter((item) => customizableIds.has(item.id) && item.quantity > 0)
+        .filter((item) => selectableIds.has(item.id) && item.quantity > 0)
         .map((item) => ({ productId: item.id, quantity: item.quantity }));
       const cart = await cartApi.addItem({
         boxId: box.id,
@@ -732,14 +888,22 @@ export default function BoxCustomize() {
                   </p>
                 ) : customizableProductGroups.length === 0 ? (
                   <>
-                    <FixedProductsSection products={fixedProducts} />
+                    <FixedProductsSection
+                      products={fixedProducts}
+                      selectedItems={selectedItems}
+                      onSelect={selectFixedProduct}
+                    />
                     <p className="box-customize-status">
                       Box này chưa có sản phẩm thay đổi.
                     </p>
                   </>
                 ) : (
                   <>
-                    <FixedProductsSection products={fixedProducts} />
+                    <FixedProductsSection
+                      products={fixedProducts}
+                      selectedItems={selectedItems}
+                      onSelect={selectFixedProduct}
+                    />
 
                     <div className="customizable-products-heading">
                       <span className="customizable-products-icon">
@@ -806,6 +970,7 @@ export default function BoxCustomize() {
                                     </p>
                                     <p className="product-price">
                                       {formatCurrency(product.price)}
+                                      {product.unit ? ` / ${product.unit}` : ""}
                                     </p>
                                     <div className="product-meta">
                                       <span className="product-tag">

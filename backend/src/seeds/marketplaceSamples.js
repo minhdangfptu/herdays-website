@@ -7,6 +7,7 @@ import Product from '../models/productModel.js';
 const sampleProducts = [
   {
     productName: 'Dầu ấm thư giãn HerDays',
+    unit: 'chai',
     thumbnail: 'https://res.cloudinary.com/demo/image/upload/sample.jpg',
     price: 129000,
     quantity: 25,
@@ -15,6 +16,7 @@ const sampleProducts = [
   },
   {
     productName: 'Túi chườm bụng mini',
+    unit: 'túi',
     thumbnail: 'https://res.cloudinary.com/demo/image/upload/woman.jpg',
     price: 99000,
     quantity: 40,
@@ -23,6 +25,7 @@ const sampleProducts = [
   },
   {
     productName: 'Trà gừng mật ong',
+    unit: 'túi',
     thumbnail: 'https://res.cloudinary.com/demo/image/upload/coffee.jpg',
     price: 79000,
     quantity: 60,
@@ -31,6 +34,7 @@ const sampleProducts = [
   },
   {
     productName: 'Khăn ướt dịu nhẹ',
+    unit: 'gói',
     thumbnail: 'https://res.cloudinary.com/demo/image/upload/face_center.jpg',
     price: 59000,
     quantity: 80,
@@ -39,6 +43,7 @@ const sampleProducts = [
   },
   {
     productName: 'Nến thơm oải hương HerDays',
+    unit: 'hũ',
     thumbnail: 'https://res.cloudinary.com/demo/image/upload/cld-sample-5.jpg',
     price: 149000,
     quantity: 30,
@@ -47,6 +52,7 @@ const sampleProducts = [
   },
   {
     productName: 'Mặt nạ ngủ lụa mềm',
+    unit: 'cái',
     thumbnail: 'https://res.cloudinary.com/demo/image/upload/cld-sample-3.jpg',
     price: 89000,
     quantity: 45,
@@ -55,6 +61,7 @@ const sampleProducts = [
   },
   {
     productName: 'Trà hoa cúc túi lọc',
+    unit: 'túi',
     thumbnail: 'https://res.cloudinary.com/demo/image/upload/samples/food/spices.jpg',
     price: 69000,
     quantity: 60,
@@ -63,6 +70,7 @@ const sampleProducts = [
   },
   {
     productName: 'Xịt thơm gối hương dịu nhẹ',
+    unit: 'chai',
     thumbnail: 'https://res.cloudinary.com/demo/image/upload/samples/ecommerce/accessories-bag.jpg',
     price: 119000,
     quantity: 35,

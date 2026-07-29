@@ -118,7 +118,7 @@ function LoginForm() {
       toast('Tài khoản Google, vui lòng đăng nhập với Google')
     }
     toast.success(`Đăng nhập thành công`)
-    navigate(result.user.role === 'admin' ? '/admin/blog' : '/home')
+    navigate(result.user.role === 'admin' ? '/admin' : '/home')
   }, [navigate])
 
   const completeSocialLogin = useCallback((result) => {
@@ -126,7 +126,7 @@ function LoginForm() {
     toast.success(`Đăng nhập thành công`)
     const shouldCompleteQuiz = result.isNewUser || !result.user.targetStatus
     if (result.user.role === 'admin') {
-      navigate('/admin/blog')
+      navigate('/admin')
       return
     }
     navigate(shouldCompleteQuiz ? '/welcome-quiz' : '/home')

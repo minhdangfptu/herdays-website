@@ -33,6 +33,64 @@ const orderItemSchema = new mongoose.Schema(
       ],
       default: []
     },
+    boxSnapshot: {
+      boxName: {
+        type: String,
+        default: null
+      },
+      thumbnail: {
+        type: String,
+        default: null
+      },
+      category: {
+        type: String,
+        default: null
+      },
+      products: {
+        type: [
+          {
+            productId: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: 'Product',
+              required: true
+            },
+            productName: {
+              type: String,
+              required: true
+            },
+            unit: {
+              type: String,
+              default: null
+            },
+            thumbnail: {
+              type: String,
+              default: null
+            },
+            price: {
+              type: Number,
+              default: 0,
+              min: 0
+            },
+            quantity: {
+              type: Number,
+              min: 1,
+              default: 1
+            },
+            isCustomizable: {
+              type: Boolean,
+              default: false
+            },
+            selectionGroup: {
+              type: String,
+              trim: true,
+              default: null,
+              maxlength: 100
+            }
+          }
+        ],
+        default: []
+      }
+    },
     price: {
       type: Number,
       required: true,

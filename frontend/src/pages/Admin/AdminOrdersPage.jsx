@@ -5,12 +5,15 @@ import {
   ChevronLeft,
   ChevronRight,
   Download,
+  Eye,
   Search,
-  SlidersHorizontal
+  SlidersHorizontal,
+  X
 } from 'lucide-react';
 
 import { adminApi } from '../../services/apiService.js';
 import { TableSkeleton } from '../../components/Skeleton.jsx';
+import OrderCustomizationDetails from '../../components/OrderCustomizationDetails.jsx';
 
 const PAGE_SIZE = 10;
 const ADMIN_FONT_FAMILY = "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif";
@@ -47,6 +50,8 @@ const formatTime = (value) => {
     month: '2-digit'
   }).format(new Date(value));
 };
+
+const getShortOrderId = (id) => String(id || '').slice(-5).toUpperCase() || '--';
 
 const getPagination = (pagination, page) => ({
   page,
@@ -139,6 +144,100 @@ function OrderStatusConfirmModal({ change, isSubmitting, onCancel, onConfirm }) 
   );
 }
 
+function AdminOrderDetailModal({ order, isLoading, onClose }) {
+  useEffect(() => {
+    if (!order && !isLoading) return undefined;
+
+    const handleKeyDown = (event) => {
+      if (event.key === 'Escape' && !isLoading) onClose();
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isLoading, onClose, order]);
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6"
+      onClick={isLoading ? undefined : onClose}
+    >
+      <section
+        className="max-h-[90vh] w-full max-w-3xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="admin-order-detail-title"
+        onClick={(event) => event.stopPropagation()}
+      >
+        <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-100 bg-white px-6 py-5">
+          <div>
+            <p className="text-xs font-bold uppercase tracking-wider text-pink-500">Chi tiết đơn hàng</p>
+            <h2 id="admin-order-detail-title" className="mt-1 text-xl font-extrabold text-slate-900">
+              {order ? `HD${String(order.id).slice(-6).toUpperCase()}` : 'Đang tải...'}
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            disabled={isLoading}
+            aria-label="Đóng chi tiết đơn hàng"
+            className="flex h-9 w-9 items-center justify-center rounded-full text-slate-400 transition hover:bg-slate-100 hover:text-slate-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <X size={20} />
+          </button>
+        </div>
+
+        {isLoading ? (
+          <div className="space-y-4 p-6" role="status" aria-label="Đang tải thông tin đơn hàng">
+            <TableSkeleton columns={2} rows={3} />
+            <TableSkeleton columns={1} rows={3} />
+          </div>
+        ) : order ? (
+          <div className="space-y-6 p-6">
+            <div className="grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Khách hàng</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">{order.user?.fullName || order.user?.email || 'Người dùng'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Ngày đặt hàng</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">{formatTime(order.createdAt) || '--'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Địa chỉ</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">{order.user?.address || 'Chưa cập nhật'}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Tổng thanh toán</p>
+                <p className="mt-1 text-base font-extrabold text-pink-500">{formatCurrency(order.totalAmount)}</p>
+              </div>
+            </div>
+
+            <div>
+              <h3 className="mb-3 text-sm font-extrabold text-slate-800">Sản phẩm trong đơn</h3>
+              <div className="divide-y divide-slate-100 rounded-xl border border-slate-100">
+                {(order.items || []).map((item) => (
+                  <div key={String(item.itemId)} className="p-4">
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <p className="text-sm font-extrabold text-slate-800">{item.itemName || (item.isBox ? 'Box trong đơn hàng' : 'Sản phẩm')}</p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">Số lượng box: {item.quantity}</p>
+                      </div>
+                      <p className="text-sm font-extrabold text-slate-700">{formatCurrency(Number(item.price) * Number(item.quantity))}</p>
+                    </div>
+                    {item.isBox && <div className="mt-4"><OrderCustomizationDetails item={item} compact /></div>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <p className="px-6 py-12 text-center text-sm font-semibold text-red-500">Không thể tải thông tin đơn hàng.</p>
+        )}
+      </section>
+    </div>
+  );
+}
+
 function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [pagination, setPagination] = useState({ page: 1, totalPages: 1, totalItems: 0 });
@@ -150,6 +249,8 @@ function AdminOrdersPage() {
   const [errorMessage, setErrorMessage] = useState('');
   const [updatingOrderId, setUpdatingOrderId] = useState(null);
   const [pendingStatusChange, setPendingStatusChange] = useState(null);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [isOrderDetailLoading, setIsOrderDetailLoading] = useState(false);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -244,6 +345,25 @@ function AdminOrdersPage() {
     if (isUpdated) setPendingStatusChange(null);
   };
 
+  const handleViewOrder = async (orderId) => {
+    setIsOrderDetailLoading(true);
+    setSelectedOrder(null);
+
+    try {
+      const order = await adminApi.getOrder(orderId);
+      setSelectedOrder(order);
+    } catch (error) {
+      toast.error(error.message || 'Không thể tải chi tiết đơn hàng.');
+    } finally {
+      setIsOrderDetailLoading(false);
+    }
+  };
+
+  const handleCloseOrderDetail = () => {
+    setSelectedOrder(null);
+    setIsOrderDetailLoading(false);
+  };
+
   const clearFilters = () => {
     setSearch('');
     setDebouncedSearch('');
@@ -311,19 +431,19 @@ function AdminOrdersPage() {
           </span>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-slate-100 bg-white">
-          <table className="w-full min-w-[1240px] border-collapse text-left">
+        <div className="overflow-x-auto rounded-lg border border-slate-100 bg-white">
+          <table className="w-full min-w-[1180px] border-collapse text-left">
             <thead className="bg-white text-xs font-bold uppercase tracking-wide text-slate-400">
               <tr className="border-b border-slate-100">
-                <th className="px-5 py-4">Mã đơn hàng</th>
-                <th className="px-5 py-4">Mã người dùng</th>
+                <th className="w-[92px] min-w-[92px] px-3 py-4">Mã đơn hàng</th>
                 <th className="px-5 py-4">Tên người dùng</th>
+                <th className="px-5 py-4">Số điện thoại</th>
                 <th className="px-5 py-4">Địa chỉ</th>
                 <th className="px-5 py-4">Sản phẩm</th>
                 <th className="px-5 py-4">Số lượng</th>
                 <th className="px-5 py-4">Tổng tiền</th>
                 <th className="px-5 py-4">Trạng thái</th>
-                <th className="px-5 py-4">Tự xóa</th>
+                <th className="sticky right-0 bg-white px-5 py-4 text-right shadow-[-8px_0_12px_-12px_rgba(15,23,42,0.3)]">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -341,7 +461,7 @@ function AdminOrdersPage() {
                 <tr>
                   <td className="px-5 py-10 text-center font-semibold text-slate-400" colSpan={9}>Không có đơn hàng phù hợp.</td>
                 </tr>
-              ) : orders.map((order, index) => {
+              ) : orders.map((order) => {
                 const statusMeta = STATUS_META[order.orderStatus] || STATUS_META.pending;
                 const products = (order.items || []).map((item) => item.itemName || item.itemId).join(', ');
                 const totalQuantity = (order.items || []).reduce((total, item) => total + Number(item.quantity || 0), 0);
@@ -353,12 +473,11 @@ function AdminOrdersPage() {
 
                 return (
                   <tr key={order.id} className="transition hover:bg-pink-50/30">
-                    <td className="px-5 py-4 text-sm font-bold text-slate-800">{(page - 1) * PAGE_SIZE + index + 1}</td>
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-500">{String(order.userId || '').slice(-6) || '--'}</td>
+                    <td className="w-[92px] min-w-[92px] px-3 py-4 text-sm font-bold text-slate-800">{getShortOrderId(order.id)}</td>
                     <td className="px-5 py-4">
                       <p className="text-sm font-bold text-slate-800">{order.user?.fullName || order.user?.email || 'Người dùng'}</p>
-                      {order.user?.phone && <p className="mt-1 text-xs font-medium text-slate-400">{order.user.phone}</p>}
                     </td>
+                    <td className="whitespace-nowrap px-5 py-4 text-sm font-semibold text-slate-600">{order.user?.phone || '--'}</td>
                     <td className="max-w-[220px] px-5 py-4 text-sm font-semibold text-slate-600">
                       <span className="line-clamp-2">{order.user?.address || 'Chưa cập nhật'}</span>
                     </td>
@@ -379,8 +498,15 @@ function AdminOrdersPage() {
                         ))}
                       </select>
                     </td>
-                    <td className="px-5 py-4 text-xs font-semibold text-slate-500">
-                      {order.deleteAt ? `Sau ${formatTime(order.deleteAt)}` : '--'}
+                    <td className="sticky right-0 bg-white px-5 py-4 text-right shadow-[-8px_0_12px_-12px_rgba(15,23,42,0.12)]">
+                      <button
+                        type="button"
+                        onClick={() => handleViewOrder(order.id)}
+                        className="inline-flex min-h-8 items-center justify-center gap-1.5 rounded-lg border border-pink-200 bg-pink-50 px-2 py-1.5 text-[11px] font-extrabold text-pink-600 transition hover:bg-pink-100 focus:outline-none focus:ring-4 focus:ring-pink-100"
+                      >
+                        <Eye size={14} />
+                        Xem
+                      </button>
                     </td>
                   </tr>
                 );
@@ -420,6 +546,14 @@ function AdminOrdersPage() {
         onCancel={() => setPendingStatusChange(null)}
         onConfirm={handleConfirmStatusChange}
       />
+
+      {(selectedOrder || isOrderDetailLoading) && (
+        <AdminOrderDetailModal
+          order={selectedOrder}
+          isLoading={isOrderDetailLoading}
+          onClose={handleCloseOrderDetail}
+        />
+      )}
     </main>
   );
 }

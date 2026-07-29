@@ -149,9 +149,7 @@ function Marketplace() {
           />
         </Link>
         <div className="marketplace-product__content">
-          <p className="marketplace-product__category">
-            {box.category || "Subscription Box"}
-          </p>
+          <p className="marketplace-product__category">{"Subscription Box"}</p>
           <h2>{getItemName(box)}</h2>
           <p className="marketplace-product__description">
             {box.description ||
@@ -232,7 +230,10 @@ function Marketplace() {
       </section>
 
       {loading && (
-        <section className="marketplace-section" aria-label="Đang tải marketplace">
+        <section
+          className="marketplace-section"
+          aria-label="Đang tải marketplace"
+        >
           <CardGridSkeleton count={3} />
         </section>
       )}

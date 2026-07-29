@@ -30,6 +30,7 @@ const PRODUCT_CATEGORIES = [
 
 const emptyProductForm = {
   productName: "",
+  unit: "",
   thumbnail: "",
   category: "",
   price: "",
@@ -112,6 +113,9 @@ function AdminProductsPage() {
           productId,
           quantity: Number(value.quantity) || 1,
           isCustomizable: value.isCustomizable === true,
+          selectionGroup: value.isCustomizable
+            ? null
+            : value.selectionGroup?.trim() || null,
         })),
     [boxProducts],
   );
@@ -227,6 +231,7 @@ function AdminProductsPage() {
         selected: checked,
         quantity: current[productId]?.quantity || 1,
         isCustomizable: current[productId]?.isCustomizable === true,
+        selectionGroup: current[productId]?.selectionGroup || "",
       },
     }));
   };
@@ -238,6 +243,7 @@ function AdminProductsPage() {
         selected: current[productId]?.selected || false,
         quantity,
         isCustomizable: current[productId]?.isCustomizable === true,
+        selectionGroup: current[productId]?.selectionGroup || "",
       },
     }));
   };
@@ -249,6 +255,21 @@ function AdminProductsPage() {
         selected: current[productId]?.selected || false,
         quantity: current[productId]?.quantity || 1,
         isCustomizable,
+        selectionGroup: isCustomizable
+          ? ""
+          : current[productId]?.selectionGroup || "",
+      },
+    }));
+  };
+
+  const handleBoxProductSelectionGroup = (productId, selectionGroup) => {
+    setBoxProducts((current) => ({
+      ...current,
+      [productId]: {
+        selected: current[productId]?.selected || false,
+        quantity: current[productId]?.quantity || 1,
+        isCustomizable: current[productId]?.isCustomizable === true,
+        selectionGroup,
       },
     }));
   };
@@ -276,6 +297,7 @@ function AdminProductsPage() {
 
       const payload = {
         productName: productForm.productName,
+        unit: productForm.unit.trim(),
         thumbnail,
         category: productForm.category,
         price: productForm.price === "" ? null : Number(productForm.price),
@@ -372,6 +394,7 @@ function AdminProductsPage() {
     setEditingProduct(product);
     setProductForm({
       productName: product.productName || "",
+      unit: product.unit || "",
       thumbnail: product.thumbnail || "",
       category: product.category || "",
       price: product.price ?? "",
@@ -391,6 +414,7 @@ function AdminProductsPage() {
           selected: true,
           quantity: item.quantity || 1,
           isCustomizable: item.isCustomizable === true,
+          selectionGroup: item.selectionGroup || "",
         };
       }
     });
@@ -501,6 +525,7 @@ function AdminProductsPage() {
                 <th className="px-5 py-4">Giá</th>
                 <th className="px-5 py-4">Số lượng</th>
                 <th className="px-5 py-4">Trạng thái</th>
+                {!isBoxTab && <th className="px-5 py-4">Đơn vị</th>}
                 <th className="px-5 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
@@ -509,16 +534,16 @@ function AdminProductsPage() {
                 <tr>
                   <td
                     className="px-5 py-6"
-                    colSpan={8}
+                    colSpan={isBoxTab ? 8 : 9}
                   >
-                    <TableSkeleton columns={8} rows={6} />
+                    <TableSkeleton columns={isBoxTab ? 8 : 9} rows={6} />
                   </td>
                 </tr>
               ) : errorMessage ? (
                 <tr>
                   <td
                     className="px-5 py-10 text-center font-semibold text-red-500"
-                    colSpan={8}
+                    colSpan={isBoxTab ? 8 : 9}
                   >
                     {errorMessage}
                   </td>
@@ -527,7 +552,7 @@ function AdminProductsPage() {
                 <tr>
                   <td
                     className="px-5 py-10 text-center font-semibold text-slate-400"
-                    colSpan={8}
+                    colSpan={isBoxTab ? 8 : 9}
                   >
                     Không có dữ liệu phù hợp.
                   </td>
@@ -601,6 +626,11 @@ function AdminProductsPage() {
                           : "Ngừng theo dõi"}
                       </span>
                     </td>
+                    {!isBoxTab && (
+                      <td className="px-5 py-4 text-sm font-semibold text-slate-600">
+                        {item.unit || "--"}
+                      </td>
+                    )}
                     <td className="px-5 py-4 text-right">
                       <button
                         type="button"
@@ -661,6 +691,14 @@ function AdminProductsPage() {
               onChange={(value) =>
                 handleProductFieldChange("productName", value)
               }
+            />
+            <FormInput
+              label="Đơn vị tính"
+              type="text"
+              required
+              placeholder="Ví dụ: hộp, chai, gói, cái"
+              value={productForm.unit}
+              onChange={(value) => handleProductFieldChange("unit", value)}
             />
             <ImageUploadField
               label="Hình ảnh sản phẩm"
@@ -788,6 +826,7 @@ function AdminProductsPage() {
                           </span>
                           <span className="block truncate text-xs font-medium text-slate-400">
                             {product.category || "Chưa phân loại"}
+                            {product.unit ? ` · ${product.unit}` : ""}
                           </span>
                         </span>
                         <input
@@ -818,6 +857,20 @@ function AdminProductsPage() {
                           <option value="fixed">Cố định</option>
                           <option value="customizable">Thay đổi</option>
                         </select>
+                        <input
+                          type="text"
+                          value={item.selectionGroup || ""}
+                          disabled={!item.selected || item.isCustomizable}
+                          onChange={(event) =>
+                            handleBoxProductSelectionGroup(
+                              product.id,
+                              event.target.value,
+                            )
+                          }
+                          placeholder="Nhóm chọn 1"
+                          aria-label={`Nhóm lựa chọn ${product.productName}`}
+                          className="h-9 w-36 rounded-md border border-slate-200 px-2 text-xs font-semibold text-slate-700 outline-none placeholder:text-slate-400 focus:border-pink-300 focus:ring-4 focus:ring-pink-50 disabled:bg-slate-100 disabled:text-slate-400"
+                        />
                       </label>
                     );
                   })
@@ -844,6 +897,7 @@ function FormInput({
   type = "text",
   required = false,
   min,
+  placeholder,
 }) {
   return (
     <label className="block">
@@ -855,6 +909,7 @@ function FormInput({
         type={type}
         min={min}
         required={required}
+        placeholder={placeholder}
         value={value}
         onChange={(event) => onChange(event.target.value)}
         className="h-11 w-full rounded-md border border-slate-200 px-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-pink-300 focus:ring-4 focus:ring-pink-50"

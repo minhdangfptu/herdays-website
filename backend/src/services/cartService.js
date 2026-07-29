@@ -17,21 +17,47 @@ const assertStockAvailable = (box, quantity) => {
   }
 };
 
+const getProductId = (item) => item.productId._id?.toString() || item.productId.toString();
+
+const getDefaultSelectedItems = (box) => {
+  const selectedItems = [];
+  const selectedGroups = new Set();
+
+  box.products.forEach((item) => {
+    if (item.isCustomizable === true) {
+      selectedItems.push({ productId: item.productId._id || item.productId, quantity: item.quantity });
+      return;
+    }
+
+    if (
+      item.selectionGroup &&
+      !selectedGroups.has(item.selectionGroup) &&
+      Number(item.productId.quantity) > 0
+    ) {
+      selectedGroups.add(item.selectionGroup);
+      selectedItems.push({ productId: item.productId._id || item.productId, quantity: item.quantity });
+    }
+  });
+
+  return selectedItems;
+};
+
 const normalizeCustomizedProducts = (box, customizedProducts) => {
   const customizableItems = box.products.filter((item) => item.isCustomizable === true);
+  const selectableFixedItems = box.products.filter(
+    (item) => item.isCustomizable !== true && item.selectionGroup
+  );
+  const selectableItems = [...customizableItems, ...selectableFixedItems];
   const selectedItems = customizedProducts === undefined
-    ? customizableItems.map((item) => ({
-      productId: item.productId._id || item.productId,
-      quantity: item.quantity
-    }))
+    ? getDefaultSelectedItems(box)
     : customizedProducts;
 
   if (!Array.isArray(selectedItems)) {
     throw new HttpError(400, 'customizedProducts must be an array');
   }
 
-  const allowed = new Map(customizableItems.map((item) => [
-    item.productId._id?.toString() || item.productId.toString(),
+  const allowed = new Map(selectableItems.map((item) => [
+    getProductId(item),
     item
   ]));
   const selectedById = new Map();
@@ -53,12 +79,40 @@ const normalizeCustomizedProducts = (box, customizedProducts) => {
     selectedById.set(key, (selectedById.get(key) || 0) + quantity);
   });
 
+  const selectedGroupCounts = new Map();
+  selectedById.forEach((quantity, productId) => {
+    const boxItem = allowed.get(productId);
+    if (boxItem?.selectionGroup) {
+      selectedGroupCounts.set(
+        boxItem.selectionGroup,
+        (selectedGroupCounts.get(boxItem.selectionGroup) || 0) + 1
+      );
+    }
+  });
+
+  const selectionGroups = new Set(selectableFixedItems.map((item) => item.selectionGroup));
+  selectionGroups.forEach((selectionGroup) => {
+    if (selectedGroupCounts.get(selectionGroup) !== 1) {
+      throw new HttpError(400, `Please select exactly one product from ${selectionGroup}`);
+    }
+  });
+
   const requiredByCategory = new Map();
   const fixedByCategory = new Map();
+  const countedSelectionGroups = new Set();
   box.products.forEach((item) => {
     const category = item.productId.category || 'Sản phẩm khác';
-    requiredByCategory.set(category, (requiredByCategory.get(category) || 0) + item.quantity);
-    if (item.isCustomizable !== true) {
+    if (item.isCustomizable === true) {
+      requiredByCategory.set(category, (requiredByCategory.get(category) || 0) + item.quantity);
+      return;
+    }
+
+    if (item.selectionGroup) {
+      if (countedSelectionGroups.has(item.selectionGroup)) return;
+      countedSelectionGroups.add(item.selectionGroup);
+      requiredByCategory.set(category, (requiredByCategory.get(category) || 0) + item.quantity);
+    } else {
+      requiredByCategory.set(category, (requiredByCategory.get(category) || 0) + item.quantity);
       fixedByCategory.set(category, (fixedByCategory.get(category) || 0) + item.quantity);
     }
   });

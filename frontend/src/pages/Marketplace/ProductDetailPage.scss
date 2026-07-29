@@ -721,12 +721,10 @@
   line-height: 1.35;
 }
 
-.product-detail-related-price {
-  align-self: end;
-  color: var(--pd-focus);
+.product-detail-unit {
+  color: var(--pd-gray);
   font-size: 14px;
-  font-variant-numeric: tabular-nums;
-  font-weight: 800;
+  font-weight: 700;
 }
 
 .product-detail-status {

@@ -6,6 +6,7 @@ import { PRODUCT_CATEGORIES } from '../constants/productCategories.js';
 const mapProduct = (p) => ({
   id: p._id,
   productName: p.productName,
+  unit: p.unit,
   thumbnail: p.thumbnail,
   price: p.price,
   quantity: p.quantity,
@@ -24,7 +25,9 @@ const mapBoxProduct = (item) => {
     productId,
     quantity: item.quantity,
     isCustomizable: item.isCustomizable === true,
+    selectionGroup: item.selectionGroup || null,
     productName: product?.productName,
+    unit: product?.unit,
     category: product?.category,
     thumbnail: product?.thumbnail,
     price: product?.price

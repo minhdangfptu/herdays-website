@@ -46,6 +46,12 @@ const boxSchema = new mongoose.Schema(
           isCustomizable: {
             type: Boolean,
             default: false
+          },
+          selectionGroup: {
+            type: String,
+            trim: true,
+            default: null,
+            maxlength: 100
           }
         }
       ],

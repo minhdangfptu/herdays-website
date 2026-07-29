@@ -398,8 +398,15 @@ $border-color: #EEEEEE;
   cursor: pointer;
   transition: all 0.3s ease;
 
-  &:hover {
+  &:not(:disabled):hover {
     background-color: darken($primary-pink, 8%);
+  }
+
+  &:disabled {
+    background-color: lighten($primary-pink, 15%);
+    color: rgba($white, 0.9);
+    cursor: not-allowed;
+    opacity: 0.7;
   }
 }
 

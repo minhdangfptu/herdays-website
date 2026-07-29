@@ -175,6 +175,12 @@ export default function Checkout() {
   const isAddressReady =
     Boolean(selectedAddress) &&
     (addressOption === "profile" || isNewAddressSaved);
+  const isCheckoutDisabled =
+    selectedCartItems.length === 0 ||
+    isCheckingOut ||
+    isAddressLoading ||
+    isSavingAddress ||
+    !isAddressReady;
 
   const handleQuantityChange = async (item, quantity) => {
     if (quantity < 1) return;
@@ -562,13 +568,8 @@ export default function Checkout() {
                   <button
                     className="herdays-checkout-btn"
                     type="button"
-                    disabled={
-                      selectedCartItems.length === 0 ||
-                      isCheckingOut ||
-                      isAddressLoading ||
-                      isSavingAddress ||
-                      !isAddressReady
-                    }
+                    disabled={isCheckoutDisabled}
+                    title={!isAddressReady ? "Vui lòng chọn hoặc lưu địa chỉ giao hàng" : undefined}
                     onClick={handleCheckout}
                   >
                     {isCheckingOut ? "Đang tạo đơn..." : "Xác nhận thanh toán"}

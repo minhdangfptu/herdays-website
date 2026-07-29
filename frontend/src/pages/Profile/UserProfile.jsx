@@ -4,6 +4,7 @@ import { FiEdit2, FiTrash2, FiInfo, FiX } from "react-icons/fi";
 import { AiOutlineUser, AiOutlineCheck } from "react-icons/ai";
 import { Briefcase, Calendar, Eye, Heart, Mail, MapPin, Package, Phone, X } from "lucide-react";
 import DeleteAccountModal from "../../components/DeleteAccountModal";
+import OrderCustomizationDetails from "../../components/OrderCustomizationDetails.jsx";
 import toast from "react-hot-toast";
 import { orderApi, profileApi } from "../../services/apiService.js";
 import { Skeleton, TableSkeleton } from "../../components/Skeleton.jsx";
@@ -138,21 +139,28 @@ function OrderDetailModal({ order, isLoading, onClose }) {
               <h3 className="mb-3 text-sm font-extrabold text-slate-800">Sản phẩm</h3>
               <div className="divide-y divide-slate-100 rounded-xl border border-slate-100">
                 {(order.items || []).map((item) => (
-                  <div key={String(item.itemId)} className="flex items-center gap-4 p-4">
-                    {item.thumbnail ? (
-                      <img className="h-16 w-16 rounded-lg border border-slate-100 object-cover" src={item.thumbnail} alt={item.itemName || "Sản phẩm"} />
-                    ) : (
-                      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-pink-50 text-[#ed77a5]">
-                        <Package size={24} />
-                      </span>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-slate-800">{item.itemName || "Sản phẩm"}</p>
-                      <p className="mt-1 text-xs font-medium text-slate-400">Số lượng: {item.quantity}</p>
+                  <div key={String(item.itemId)}>
+                    <div className="flex items-center gap-4 p-4">
+                      {item.thumbnail ? (
+                        <img className="h-16 w-16 rounded-lg border border-slate-100 object-cover" src={item.thumbnail} alt={item.itemName || "Sản phẩm"} />
+                      ) : (
+                        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-pink-50 text-[#ed77a5]">
+                          <Package size={24} />
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold text-slate-800">{item.itemName || (item.isBox ? "Box trong đơn hàng" : "Sản phẩm")}</p>
+                        <p className="mt-1 text-xs font-medium text-slate-400">Số lượng: {item.quantity}</p>
+                      </div>
+                      <p className="text-right text-sm font-extrabold text-slate-700">
+                        {formatOrderCurrency(Number(item.price) * Number(item.quantity))}
+                      </p>
                     </div>
-                    <p className="text-right text-sm font-extrabold text-slate-700">
-                      {formatOrderCurrency(Number(item.price) * Number(item.quantity))}
-                    </p>
+                    {item.isBox && (
+                      <div className="px-4 pb-4">
+                        <OrderCustomizationDetails item={item} />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>

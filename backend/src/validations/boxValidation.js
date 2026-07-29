@@ -46,6 +46,20 @@ const validateCategory = (category) => {
   return trimmed;
 };
 
+const validateSelectionGroup = (value, index, isCustomizable) => {
+  if (value === undefined || value === null || value === '') return null;
+  if (isCustomizable) {
+    throw new HttpError(400, `products.${index}.selectionGroup is only available for fixed products`);
+  }
+
+  const trimmed = String(value).trim();
+  if (!trimmed) return null;
+  if (trimmed.length > 100) {
+    throw new HttpError(400, `products.${index}.selectionGroup must not exceed 100 characters`);
+  }
+  return trimmed;
+};
+
 const validateBoxProducts = (products) => {
   if (products === undefined || products === null) return [];
   if (!Array.isArray(products)) throw new HttpError(400, 'products must be an array');
@@ -63,10 +77,13 @@ const validateBoxProducts = (products) => {
         throw new HttpError(400, `products.${index}.quantity must be an integer >= 1`);
       }
 
+      const isCustomizable = item.isCustomizable === true || item.type === 'customizable';
+
       return {
         productId,
         quantity,
-        isCustomizable: item.isCustomizable === true || item.type === 'customizable'
+        isCustomizable,
+        selectionGroup: validateSelectionGroup(item.selectionGroup, index, isCustomizable)
       };
     });
 };

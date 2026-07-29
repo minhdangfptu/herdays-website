@@ -534,6 +534,10 @@ export const adminApi = {
     const response = await request(`/admin/orders${buildQuery(params)}`, { isAuthenticated: true })
     return { orders: response.data, pagination: response.meta }
   },
+  getOrder: async (id) => {
+    const response = await request(`/admin/orders/${id}`, { isAuthenticated: true })
+    return response.data
+  },
   getOrderStats: async () => {
     const response = await request('/admin/orders/stats', { isAuthenticated: true })
     return response.data
