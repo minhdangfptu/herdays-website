@@ -50,6 +50,7 @@ const TRANSLATIONS = {
   'E12000': 'Email đã được sử dụng cho tài khoản khác.',
   'P12000': 'Số điện thoại đã được sử dụng cho tài khoản khác.',
   'Invalid Vietnamese phone format': 'Số điện thoại Việt Nam phải có 10 chữ số và bắt đầu bằng 0.',
+  'subscriptionMonths must be one of: 1, 3, 6, 12': 'Gói đăng ký phải là 1, 3, 6 hoặc 12 tháng.',
 
   // Network
   'failed to fetch': 'Vui lòng kiểm tra kết nối và thử lại sau.',

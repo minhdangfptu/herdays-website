@@ -229,6 +229,8 @@ export default function BoxCustomize() {
   const checkoutButtonRef = useRef(null);
   const categorySectionRefs = useRef({});
   const boxPickerRef = useRef(null);
+  const programmaticCategoryRef = useRef(null);
+  const programmaticCategoryTimeoutRef = useRef(null);
 
   useEffect(() => {
     let isMounted = true;
@@ -409,9 +411,16 @@ export default function BoxCustomize() {
               second.intersectionRatio - first.intersectionRatio,
           )[0];
 
-        if (visibleEntry?.target.dataset.category) {
-          setActiveCategory(visibleEntry.target.dataset.category);
+        const visibleCategory = visibleEntry?.target.dataset.category;
+        if (!visibleCategory) return;
+
+        if (programmaticCategoryRef.current) {
+          if (visibleCategory !== programmaticCategoryRef.current) return;
+          programmaticCategoryRef.current = null;
+          window.clearTimeout(programmaticCategoryTimeoutRef.current);
         }
+
+        setActiveCategory(visibleCategory);
       },
       {
         rootMargin: "-18% 0px -62% 0px",
@@ -424,7 +433,10 @@ export default function BoxCustomize() {
       if (section) observer.observe(section);
     });
 
-    return () => observer.disconnect();
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(programmaticCategoryTimeoutRef.current);
+    };
   }, [categoryNames]);
 
   useEffect(() => {
@@ -516,19 +528,35 @@ export default function BoxCustomize() {
   );
 
   const scrollToCategory = (category) => {
+    programmaticCategoryRef.current = category;
+    window.clearTimeout(programmaticCategoryTimeoutRef.current);
+    programmaticCategoryTimeoutRef.current = window.setTimeout(() => {
+      programmaticCategoryRef.current = null;
+    }, 1000);
     setActiveCategory(category);
     const target = categorySectionRefs.current[category];
     if (!target) return;
 
+    const headerHeight = document.querySelector(".header")?.getBoundingClientRect().height || 0;
+    const stepperRect = document.querySelector(".category-stepper")?.getBoundingClientRect();
     const lenis = getLenis();
+    const currentScroll = lenis?.scroll ?? window.scrollY;
+    const stickyContentBottom = stepperRect
+      ? stepperRect.bottom
+      : headerHeight;
+    const targetScrollTop = Math.max(
+      currentScroll + target.getBoundingClientRect().top - stickyContentBottom - 24,
+      0,
+    );
+
     if (lenis) {
-      lenis.scrollTo(target, { offset: -188, duration: 0.7 });
+      lenis.scrollTo(targetScrollTop, { duration: 0.7 });
       return;
     }
 
-    target.scrollIntoView({
+    window.scrollTo({
+      top: targetScrollTop,
       behavior: "smooth",
-      block: "start",
     });
   };
 

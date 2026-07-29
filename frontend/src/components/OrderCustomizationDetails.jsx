@@ -20,7 +20,7 @@ const formatQuantity = (quantity, unit) => (
   `${quantity}${unit ? ` ${unit}` : ''}`
 );
 
-export default function OrderCustomizationDetails({ item, compact = false }) {
+export default function OrderCustomizationDetails({ item, compact = false, showProductStatus = true }) {
   if (!item?.isBox) return null;
 
   const customizedProducts = Array.isArray(item.customizedProducts)
@@ -33,6 +33,16 @@ export default function OrderCustomizationDetails({ item, compact = false }) {
       isSelected: true,
       isCustomizable: product.isCustomizable === true
     }));
+  const customizedProductIds = new Set(
+    customizedProducts.map((product) => String(product.productId?._id || product.productId)),
+  );
+  const visibleBoxProducts = boxProducts.filter((product) => {
+    if (product.isSelected === false) return false;
+    if (!product.selectionGroup || product.isSelected === true) return true;
+
+    const productId = product.productId?._id || product.productId;
+    return customizedProductIds.has(String(productId));
+  });
   const hasQuantityCustomization = item.hasCustomization
     || customizedProducts.some((product) => product.isQuantityChanged);
   const hasFixedSelection = item.hasFixedSelection
@@ -58,17 +68,14 @@ export default function OrderCustomizationDetails({ item, compact = false }) {
           </div>
 
           <p className="mt-3 text-xs font-extrabold text-slate-600">
-            Sản phẩm trong box ({boxProducts.length})
+            Sản phẩm trong box ({visibleBoxProducts.length})
           </p>
-          {boxProducts.length > 0 ? (
+          {visibleBoxProducts.length > 0 ? (
             <div className="mt-2 grid gap-2 sm:grid-cols-2">
-              {boxProducts.map((product, index) => {
+              {visibleBoxProducts.map((product, index) => {
                 const isFixedSelection = Boolean(product.selectionGroup);
-                const isSelected = product.isSelected !== false;
                 const label = isFixedSelection
-                  ? isSelected
-                    ? `Đã chọn · ${getSelectionGroupLabel(product.selectionGroup)}`
-                    : `Lựa chọn thay thế · ${getSelectionGroupLabel(product.selectionGroup)}`
+                  ? `Đã chọn · ${getSelectionGroupLabel(product.selectionGroup)}`
                   : product.isCustomizable
                     ? product.isQuantityChanged
                       ? 'Sản phẩm thay đổi · Đã tăng số lượng'
@@ -78,7 +85,7 @@ export default function OrderCustomizationDetails({ item, compact = false }) {
                 return (
                   <div
                     key={`${product.productId || product.productName || 'product'}-${index}`}
-                    className={`flex items-start gap-2 rounded-lg border px-3 py-2 ${isSelected ? 'border-pink-100 bg-white' : 'border-slate-100 bg-slate-50 opacity-70'}`}
+                    className="flex items-start gap-2 rounded-lg border border-pink-100 bg-white px-3 py-2"
                   >
                     {product.thumbnail ? (
                       <img
@@ -94,7 +101,8 @@ export default function OrderCustomizationDetails({ item, compact = false }) {
                         {product.productName || 'Sản phẩm trong box'}
                       </p>
                       <p className="mt-0.5 text-[11px] font-semibold text-slate-500">
-                        {label} · {formatQuantity(product.quantity, product.unit)}
+                        {showProductStatus && `${label} · `}
+                        {formatQuantity(product.quantity, product.unit)}
                       </p>
                     </div>
                   </div>

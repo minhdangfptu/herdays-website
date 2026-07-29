@@ -224,7 +224,7 @@ function AdminOrderDetailModal({ order, isLoading, onClose }) {
                       </div>
                       <p className="text-sm font-extrabold text-slate-700">{formatCurrency(Number(item.price) * Number(item.quantity))}</p>
                     </div>
-                    {item.isBox && <div className="mt-4"><OrderCustomizationDetails item={item} compact /></div>}
+                    {item.isBox && <div className="mt-4"><OrderCustomizationDetails item={item} compact showProductStatus={false} /></div>}
                   </div>
                 ))}
               </div>

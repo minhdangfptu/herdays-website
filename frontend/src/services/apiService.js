@@ -437,10 +437,10 @@ export const orderApi = {
     const response = await request(`/orders/${id}`, { isAuthenticated: true })
     return response.data
   },
-  createFromCart: async ({ paymentMethod = 'bank_transfer', lovelyMessage = '', boxIds } = {}) => {
+  createFromCart: async ({ paymentMethod = 'bank_transfer', lovelyMessage = '', boxIds, subscriptionMonths = 1 } = {}) => {
     const response = await request('/orders', {
       method: 'POST',
-      body: { paymentMethod, lovelyMessage, boxIds },
+      body: { paymentMethod, lovelyMessage, boxIds, subscriptionMonths },
       isAuthenticated: true
     })
     return response.data

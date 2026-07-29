@@ -55,8 +55,8 @@ const normalizeCartItem = (item) => {
 
 const SUBSCRIPTION_PLANS = [
   { months: 1, label: "1 tháng", discount: 0, badge: null },
-  { months: 3, label: "3 tháng", discount: 5, badge: "Tiết kiệm 5%" },
-  { months: 6, label: "6 tháng", discount: 10, badge: "Tiết kiệm 10%" },
+  { months: 3, label: "3 tháng", discount: 10, badge: "Tiết kiệm 10%" },
+  { months: 6, label: "6 tháng", discount: 15, badge: "Tiết kiệm 15%" },
   { months: 12, label: "12 tháng", discount: 20, badge: "Tốt nhất" },
 ];
 
@@ -279,6 +279,7 @@ export default function Checkout() {
       const order = await orderApi.createFromCart({
         paymentMethod: "bank_transfer",
         boxIds: selectedBoxIds,
+        subscriptionMonths: selectedPlan,
       });
       const nextItems = cartItems.filter(
         (item) => !selectedBoxIds.includes(String(item.id)),

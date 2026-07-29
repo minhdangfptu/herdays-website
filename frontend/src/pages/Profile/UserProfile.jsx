@@ -79,9 +79,9 @@ function OrderDetailModal({ order, isLoading, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6" onClick={onClose}>
+    <div className="fixed inset-x-0 bottom-0 top-[65px] z-50 flex items-start justify-center overflow-y-auto bg-slate-950/40 px-4 py-6" onClick={onClose}>
       <section
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        className="max-h-[calc(100vh-65px-3rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="order-detail-title"
@@ -158,7 +158,7 @@ function OrderDetailModal({ order, isLoading, onClose }) {
                     </div>
                     {item.isBox && (
                       <div className="px-4 pb-4">
-                        <OrderCustomizationDetails item={item} />
+                        <OrderCustomizationDetails item={item} showProductStatus={false} />
                       </div>
                     )}
                   </div>

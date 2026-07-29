@@ -120,6 +120,27 @@ const orderSchema = new mongoose.Schema(
       required: true,
       min: 0
     },
+    subtotalAmount: {
+      type: Number,
+      required: false,
+      min: 0
+    },
+    subscriptionMonths: {
+      type: Number,
+      enum: [1, 3, 6, 12],
+      default: 1
+    },
+    discountPercent: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0
+    },
+    discountAmount: {
+      type: Number,
+      min: 0,
+      default: 0
+    },
     paymentMethod: {
       type: String,
       default: null

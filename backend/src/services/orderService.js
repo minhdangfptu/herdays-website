@@ -12,6 +12,12 @@ import {
 import HttpError from '../utils/httpError.js';
 
 const DELETED_ORDER_TTL_MS = 10 * 60 * 1000;
+const SUBSCRIPTION_DISCOUNTS = new Map([
+  [1, 0],
+  [3, 10],
+  [6, 15],
+  [12, 20]
+]);
 
 const LEGACY_BOX_DETAILS_BY_PRICE = new Map([
   [329000, {
@@ -44,6 +50,10 @@ const getCustomizedBoxPrice = (box, customizedProducts = []) => {
 
   return (Number(box.price) || 0) + customizationExtra;
 };
+
+const getSubscriptionDiscount = (subscriptionMonths = 1) => (
+  SUBSCRIPTION_DISCOUNTS.get(Number(subscriptionMonths)) || 0
+);
 
 const createBoxSnapshot = (box) => ({
   boxName: box.boxName,
@@ -219,6 +229,10 @@ const mapOrder = (order, itemMap) => ({
   user: mapUser(order.userId),
   items: order.items.map((item) => mapOrderItem(item, itemMap)),
   totalAmount: order.totalAmount,
+  subtotalAmount: order.subtotalAmount ?? order.totalAmount,
+  subscriptionMonths: order.subscriptionMonths || 1,
+  discountPercent: order.discountPercent || 0,
+  discountAmount: order.discountAmount || 0,
   paymentMethod: order.paymentMethod,
   orderStatus: normalizeOrderStatus(order.orderStatus),
   lovelyMessage: order.lovelyMessage,
@@ -269,7 +283,12 @@ export const getOrdersByUser = async (userId) => {
   return orders.map((order) => mapOrder(order, itemMap));
 };
 
-export const createOrderFromCart = async (userId, { paymentMethod = 'bank_transfer', lovelyMessage = '', boxIds } = {}) => {
+export const createOrderFromCart = async (userId, {
+  paymentMethod = 'bank_transfer',
+  lovelyMessage = '',
+  boxIds,
+  subscriptionMonths = 1
+} = {}) => {
   const session = await Order.startSession();
   let createdOrder;
 
@@ -314,12 +333,19 @@ export const createOrderFromCart = async (userId, { paymentMethod = 'bank_transf
         };
       });
 
-      const totalAmount = items.reduce((total, item) => total + item.price * item.quantity, 0);
+      const subtotalAmount = items.reduce((total, item) => total + item.price * item.quantity, 0);
+      const discountPercent = getSubscriptionDiscount(subscriptionMonths);
+      const discountAmount = Math.round((subtotalAmount * discountPercent) / 100);
+      const totalAmount = subtotalAmount - discountAmount;
 
       [createdOrder] = await Order.create([{
         userId,
         items,
         totalAmount,
+        subtotalAmount,
+        subscriptionMonths: Number(subscriptionMonths),
+        discountPercent,
+        discountAmount,
         paymentMethod,
         lovelyMessage
       }], { session });
