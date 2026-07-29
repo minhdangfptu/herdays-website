@@ -202,9 +202,9 @@ export default function Cart() {
                               <span className="cart-stock-dot"></span>
                               Còn trong kho: {item.stock}
                             </span>
-                            <span className="cart-stock-remaining">
+                            {/* <span className="cart-stock-remaining">
                               Còn lại sau khi thêm: {item.remainingStock}
-                            </span>
+                            </span> */}
                             <span className="cart-price">{formatCurrency(item.price)}</span>
                           </div>
 

@@ -273,6 +273,51 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
   }
 }
 
+@media (max-width: 480px) {
+  .blog-topics-breadcrumb-row {
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 24px;
+    padding-top: 20px;
+
+    .blog-topics-breadcrumb {
+      min-width: 0;
+      flex: 0 1 auto;
+      white-space: nowrap;
+    }
+  }
+
+  .blog-topics-search {
+    min-width: 0;
+    flex: 1 1 160px;
+
+    &__input {
+      width: 100%;
+    }
+  }
+
+  .blog-topics-section__header {
+    gap: 12px;
+    margin-bottom: 30px;
+  }
+
+  .blog-topics-section__text-center {
+    width: 100%;
+  }
+
+  .blog-topics-section__title {
+    margin-bottom: 10px;
+  }
+
+  .blog-topics-section__subtitle {
+    line-height: 1.6;
+  }
+
+  .blog-topics-section__link {
+    margin-top: 2px;
+  }
+}
+
 // ============================================
 // Grids
 // ============================================

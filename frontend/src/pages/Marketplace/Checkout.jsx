@@ -31,13 +31,8 @@ const normalizeCartItem = (item) => {
     const productId = customizedProduct.productId?._id
       || customizedProduct.productId?.id
       || customizedProduct.productId;
-    const baseProduct = (box.products || []).find((boxProduct) => (
-      String(boxProduct.productId?._id || boxProduct.productId?.id || boxProduct.productId) === String(productId)
-    ));
-    const baseQuantity = Number(baseProduct?.quantity) || 1;
     const selectedQuantity = Number(customizedProduct.quantity) || 0;
-    const extraQuantity = Math.max(selectedQuantity - baseQuantity, 0);
-    return total + extraQuantity * (Number(customizedProduct.productId?.price) || 0);
+    return total + selectedQuantity * (Number(customizedProduct.productId?.price) || 0);
   }, 0);
 
   return {

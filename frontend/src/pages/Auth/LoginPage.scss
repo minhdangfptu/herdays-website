@@ -39,8 +39,6 @@ $desktop-content-scale: 0.88;
   min-height: 100%;
 }
 
-
-
 .submit-button:disabled {
   cursor: not-allowed;
   opacity: 0.65;
@@ -124,7 +122,10 @@ $desktop-content-scale: 0.88;
   font: inherit;
   font-size: 16px;
   font-weight: 400;
-  transition: border-color 200ms ease-in-out, box-shadow 200ms ease-in-out, transform 200ms ease-in-out;
+  transition:
+    border-color 200ms ease-in-out,
+    box-shadow 200ms ease-in-out,
+    transform 200ms ease-in-out;
 }
 
 .input-shell input::placeholder {
@@ -227,14 +228,14 @@ $desktop-content-scale: 0.88;
 }
 
 .form-options a,
-.register-prompt a {
+.login-register-prompt a {
   color: #f38bb5;
   font-weight: 700;
   text-decoration: none;
 }
 
 .form-options a:hover,
-.register-prompt a:hover {
+.login-register-prompt a:hover {
   text-decoration: underline;
 }
 
@@ -248,7 +249,9 @@ $desktop-content-scale: 0.88;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  transition: background 160ms ease, transform 160ms ease;
+  transition:
+    background 160ms ease,
+    transform 160ms ease;
 }
 
 .submit-button:hover {
@@ -269,7 +272,7 @@ $desktop-content-scale: 0.88;
 .divider::after {
   height: 1px;
   background: rgb(59 59 59 / 70%);
-  content: '';
+  content: "";
 }
 
 /* =========================
@@ -315,7 +318,9 @@ $desktop-content-scale: 0.88;
   line-height: 1;
   white-space: nowrap;
   cursor: pointer;
-  transition: border-color 160ms ease, background 160ms ease;
+  transition:
+    border-color 160ms ease,
+    background 160ms ease;
 }
 
 /* Google wrapper */
@@ -412,7 +417,7 @@ $desktop-content-scale: 0.88;
   object-fit: contain;
 }
 
-.register-prompt {
+.login-register-prompt {
   margin: 20px 0 0;
   color: rgb(59 59 59 / 70%);
   font-size: 16px;
@@ -436,7 +441,7 @@ $desktop-content-scale: 0.88;
 
 .welcome-copy h2 {
   margin: 0;
-  font-family: 'Segoe UI', 'Noto Sans', Arial, sans-serif;
+  font-family: "Segoe UI", "Noto Sans", Arial, sans-serif;
   font-size: 32px;
   font-weight: 800;
   line-height: 41px;
@@ -444,7 +449,7 @@ $desktop-content-scale: 0.88;
 
 .welcome-lead {
   margin: 24px 0 40px;
-  font-family: 'Segoe UI', 'Noto Sans', Arial, sans-serif;
+  font-family: "Segoe UI", "Noto Sans", Arial, sans-serif;
   font-size: 32px;
   font-weight: 800;
   line-height: 1.27;
@@ -452,7 +457,7 @@ $desktop-content-scale: 0.88;
 
 .welcome-description {
   margin: 0;
-  font-family: 'Segoe UI', 'Noto Sans', Arial, sans-serif;
+  font-family: "Segoe UI", "Noto Sans", Arial, sans-serif;
   font-size: 18px;
   font-weight: 600;
   line-height: 1.3;
@@ -760,7 +765,7 @@ a:focus-visible {
     font-size: 13px;
   }
 
-  .register-prompt {
+  .login-register-prompt {
     margin-top: 12px;
     font-size: 14px;
     line-height: 18px;
@@ -935,7 +940,6 @@ a:focus-visible {
     width: min(250px, 82vw);
     height: auto;
     margin-bottom: 30px;
-    
   }
 
   .login-copy h1 {
@@ -992,8 +996,8 @@ a:focus-visible {
     display: none;
   }
 
-  .cycle-visual {
-    margin-top: 72px;
+  .login-page .cycle-visual {
+    margin-top: 136px;
   }
 
   .cycle-card__header {
@@ -1017,7 +1021,8 @@ a:focus-visible {
     width: clamp(24px, 9vw, 42px);
   }
 
-  .mood-card {
+  .login-page .mood-card {
+    top: 0;
     right: 6px;
   }
 }
@@ -1029,5 +1034,45 @@ a:focus-visible {
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
-  
+}
+
+@media (max-width: 600px) {
+  // Keep both social actions in separate, predictable rows on narrow screens.
+  .login-page .social-login {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    margin-bottom: 0;
+  }
+
+  .login-page .social-login > *,
+  .login-page .social-login button,
+  .login-page .google-login-button,
+  .login-page .google-login-button__facade {
+    flex: 0 0 44px;
+    overflow: hidden;
+  }
+
+  .login-page .social-login button,
+  .login-page .google-login-button__facade {
+    white-space: nowrap;
+  }
+
+  .login-page .social-login button span,
+  .login-page .google-login-button__facade span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .login-page .login-register-prompt {
+    position: relative;
+    z-index: 1;
+    clear: both;
+    display: block;
+    margin: 0 0 20px;
+    padding-top: 74px;
+    line-height: 24px;
+  }
 }

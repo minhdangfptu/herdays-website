@@ -268,7 +268,10 @@ export default function BoxCustomize() {
               if (selectedGroups.has(product.selectionGroup)) return;
               selectedGroups.add(product.selectionGroup);
             }
-            initialProducts.push(product);
+            initialProducts.push({
+              ...product,
+              quantity: product.isCustomizable ? 0 : product.quantity,
+            });
           });
 
         setBoxes(boxListResult.items || []);
@@ -471,15 +474,6 @@ export default function BoxCustomize() {
     [selectedItems],
   );
 
-  const incompleteCategories = useMemo(
-    () =>
-      requiredCategories.filter(
-        (category) =>
-          (selectedCategoryTotals[category] || 0) < categoryLimits[category],
-      ),
-    [categoryLimits, requiredCategories, selectedCategoryTotals],
-  );
-
   const incompleteSelectionGroups = useMemo(
     () =>
       fixedSelectionGroups.filter(([, groupProducts]) => {
@@ -494,7 +488,6 @@ export default function BoxCustomize() {
   const isSelectionComplete =
     Boolean(box?.id) &&
     (box?.products || []).length > 0 &&
-    incompleteCategories.length === 0 &&
     incompleteSelectionGroups.length === 0;
 
   const selectedProductCount = useMemo(
@@ -508,9 +501,7 @@ export default function BoxCustomize() {
         const product = customizableProductsById.get(item.id);
         if (!product) return total;
 
-        const baseQuantity = Number(product.boxQuantity) || 1;
-        const extraQuantity = Math.max(Number(item.quantity) - baseQuantity, 0);
-        return total + extraQuantity * (Number(product.price) || 0);
+        return total + Number(item.quantity) * (Number(product.price) || 0);
       }, 0),
     [customizableProductsById, selectedItems],
   );
@@ -521,8 +512,7 @@ export default function BoxCustomize() {
       customizableProducts.some((product) => {
         const selectedQuantity =
           selectedItems.find((item) => item.id === product.id)?.quantity || 0;
-        const baseQuantity = Number(product.boxQuantity) || 1;
-        return selectedQuantity !== baseQuantity;
+        return selectedQuantity > 0;
       }),
     [customizableProducts, selectedItems],
   );
@@ -698,7 +688,6 @@ export default function BoxCustomize() {
 
     if (!isSelectionComplete) {
       const missingText = [
-        ...incompleteCategories,
         ...incompleteSelectionGroups.map(([selectionGroup]) =>
           getSelectionGroupLabel(selectionGroup),
         ),
@@ -1012,7 +1001,7 @@ export default function BoxCustomize() {
                                       >
                                         <button
                                           type="button"
-                                          disabled={selectedQuantity <= 1}
+                                          disabled={selectedQuantity <= 0}
                                           onClick={() =>
                                             updateProductQuantity(product, -1)
                                           }
@@ -1099,11 +1088,6 @@ export default function BoxCustomize() {
             <span className="bar-count">
               Đã chọn {selectedProductCount} sản phẩm
             </span>
-            {!isSelectionComplete && (
-              <span className="bar-required">
-                Còn {incompleteCategories.length} danh mục chưa đủ
-              </span>
-            )}
             <span className="bar-stock">
               {availableBoxQuantity > 0
                 ? `Còn ${availableBoxQuantity} box`

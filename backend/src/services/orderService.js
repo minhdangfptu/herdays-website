@@ -42,10 +42,8 @@ const getCustomizedBoxPrice = (box, customizedProducts = []) => {
     .filter((item) => item.isCustomizable === true)
     .reduce((total, item) => {
       const productId = item.productId._id?.toString() || item.productId.toString();
-      const baseQuantity = Number(item.quantity) || 1;
       const selectedQuantity = selectedById.get(productId) || 0;
-      const extraQuantity = Math.max(selectedQuantity - baseQuantity, 0);
-      return total + extraQuantity * (Number(item.productId.price) || 0);
+      return total + selectedQuantity * (Number(item.productId.price) || 0);
     }, 0);
 
   return (Number(box.price) || 0) + customizationExtra;

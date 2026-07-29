@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FiEdit2, FiTrash2, FiInfo, FiX } from "react-icons/fi";
 import { AiOutlineUser, AiOutlineCheck } from "react-icons/ai";
-import { Briefcase, Calendar, Eye, Heart, Mail, MapPin, Package, Phone, X } from "lucide-react";
+import { Briefcase, Calendar, Heart, Mail, MapPin, Package, Phone, X } from "lucide-react";
 import DeleteAccountModal from "../../components/DeleteAccountModal";
 import OrderCustomizationDetails from "../../components/OrderCustomizationDetails.jsx";
 import toast from "react-hot-toast";
@@ -679,10 +679,9 @@ export default function UserProfile() {
                         <button
                           type="button"
                           onClick={() => handleViewOrder(order.id)}
-                          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#ed77a5] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f91] focus:outline-none focus:ring-4 focus:ring-pink-100"
+                          className="user-profile-order-view-btn inline-flex min-h-10 items-center justify-center rounded-lg bg-[#ed77a5] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f91] focus:outline-none focus:ring-4 focus:ring-pink-100"
                         >
-                          <Eye size={15} />
-                          Xem chi tiết
+                          Xem
                         </button>
                       </td>
                     </tr>

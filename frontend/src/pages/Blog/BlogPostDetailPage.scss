@@ -112,10 +112,18 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
   gap: 6px;
   font-size: 13px;
   color: $gray-text;
-  margin-bottom: 12px;
+  margin: 0 0 24px;
+  overflow-x: auto;
+  white-space: nowrap;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   a {
     color: $secondary-pink;
+    flex-shrink: 0;
     text-decoration: none;
 
     &:hover {
@@ -123,9 +131,30 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
     }
   }
 
+  &__current {
+    min-width: 0;
+    max-width: min(42vw, 360px);
+    overflow: hidden;
+    color: $gray-text;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
   svg {
     flex-shrink: 0;
     opacity: 0.6;
+  }
+}
+
+@media (max-width: 640px) {
+  .blog-detail-breadcrumb {
+    gap: 7px;
+    margin-bottom: 22px;
+    font-size: 12px;
+
+    &__current {
+      max-width: 42vw;
+    }
   }
 }
 
