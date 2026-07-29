@@ -46,6 +46,9 @@ const normalizeCustomizedProducts = (box, customizedProducts) => {
     if (!Number.isInteger(quantity) || quantity < 1) {
       throw new HttpError(400, 'Customized product quantity must be an integer >= 1');
     }
+    if (Number.isFinite(Number(boxItem.productId.quantity)) && quantity > Number(boxItem.productId.quantity)) {
+      throw new HttpError(400, 'Customized product quantity exceeds available stock');
+    }
 
     selectedById.set(key, (selectedById.get(key) || 0) + quantity);
   });
@@ -67,7 +70,7 @@ const normalizeCustomizedProducts = (box, customizedProducts) => {
   });
 
   for (const [category, requiredQuantity] of requiredByCategory) {
-    if ((selectedByCategory.get(category) || 0) !== requiredQuantity) {
+    if ((selectedByCategory.get(category) || 0) < requiredQuantity) {
       throw new HttpError(400, 'Please select the required product quantities for each category');
     }
   }
@@ -75,13 +78,22 @@ const normalizeCustomizedProducts = (box, customizedProducts) => {
   return [...selectedById.entries()].map(([productId, quantity]) => ({ productId, quantity }));
 };
 
+const populateCart = async (cart) => {
+  await cart.populate('items.boxId');
+  await cart.populate({
+    path: 'items.customizedProducts.productId',
+    select: 'productName price thumbnail'
+  });
+  return cart;
+};
+
 export const getCart = async (userId) => {
-  let cart = await Cart.findOne({ userId }).populate('items.boxId');
+  let cart = await Cart.findOne({ userId });
   if (!cart) {
     cart = await Cart.create({ userId, items: [] });
   }
 
-  return cart;
+  return populateCart(cart);
 };
 
 export const addToCart = async (userId, boxId, quantity = 1, customizedProducts) => {
@@ -91,7 +103,7 @@ export const addToCart = async (userId, boxId, quantity = 1, customizedProducts)
     throw new HttpError(400, 'Invalid boxId');
   }
 
-  const box = await Box.findById(boxId).populate('products.productId', 'category');
+  const box = await Box.findById(boxId).populate('products.productId', 'category price quantity');
   if (!box) throw new HttpError(404, 'Box not found');
   const normalizedCustomizedProducts = normalizeCustomizedProducts(box, customizedProducts);
 
@@ -116,9 +128,7 @@ export const addToCart = async (userId, boxId, quantity = 1, customizedProducts)
   }
 
   await cart.save();
-  await cart.populate('items.boxId');
-
-  return cart;
+  return populateCart(cart);
 };
 
 export const updateCartItem = async (userId, boxId, quantity) => {
@@ -143,9 +153,7 @@ export const updateCartItem = async (userId, boxId, quantity) => {
 
   item.quantity = nextQuantity;
   await cart.save();
-  await cart.populate('items.boxId');
-
-  return cart;
+  return populateCart(cart);
 };
 
 export const removeFromCart = async (userId, boxId) => {
@@ -161,9 +169,7 @@ export const removeFromCart = async (userId, boxId) => {
 
   cart.items.splice(itemIndex, 1);
   await cart.save();
-  await cart.populate('items.boxId');
-
-  return cart;
+  return populateCart(cart);
 };
 
 export const clearCart = async (userId) => {
@@ -173,5 +179,5 @@ export const clearCart = async (userId) => {
   cart.items = [];
   await cart.save();
 
-  return cart;
+  return populateCart(cart);
 };

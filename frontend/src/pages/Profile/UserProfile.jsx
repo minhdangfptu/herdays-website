@@ -327,7 +327,7 @@ export default function UserProfile() {
   const handleCloseOrderDetail = () => {
     setSelectedOrder(null);
     setOrderDetailError(null);
-    setSearchParams({});
+    setSearchParams({}, { replace: true });
   };
 
   const userData = {
@@ -671,7 +671,7 @@ export default function UserProfile() {
                         <button
                           type="button"
                           onClick={() => handleViewOrder(order.id)}
-                          className="inline-flex items-center gap-2 rounded-lg border border-pink-200 px-3 py-2 text-xs font-bold text-[#ed77a5] transition hover:bg-pink-50"
+                          className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg bg-[#ed77a5] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f91] focus:outline-none focus:ring-4 focus:ring-pink-100"
                         >
                           <Eye size={15} />
                           Xem chi tiết

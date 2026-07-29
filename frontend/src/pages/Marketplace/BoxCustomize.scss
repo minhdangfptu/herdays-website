@@ -279,7 +279,8 @@ $font-primary: 'Roboto', sans-serif;
   position: sticky;
   top: 81px;
   z-index: 10;
-  margin: 0 0 28px;
+  width: calc(100% + 24px);
+  margin: 0 -12px 28px;
   padding: 16px;
   border: 1px solid rgba($primary-pink, 0.2);
   border-radius: 18px;
@@ -717,6 +718,14 @@ $font-primary: 'Roboto', sans-serif;
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
   }
+
+  .product-price {
+    margin: 0 0 10px;
+    color: $primary-pink;
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 1.25;
+  }
   
   .product-meta {
     display: flex;
@@ -808,6 +817,14 @@ $font-primary: 'Roboto', sans-serif;
     font-weight: 700;
     color: $white;
   }
+
+  .bar-price-breakdown {
+    margin-left: 8px;
+    color: rgba($white, 0.86);
+    font-size: 12px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
 }
 
 .bar-right {
@@ -877,8 +894,9 @@ $font-primary: 'Roboto', sans-serif;
   }
 
   .category-stepper {
+    width: 100%;
     top: 73px;
-    margin-bottom: 22px;
+    margin: 0 0 22px;
     padding: 12px;
   }
 

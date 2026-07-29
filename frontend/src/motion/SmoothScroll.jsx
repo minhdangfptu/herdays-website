@@ -29,7 +29,8 @@ export function SmoothScroll() {
         smoothWheel: true,
         syncTouch: false,
         stopInertiaOnNavigate: true,
-        prevent: (node) => Boolean(node?.closest?.('[data-lenis-prevent]')),
+        // Modal layers should receive native scrolling without Lenis interception.
+        prevent: (node) => Boolean(node?.closest?.('[data-lenis-prevent], [role="dialog"], [class*="modal"], [class*="Modal"], [class*="overlay"], .fixed.inset-0')),
       })
 
       lenisRef.current = lenis

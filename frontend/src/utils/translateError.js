@@ -60,6 +60,7 @@ const TRANSLATIONS = {
   'Please select the required product quantities for each category': 'Vui lĂ²ng chá»n Ä‘Ăºng sá»‘ lÆ°á»£ng sáº£n pháº©m trong tá»«ng danh má»¥c.',
   'Box is out of stock': 'Box nay da het hang.',
   'Requested quantity exceeds available stock': 'Số lượng hàng vượt quá hàng có sẵn.',
+  'Customized product quantity exceeds available stock': 'Số lượng sản phẩm thêm vượt quá tồn kho hiện có.',
   'Quantity must be an integer': 'Số lượng phải là số nguyên.',
   'Quantity must be at least 1': 'Số lượng phải lớn hơn hoặc bằng 1.',
 }

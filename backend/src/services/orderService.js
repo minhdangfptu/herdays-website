@@ -13,6 +13,24 @@ import HttpError from '../utils/httpError.js';
 
 const DELETED_ORDER_TTL_MS = 10 * 60 * 1000;
 
+const getCustomizedBoxPrice = (box, customizedProducts = []) => {
+  const selectedById = new Map(
+    customizedProducts.map((item) => [item.productId.toString(), Number(item.quantity) || 0])
+  );
+
+  const customizationExtra = box.products
+    .filter((item) => item.isCustomizable === true)
+    .reduce((total, item) => {
+      const productId = item.productId._id?.toString() || item.productId.toString();
+      const baseQuantity = Number(item.quantity) || 1;
+      const selectedQuantity = selectedById.get(productId) || 0;
+      const extraQuantity = Math.max(selectedQuantity - baseQuantity, 0);
+      return total + extraQuantity * (Number(item.productId.price) || 0);
+    }, 0);
+
+  return (Number(box.price) || 0) + customizationExtra;
+};
+
 const getStatusFilter = (status) => {
   if (status === ORDER_STATUS.CONFIRMED) {
     return { $in: [ORDER_STATUS.CONFIRMED, 'preparing'] };
@@ -163,7 +181,9 @@ export const createOrderFromCart = async (userId, { paymentMethod = 'bank_transf
       }
 
       const cartBoxIds = selectedCartItems.map((item) => item.boxId);
-      const boxes = await Box.find({ _id: { $in: cartBoxIds } }).session(session);
+      const boxes = await Box.find({ _id: { $in: cartBoxIds } })
+        .populate('products.productId', 'price category quantity')
+        .session(session);
       const boxById = new Map(boxes.map((box) => [box._id.toString(), box]));
 
       const items = selectedCartItems.map((cartItem) => {
@@ -178,7 +198,7 @@ export const createOrderFromCart = async (userId, { paymentMethod = 'bank_transf
           isBox: true,
           quantity: cartItem.quantity,
           customizedProducts: cartItem.customizedProducts || [],
-          price: box.price
+          price: getCustomizedBoxPrice(box, cartItem.customizedProducts || [])
         };
       });
 
