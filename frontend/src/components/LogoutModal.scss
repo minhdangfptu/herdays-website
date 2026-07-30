@@ -8,7 +8,7 @@ $text-secondary: #8b98aa;
 .logout-modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 1000;
+  z-index: 1200;
   display: grid;
   place-items: center;
   background: rgba(0, 0, 0, 0.45);
@@ -125,4 +125,8 @@ $text-secondary: #8b98aa;
   &:active {
     transform: translateY(0);
   }
+}
+
+.logout-modal-card--warning {
+  max-width: 420px;
 }

@@ -9,11 +9,13 @@ import {
   Pencil,
   Plus,
   Search,
+  Trash2,
   X,
 } from "lucide-react";
 
 import { adminApi, cloudinaryApi } from "../../services/apiService.js";
 import { TableSkeleton } from "../../components/Skeleton.jsx";
+import LogoutModal from "../../components/LogoutModal.jsx";
 
 const PAGE_SIZE = 10;
 const ADMIN_FONT_FAMILY =
@@ -72,11 +74,12 @@ const getProductRefId = (item) => {
 };
 
 function AdminProductsPage() {
-  const [activeTab, setActiveTab] = useState("products");
+  const [activeTab, setActiveTab] = useState("boxes");
   const [products, setProducts] = useState([]);
   const [boxes, setBoxes] = useState([]);
   const [productOptions, setProductOptions] = useState([]);
-  const [productCategories, setProductCategories] = useState(PRODUCT_CATEGORIES);
+  const [productCategories, setProductCategories] =
+    useState(PRODUCT_CATEGORIES);
   const [pagination, setPagination] = useState({
     page: 1,
     totalPages: 1,
@@ -84,6 +87,7 @@ function AdminProductsPage() {
   });
   const [page, setPage] = useState(1);
   const [search, setSearch] = useState("");
+  const [boxProductSearch, setBoxProductSearch] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -97,6 +101,7 @@ function AdminProductsPage() {
   const [boxImageFile, setBoxImageFile] = useState(null);
   const [boxProducts, setBoxProducts] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isDeleteBoxModalOpen, setIsDeleteBoxModalOpen] = useState(false);
 
   const isBoxTab = activeTab === "boxes";
   const rows = isBoxTab ? boxes : products;
@@ -119,6 +124,17 @@ function AdminProductsPage() {
         })),
     [boxProducts],
   );
+
+  const filteredBoxProducts = useMemo(() => {
+    const query = boxProductSearch.trim().toLocaleLowerCase("vi");
+    if (!query) return productOptions;
+
+    return productOptions.filter((product) =>
+      String(product.productName || "")
+        .toLocaleLowerCase("vi")
+        .includes(query),
+    );
+  }, [boxProductSearch, productOptions]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -181,7 +197,9 @@ function AdminProductsPage() {
       .then(([productResult, categories]) => {
         if (!isActive) return;
         setProductOptions(productResult.products || []);
-        setProductCategories(categories?.length ? categories : PRODUCT_CATEGORIES);
+        setProductCategories(
+          categories?.length ? categories : PRODUCT_CATEGORIES,
+        );
       })
       .catch(() => undefined);
 
@@ -210,6 +228,8 @@ function AdminProductsPage() {
 
   const closeBoxModal = () => {
     setIsBoxModalOpen(false);
+    setIsDeleteBoxModalOpen(false);
+    setBoxProductSearch("");
     setEditingBox(null);
     setBoxForm(emptyBoxForm);
     setBoxImageFile(null);
@@ -373,6 +393,27 @@ function AdminProductsPage() {
     }
   };
 
+  const handleDeleteBox = async () => {
+    if (!editingBox) return;
+    setIsDeleteBoxModalOpen(true);
+  };
+
+  const handleConfirmDeleteBox = async () => {
+    if (!editingBox) return;
+    setIsDeleteBoxModalOpen(false);
+    setIsSubmitting(true);
+    try {
+      await adminApi.deleteBox(editingBox.id);
+      toast.success("Đã xoá box");
+      closeBoxModal();
+      await refreshCurrentTab();
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
   const openCreateModal = () => {
     if (isBoxTab) {
       closeProductModal();
@@ -380,6 +421,7 @@ function AdminProductsPage() {
       setBoxForm(emptyBoxForm);
       setBoxImageFile(null);
       setBoxProducts({});
+      setBoxProductSearch("");
       setIsBoxModalOpen(true);
     } else {
       closeBoxModal();
@@ -420,6 +462,7 @@ function AdminProductsPage() {
     });
 
     setEditingBox(box);
+    setBoxProductSearch("");
     setBoxForm({
       boxName: box.boxName || box.productName || "",
       thumbnail: box.thumbnail || "",
@@ -468,6 +511,17 @@ function AdminProductsPage() {
         <div className="mb-4 flex border-b border-slate-100">
           <button
             type="button"
+            onClick={() => handleTabChange("boxes")}
+            className={`border-b-2 px-4 py-3 text-sm font-bold transition ${
+              activeTab === "boxes"
+                ? "border-pink-500 text-pink-500"
+                : "border-transparent text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            Hộp box cá nhân hoá
+          </button>
+          <button
+            type="button"
             onClick={() => handleTabChange("products")}
             className={`border-b-2 px-4 py-3 text-sm font-bold transition ${
               activeTab === "products"
@@ -476,17 +530,6 @@ function AdminProductsPage() {
             }`}
           >
             Sản phẩm lẻ
-          </button>
-          <button
-            type="button"
-            onClick={() => handleTabChange("boxes")}
-            className={`border-b-2 px-4 py-3 text-sm font-bold transition ${
-              activeTab === "boxes"
-                ? "border-pink-500 text-pink-500"
-                : "border-transparent text-slate-500 hover:text-slate-800"
-            }`}
-          >
-            Hộp quà
           </button>
         </div>
 
@@ -512,8 +555,21 @@ function AdminProductsPage() {
           </span>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-slate-100 bg-white">
-          <table className="w-full min-w-[960px] border-collapse text-left">
+        <div className="overflow-x-auto rounded-lg border border-slate-100 bg-white">
+          <table
+            className={`w-full ${isBoxTab ? "min-w-[1280px]" : "min-w-[1380px]"} table-fixed border-collapse text-left`}
+          >
+            <colgroup>
+              <col className="w-[64px]" />
+              <col className={isBoxTab ? "w-[260px]" : "w-[330px]"} />
+              <col className="w-[190px]" />
+              <col className="w-[190px]" />
+              <col className="w-[120px]" />
+              <col className="w-[90px]" />
+              <col className="w-[150px]" />
+              {!isBoxTab && <col className="w-[100px]" />}
+              <col className="w-[132px]" />
+            </colgroup>
             <thead className="bg-white text-xs font-bold uppercase tracking-wide text-slate-400">
               <tr className="border-b border-slate-100">
                 <th className="px-5 py-4">Mã</th>
@@ -526,16 +582,13 @@ function AdminProductsPage() {
                 <th className="px-5 py-4">Số lượng</th>
                 <th className="px-5 py-4">Trạng thái</th>
                 {!isBoxTab && <th className="px-5 py-4">Đơn vị</th>}
-                <th className="px-5 py-4 text-right">Thao tác</th>
+                <th className="px-3 py-4 text-right">Thao tác</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td
-                    className="px-5 py-6"
-                    colSpan={isBoxTab ? 8 : 9}
-                  >
+                  <td className="px-5 py-6" colSpan={isBoxTab ? 8 : 9}>
                     <TableSkeleton columns={isBoxTab ? 8 : 9} rows={6} />
                   </td>
                 </tr>
@@ -580,12 +633,12 @@ function AdminProductsPage() {
                             )}
                           </div>
                         )}
-                        <div>
-                          <p className="font-semibold text-slate-900">
+                        <div className="min-w-0">
+                          <p className="line-clamp-2 break-words font-semibold text-slate-900">
                             {item.productName}
                           </p>
                           {isBoxTab && (
-                            <p className="mt-1 line-clamp-1 text-xs font-medium text-slate-400">
+                            <p className="mt-1 line-clamp-1 break-words text-xs font-medium text-slate-400">
                               {(item.products || [])
                                 .map((product) => product.productName)
                                 .filter(Boolean)
@@ -595,27 +648,27 @@ function AdminProductsPage() {
                         </div>
                       </div>
                     </td>
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-600">
+                    <td className="break-words px-5 py-4 text-sm font-semibold text-slate-600">
                       {isBoxTab
                         ? (item.productCategories || []).join(", ") ||
                           item.category ||
                           "Tự động"
                         : item.category || "Chưa phân loại"}
                     </td>
-                    <td className="max-w-[240px] px-5 py-4 text-sm text-slate-500">
-                      <span className="line-clamp-2">
+                    <td className="px-5 py-4 text-sm text-slate-500">
+                      <span className="line-clamp-2 break-words">
                         {item.description || "--"}
                       </span>
                     </td>
-                    <td className="px-5 py-4 text-sm font-semibold text-slate-800">
+                    <td className="whitespace-nowrap px-5 py-4 text-sm font-semibold text-slate-800">
                       {formatCurrency(item.price)}
                     </td>
-                    <td className="px-5 py-4 text-sm text-slate-600">
+                    <td className="whitespace-nowrap px-5 py-4 text-sm text-slate-600">
                       {item.quantity}
                     </td>
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 align-middle">
                       <span
-                        className={`rounded-md px-2 py-1 text-xs font-bold ${
+                        className={`inline-flex whitespace-nowrap rounded-md px-2 py-1 text-xs font-bold ${
                           Number(item.quantity) > 0
                             ? "bg-blue-50 text-blue-600"
                             : "bg-orange-50 text-orange-600"
@@ -627,11 +680,11 @@ function AdminProductsPage() {
                       </span>
                     </td>
                     {!isBoxTab && (
-                      <td className="px-5 py-4 text-sm font-semibold text-slate-600">
+                      <td className="whitespace-nowrap px-5 py-4 text-sm font-semibold text-slate-600">
                         {item.unit || "--"}
                       </td>
                     )}
-                    <td className="px-5 py-4 text-right">
+                    <td className="px-3 py-4 text-right">
                       <button
                         type="button"
                         onClick={() =>
@@ -642,7 +695,7 @@ function AdminProductsPage() {
                         className="inline-flex min-h-9 items-center justify-center gap-2 whitespace-nowrap rounded-md border border-slate-200 px-3 py-2 text-xs font-bold leading-tight text-slate-600 transition hover:border-pink-200 hover:bg-pink-50 hover:text-pink-500"
                       >
                         <Pencil size={15} />
-                        {isBoxTab ? "Chi tiết box" : "Chi tiết sản phẩm"}
+                        {isBoxTab ? "Xem" : "Xem"}
                       </button>
                     </td>
                   </tr>
@@ -750,56 +803,112 @@ function AdminProductsPage() {
       )}
 
       {isBoxModalOpen && (
-        <AdminModal title={boxModalTitle} onClose={closeBoxModal}>
-          <form onSubmit={handleSaveBox} className="space-y-4">
-            <FormInput
-              label="Tên box"
-              required
-              value={boxForm.boxName}
-              onChange={(value) => handleBoxFieldChange("boxName", value)}
-            />
-            <ImageUploadField
-              label="Hình ảnh box"
-              currentUrl={boxForm.thumbnail}
-              file={boxImageFile}
-              required={!editingBox}
-              onChange={setBoxImageFile}
-            />
-            <div className="grid gap-4 sm:grid-cols-2">
+        <AdminModal title={boxModalTitle} onClose={closeBoxModal} wide>
+          <form
+            onSubmit={handleSaveBox}
+            className="grid gap-6 lg:grid-cols-[minmax(280px,0.8fr)_minmax(520px,1.2fr)]"
+          >
+            <div className="space-y-4">
+              <div className="rounded-lg border border-pink-100 bg-pink-50/70 p-4">
+                <p className="text-sm font-bold text-pink-600">
+                  Hướng dẫn thêm box
+                </p>
+                <ol className="mt-2 list-decimal space-y-1 pl-4 text-xs font-medium leading-relaxed text-slate-600">
+                  <li>Điền thông tin cơ bản của box ở cột này.</li>
+                  <li>Tích chọn sản phẩm muốn thêm và nhập số lượng.</li>
+                  <li>
+                    Chọn loại sản phẩm: Nhập cùng tên nhóm lựa chọn. Ví dụ "Cùng
+                    loại chăm sóc da" thì ghi "Chăm sóc da" vào ô nhóm lựa chọn.
+                    Lưu ý: Chỉ sản phẩm cố định mới được nhóm lựa chọn, sản phẩm
+                    thay đổi sẽ không có ô nhóm lựa chọn.
+                  </li>
+                </ol>
+              </div>
               <FormInput
-                label="Giá"
-                type="number"
-                min="0"
+                label="Tên box"
                 required
-                value={boxForm.price}
-                onChange={(value) => handleBoxFieldChange("price", value)}
+                value={boxForm.boxName}
+                onChange={(value) => handleBoxFieldChange("boxName", value)}
               />
-              <FormInput
-                label="Số lượng box"
-                type="number"
-                min="0"
-                required
-                value={boxForm.quantity}
-                onChange={(value) => handleBoxFieldChange("quantity", value)}
+              <ImageUploadField
+                label="Hình ảnh box"
+                currentUrl={boxForm.thumbnail}
+                file={boxImageFile}
+                required={!editingBox}
+                onChange={setBoxImageFile}
+              />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <FormInput
+                  label="Giá"
+                  type="number"
+                  min="0"
+                  required
+                  value={boxForm.price}
+                  onChange={(value) => handleBoxFieldChange("price", value)}
+                />
+                <FormInput
+                  label="Số lượng box"
+                  type="number"
+                  min="0"
+                  required
+                  value={boxForm.quantity}
+                  onChange={(value) => handleBoxFieldChange("quantity", value)}
+                />
+              </div>
+              <FormTextarea
+                label="Ghi chú"
+                value={boxForm.description}
+                onChange={(value) => handleBoxFieldChange("description", value)}
               />
             </div>
-            <FormTextarea
-              label="Ghi chú"
-              value={boxForm.description}
-              onChange={(value) => handleBoxFieldChange("description", value)}
-            />
 
-            <div>
-              <p className="mb-2 text-sm font-bold text-slate-700">
-                Sản phẩm trong box *
-              </p>
-              <div className="max-h-56 overflow-y-auto rounded-lg border border-slate-200">
+            <section className="min-w-0 rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+              <div className="mb-3 flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-sm font-bold text-slate-700">
+                    Sản phẩm trong box *
+                  </p>
+                  <p className="mt-1 text-xs font-medium text-slate-400">
+                    Chọn sản phẩm và cấu hình số lượng, loại sản phẩm.
+                  </p>
+                </div>
+                <span className="shrink-0 rounded-full bg-pink-50 px-2.5 py-1 text-xs font-bold text-pink-500">
+                  {selectedBoxProducts.length}/{productOptions.length}
+                </span>
+              </div>
+              <div className="relative mb-3">
+                <Search
+                  size={17}
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
+                />
+                <input
+                  type="search"
+                  value={boxProductSearch}
+                  onChange={(event) => setBoxProductSearch(event.target.value)}
+                  placeholder="Tìm theo tên sản phẩm..."
+                  aria-label="Tìm sản phẩm trong box"
+                  className="h-10 w-full rounded-lg border border-slate-200 bg-white pl-10 pr-3 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
+                />
+              </div>
+              <div className="max-h-[calc(90vh-190px)] overflow-y-auto rounded-lg border border-slate-200 bg-white">
+                <div className="hidden items-center gap-3 border-b border-slate-200 bg-slate-50 px-4 py-2 text-[11px] font-bold uppercase tracking-wide text-slate-400 sm:flex">
+                  <span className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="min-w-[180px] flex-1">Sản phẩm</span>
+                  <span className="w-20 shrink-0">Số lượng</span>
+                  <span className="w-[106px] shrink-0">Loại</span>
+                  <span className="w-36 shrink-0">Nhóm lựa chọn</span>
+                </div>
                 {productOptions.length === 0 ? (
                   <p className="px-4 py-6 text-center text-sm font-semibold text-slate-400">
                     Chưa có sản phẩm lẻ để chọn.
                   </p>
+                ) : filteredBoxProducts.length === 0 ? (
+                  <p className="px-4 py-6 text-center text-sm font-semibold text-slate-400">
+                    Không tìm thấy sản phẩm phù hợp.
+                  </p>
                 ) : (
-                  productOptions.map((product) => {
+                  filteredBoxProducts.map((product) => {
                     const item = boxProducts[product.id] || {
                       selected: false,
                       quantity: 1,
@@ -807,7 +916,7 @@ function AdminProductsPage() {
                     return (
                       <label
                         key={product.id}
-                        className="flex items-center gap-3 border-b border-slate-100 px-4 py-3 last:border-b-0"
+                        className="flex flex-wrap items-center gap-3 border-b border-slate-100 px-4 py-3 last:border-b-0 sm:flex-nowrap"
                       >
                         <input
                           type="checkbox"
@@ -820,7 +929,7 @@ function AdminProductsPage() {
                           }
                           className="h-4 w-4 rounded border-slate-300 text-pink-500 focus:ring-pink-400"
                         />
-                        <span className="min-w-0 flex-1">
+                        <span className="min-w-[180px] flex-1">
                           <span className="block truncate text-sm font-bold text-slate-800">
                             {product.productName}
                           </span>
@@ -852,7 +961,7 @@ function AdminProductsPage() {
                             )
                           }
                           aria-label={`Loại sản phẩm ${product.productName}`}
-                          className="h-9 rounded-md border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-50 disabled:bg-slate-100 disabled:text-slate-400"
+                          className="h-9 w-[106px] shrink-0 rounded-md border border-slate-200 bg-white px-2 text-xs font-bold text-slate-700 outline-none focus:border-pink-300 focus:ring-4 focus:ring-pink-50 disabled:bg-slate-100 disabled:text-slate-400"
                         >
                           <option value="fixed">Cố định</option>
                           <option value="customizable">Thay đổi</option>
@@ -876,16 +985,30 @@ function AdminProductsPage() {
                   })
                 )}
               </div>
-            </div>
+            </section>
 
-            <ModalActions
-              isSubmitting={isSubmitting}
-              onCancel={closeBoxModal}
-              submitLabel={editingBox ? "Cập nhật" : "Xác nhận"}
-            />
+            <div className="lg:col-span-2">
+              <ModalActions
+                isSubmitting={isSubmitting}
+                onCancel={closeBoxModal}
+                onDelete={editingBox ? handleDeleteBox : undefined}
+                submitLabel={editingBox ? "Cập nhật" : "Xác nhận"}
+              />
+            </div>
           </form>
         </AdminModal>
       )}
+
+      <LogoutModal
+        isOpen={isDeleteBoxModalOpen}
+        onClose={() => setIsDeleteBoxModalOpen(false)}
+        onConfirm={handleConfirmDeleteBox}
+        title="Cảnh báo xoá box"
+        description="Xoá box có thể khiến dữ liệu phía khách hàng xảy ra sai sót. Nếu box này chưa có ai đặt thì xoá cũng không sao. Nếu muốn xoá an toàn, hãy liên hệ với phía dev."
+        cancelLabel="Huỷ"
+        confirmLabel="Vẫn xoá box"
+        cardClassName="logout-modal-card--warning"
+      />
     </main>
   );
 }
@@ -949,6 +1072,16 @@ function ImageUploadField({
   onChange,
   required = false,
 }) {
+  const previewUrl = useMemo(() => {
+    if (!file) return currentUrl || "";
+    return URL.createObjectURL(file);
+  }, [currentUrl, file]);
+
+  useEffect(() => {
+    if (!file || !previewUrl.startsWith("blob:")) return undefined;
+    return () => URL.revokeObjectURL(previewUrl);
+  }, [file, previewUrl]);
+
   return (
     <label className="block">
       <span className="mb-1 block text-sm font-bold text-slate-700">
@@ -956,10 +1089,10 @@ function ImageUploadField({
         {required && <span className="text-pink-500"> *</span>}
       </span>
       <div className="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
-        {currentUrl ? (
+        {previewUrl ? (
           <img
             className="h-14 w-14 rounded-md object-cover"
-            src={currentUrl}
+            src={previewUrl}
             alt={label}
           />
         ) : (
@@ -971,7 +1104,7 @@ function ImageUploadField({
           <input
             type="file"
             accept="image/*"
-            required={required && !currentUrl}
+            required={required && !currentUrl && !file}
             onChange={(event) => onChange(event.target.files?.[0] || null)}
             className="block w-full text-sm font-semibold text-slate-600 file:mr-3 file:rounded-md file:border-0 file:bg-pink-50 file:px-3 file:py-2 file:text-sm file:font-bold file:text-pink-500 hover:file:bg-pink-100"
           />
@@ -1002,10 +1135,12 @@ function FormTextarea({ label, value, onChange }) {
   );
 }
 
-function AdminModal({ title, children, onClose }) {
+function AdminModal({ title, children, onClose, wide = false }) {
   return (
     <div className="fixed inset-0 z-[1100] flex items-center justify-center bg-slate-950/30 px-4">
-      <div className="max-h-[90vh] w-full max-w-xl overflow-hidden rounded-lg bg-white shadow-xl">
+      <div
+        className={`max-h-[90vh] w-full ${wide ? "max-w-6xl" : "max-w-xl"} overflow-hidden rounded-lg bg-white shadow-xl`}
+      >
         <div className="flex items-center justify-between bg-pink-500 px-5 py-4 text-white">
           <h2 className="text-base font-bold">{title}</h2>
           <button
@@ -1025,16 +1160,34 @@ function AdminModal({ title, children, onClose }) {
   );
 }
 
-function ModalActions({ isSubmitting, onCancel, submitLabel = "Xác nhận" }) {
+function ModalActions({
+  isSubmitting,
+  onCancel,
+  onDelete,
+  submitLabel = "Xác nhận",
+}) {
   return (
     <div className="-mx-5 -mb-5 mt-5 flex items-center justify-between bg-slate-50 px-5 py-4">
-      <button
-        type="button"
-        onClick={onCancel}
-        className="rounded-md bg-slate-400 px-4 py-2 text-sm font-bold text-white transition hover:bg-slate-500"
-      >
-        Hủy
-      </button>
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-md bg-slate-400 px-4 py-2 text-sm font-bold text-white transition hover:bg-slate-500"
+        >
+          Hủy
+        </button>
+        {onDelete && (
+          <button
+            type="button"
+            onClick={onDelete}
+            disabled={isSubmitting}
+            className="inline-flex items-center gap-2 rounded-md border border-red-200 bg-red-50 px-4 py-2 text-sm font-bold text-red-600 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            <Trash2 size={16} />
+            Xoá box
+          </button>
+        )}
+      </div>
       <button
         type="submit"
         disabled={isSubmitting}

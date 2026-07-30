@@ -9,6 +9,19 @@ export const validateOrderId = (id) => {
   return id;
 };
 
+export const validateOrderCreatedAt = (value) => {
+  if (typeof value !== 'string' || !value.trim()) {
+    throw new HttpError(400, 'createdAt is required');
+  }
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    throw new HttpError(400, 'createdAt must be a valid date');
+  }
+
+  return date;
+};
+
 export const validateOrderQuery = (query) => {
   const page = Math.max(1, Number.parseInt(query.page, 10) || 1);
   const limit = Math.min(50, Math.max(1, Number.parseInt(query.limit, 10) || 12));

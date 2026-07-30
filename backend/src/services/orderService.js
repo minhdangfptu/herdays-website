@@ -2,6 +2,9 @@ import Order from '../models/orderModel.js';
 import Box from '../models/boxModel.js';
 import Cart from '../models/cartModel.js';
 import Product from '../models/productModel.js';
+import ExcelJS from 'exceljs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import {
   ORDER_STATUS,
   ORDER_STATUS_LABELS,
@@ -12,6 +15,33 @@ import {
 import HttpError from '../utils/httpError.js';
 
 const DELETED_ORDER_TTL_MS = 10 * 60 * 1000;
+const VIETNAM_TIME_ZONE = 'Asia/Ho_Chi_Minh';
+const ORDER_EXPORT_TEMPLATE_PATH = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../templates/order-export-template.xlsx'
+);
+
+const getVietnamDateParts = (value) => {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+
+  const parts = new Intl.DateTimeFormat('en-US', {
+    timeZone: VIETNAM_TIME_ZONE,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hourCycle: 'h23'
+  }).formatToParts(date);
+
+  return Object.fromEntries(
+    parts
+      .filter(({ type }) => type !== 'literal')
+      .map(({ type, value: partValue }) => [type, Number(partValue)])
+  );
+};
 const SUBSCRIPTION_DISCOUNTS = new Map([
   [1, 0],
   [3, 10],
@@ -240,6 +270,152 @@ const mapOrder = (order, itemMap) => ({
   createdAt: order.createdAt,
   updatedAt: order.updatedAt
 });
+
+const getOrderExportProductText = (item) => {
+  const customizationText = (item.customizedProducts || [])
+    .filter((customizedProduct) => Number(customizedProduct.quantity) > 0)
+    .map((customizedProduct) => (
+      `${customizedProduct.productName || 'Sản phẩm'} x${customizedProduct.quantity}`
+    ))
+    .join('; ');
+
+  return customizationText
+    ? `${item.itemName || 'Sản phẩm'} (${customizationText})`
+    : item.itemName || 'Sản phẩm';
+};
+
+const toVietnamExcelDate = (value) => {
+  if (!value) return null;
+  const values = getVietnamDateParts(value);
+  if (!values) return null;
+
+  return new Date(Date.UTC(
+    values.year,
+    values.month - 1,
+    values.day,
+    values.hour,
+    values.minute,
+    values.second
+  ));
+};
+
+const copyTemplateRowStyle = (sourceRow, targetRow) => {
+  targetRow.height = sourceRow.height;
+  for (let column = 1; column <= 10; column += 1) {
+    targetRow.getCell(column).style = { ...sourceRow.getCell(column).style };
+  }
+};
+
+const buildOrderExportRows = (orders) => orders.map((order) => {
+  const items = order.items || [];
+  const productText = items.map(getOrderExportProductText).join('; ');
+  const quantity = items.reduce(
+    (total, item) => total + (Number(item.quantity) || 0),
+    0
+  );
+
+  return {
+    date: toVietnamExcelDate(order.createdAt),
+    orderCode: String(order.id || '').slice(-5).toUpperCase(),
+    customer: order.user?.fullName || order.user?.email || 'Người dùng',
+    productType: productText || 'Đơn hàng',
+    price: Number(order.subtotalAmount ?? order.totalAmount) || 0,
+    quantity,
+    total: Number(order.totalAmount) || 0,
+    phone: order.user?.phone || '',
+    address: order.user?.address || 'Chưa cập nhật'
+  };
+});
+
+export const exportOrders = async ({ search, status }) => {
+  const filter = {};
+
+  if (status) filter.orderStatus = getStatusFilter(status);
+
+  if (search) {
+    filter.$or = [
+      { 'items.itemId': { $regex: search, $options: 'i' } },
+      { 'items.isBox': { $regex: search, $options: 'i' } }
+    ];
+  }
+
+  const orders = await Order.find(filter)
+    .sort({ createdAt: -1 })
+    .populate('userId', 'fullName email phone address');
+  const itemMap = await getOrderItemMap(orders);
+  const mappedOrders = orders.map((order) => mapOrder(order, itemMap));
+  const exportRows = buildOrderExportRows(mappedOrders);
+
+  const workbook = new ExcelJS.Workbook();
+  await workbook.xlsx.readFile(ORDER_EXPORT_TEMPLATE_PATH);
+  const worksheet = workbook.worksheets[0];
+  const templateStartRow = 3;
+  const templateEndRow = worksheet.rowCount;
+  const exportDate = getVietnamDateParts(new Date());
+  const exportDateLabel = [exportDate.day, exportDate.month, exportDate.year]
+    .map((part) => String(part).padStart(2, '0'))
+    .join('-');
+
+  worksheet.getCell('A1').value = `Revenue for (${exportDateLabel})`;
+  const templateRow = worksheet.getRow(templateStartRow);
+  worksheet.getCell('C2').value = 'Order code';
+  worksheet.getColumn(10).width = 42;
+
+  exportRows.forEach((exportRow, index) => {
+    const row = worksheet.getRow(templateStartRow + index);
+    copyTemplateRowStyle(templateRow, row);
+
+    row.getCell(1).value = index + 1;
+    row.getCell(2).value = exportRow.date;
+    row.getCell(3).value = exportRow.orderCode;
+    row.getCell(3).numFmt = '@';
+    row.getCell(4).value = exportRow.customer;
+    row.getCell(5).value = exportRow.productType;
+    row.getCell(6).value = exportRow.price;
+    row.getCell(7).value = exportRow.quantity;
+    row.getCell(8).value = exportRow.total;
+    row.getCell(9).numFmt = '@';
+    row.getCell(9).value = String(exportRow.phone || '').trim();
+    row.getCell(10).value = exportRow.address;
+    row.getCell(10).alignment = {
+      ...row.getCell(10).alignment,
+      wrapText: true,
+      vertical: 'middle'
+    };
+  });
+
+  for (let rowNumber = templateStartRow + exportRows.length; rowNumber <= templateEndRow; rowNumber += 1) {
+    const row = worksheet.getRow(rowNumber);
+    for (let column = 1; column <= 10; column += 1) {
+      row.getCell(column).value = null;
+    }
+  }
+
+  const lastUsedRow = Math.max(templateEndRow, templateStartRow + exportRows.length - 1);
+  for (let rowNumber = 1; rowNumber <= lastUsedRow; rowNumber += 1) {
+    const row = worksheet.getRow(rowNumber);
+    for (let column = 1; column <= 10; column += 1) {
+      const cell = row.getCell(column);
+      cell.font = { ...cell.font, name: 'Times New Roman' };
+    }
+  }
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const datePart = [exportDate.day, exportDate.month, exportDate.year]
+    .map((part) => String(part).padStart(2, '0'))
+    .join('-');
+  const timePart = [exportDate.hour, exportDate.minute]
+    .map((part) => String(part).padStart(2, '0'))
+    .join('-');
+  const dataAsOfDate = [exportDate.year, exportDate.month, exportDate.day]
+    .map((part) => String(part).padStart(2, '0'))
+    .join('-');
+
+  return {
+    buffer,
+    fileName: `${datePart}_${timePart}_data-to-${dataAsOfDate}.xlsx`
+  };
+};
 
 export const getOrders = async ({ page, limit, search, status }) => {
   const filter = {};
@@ -476,6 +652,18 @@ export const updateOrderStatus = async (id, status) => {
 
   const itemMap = await getOrderItemMap([updatedOrder]);
   return mapOrder(updatedOrder, itemMap);
+};
+
+export const updateOrderCreatedAt = async (id, createdAt) => {
+  const order = await Order.findById(id).select('_id');
+  if (!order) throw new HttpError(404, 'Order not found');
+
+  await Order.collection.updateOne(
+    { _id: order._id },
+    { $set: { createdAt, updatedAt: new Date() } }
+  );
+
+  return getOrderById(id);
 };
 
 export const getOrderStats = async () => {

@@ -9,7 +9,9 @@ router.use(authMiddleware, adminMiddleware);
 
 router.get('/', orderController.getOrders);
 router.get('/stats', orderController.getStats);
+router.get('/export', orderController.exportOrders);
 router.get('/:id', orderController.getOrder);
+router.patch('/:id/created-at', orderController.updateCreatedAt);
 router.put('/:id/status', orderController.updateStatus);
 
 export default router;
