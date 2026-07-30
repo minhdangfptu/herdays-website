@@ -79,7 +79,7 @@ function BlogPostDetailPage() {
           <FiArrowLeft size={18} />
           <span>Quay lại</span>
         </Link>
-        <p  style={{marginBottom: '30px'}} className="blog-detail-breadcrumb">
+        <p className="blog-detail-breadcrumb">
           <Link to="/">Trang chủ</Link>
           <FiChevronRight size={14} />
           <Link to="/blog"> Chủ đề</Link>
@@ -88,7 +88,9 @@ function BlogPostDetailPage() {
             {post.topicId?.name || post.postTopicId?.name || 'Chủ đề'}
           </Link>
           <FiChevronRight size={14} />
-          <span>{post.title?.length > 64 ? `${post.title.slice(0, 64)}...` : post.title}</span>
+          <span className="blog-detail-breadcrumb__current" title={post.title}>
+            {post.title}
+          </span>
         </p>
 
         <div className="blog-detail-layout">

@@ -93,7 +93,6 @@ export default function ProductDetailPage() {
       name: product.productName || 'Sản phẩm trong box',
       subtitle: product.category || item?.category || 'HerDays',
       thumbnail: product.thumbnail,
-      price: product.price,
       quantity: product.quantity || 1
     }))
   ), [item])
@@ -286,6 +285,9 @@ export default function ProductDetailPage() {
 
             <div className="product-detail-price-section">
               <span className="product-detail-current-price">{formatCurrency(item.price)}</span>
+              {!isBox && item.unit && (
+                <span className="product-detail-unit">/ {item.unit}</span>
+              )}
               {isBox && (
                 <span className="product-detail-discount">
                   {availableQuantity > 0 ? `Còn ${availableQuantity}` : 'Hết hàng'}
@@ -426,7 +428,6 @@ export default function ProductDetailPage() {
                         </span>
                       </div>
                       <h3 className="product-detail-related-name">{relatedProduct.name}</h3>
-                      <span className="product-detail-related-price">{formatCurrency(relatedProduct.price)}</span>
                     </div>
                   </Link>
                 ))

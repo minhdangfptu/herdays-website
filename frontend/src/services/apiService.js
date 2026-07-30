@@ -437,10 +437,10 @@ export const orderApi = {
     const response = await request(`/orders/${id}`, { isAuthenticated: true })
     return response.data
   },
-  createFromCart: async ({ paymentMethod = 'bank_transfer', lovelyMessage = '', boxIds } = {}) => {
+  createFromCart: async ({ paymentMethod = 'bank_transfer', lovelyMessage = '', boxIds, subscriptionMonths = 1 } = {}) => {
     const response = await request('/orders', {
       method: 'POST',
-      body: { paymentMethod, lovelyMessage, boxIds },
+      body: { paymentMethod, lovelyMessage, boxIds, subscriptionMonths },
       isAuthenticated: true
     })
     return response.data
@@ -533,6 +533,10 @@ export const adminApi = {
   getOrders: async (params = {}) => {
     const response = await request(`/admin/orders${buildQuery(params)}`, { isAuthenticated: true })
     return { orders: response.data, pagination: response.meta }
+  },
+  getOrder: async (id) => {
+    const response = await request(`/admin/orders/${id}`, { isAuthenticated: true })
+    return response.data
   },
   getOrderStats: async () => {
     const response = await request('/admin/orders/stats', { isAuthenticated: true })

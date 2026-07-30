@@ -41,6 +41,7 @@ import Error404 from "./pages/Error/Error404.jsx";
 import Marketplace from "./pages/Marketplace/Marketplace.jsx";
 import Checkout from "./pages/Marketplace/Checkout.jsx";
 import QRPayment from "./pages/Marketplace/QRPayment.jsx";
+import CompleteTransactionPage from "./pages/Marketplace/CompleteTransactionPage.jsx";
 import Cart from "./pages/Marketplace/Cart.jsx";
 import BoxCustomize from "./pages/Marketplace/BoxCustomize.jsx";
 import ProductDetailPage from "./pages/Marketplace/ProductDetailPage.jsx";
@@ -265,6 +266,7 @@ function AppRoutes({ session }) {
             <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/check-out" element={<Checkout />} />
             <Route path="/qr-payment" element={<QRPayment />} />
+            <Route path="/complete-transaction" element={<CompleteTransactionPage />} />
             <Route path="/cart" element={<Cart />} />
             <Route path="/box-customize" element={<BoxCustomize />} />
             <Route path="/box-customize/:boxId" element={<BoxCustomize />} />

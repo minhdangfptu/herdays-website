@@ -15,6 +15,18 @@ $gray-border: #D1D5DB;
 $success-green: #4CAF50;
 $info-blue: #2196F3;
 
+.user-profile-order-view-btn {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .user-profile-order-view-btn {
+    min-height: 40px;
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+}
+
 // ============================================
 // Main Container
 // (padding/bg now handled by Tailwind on <main>)

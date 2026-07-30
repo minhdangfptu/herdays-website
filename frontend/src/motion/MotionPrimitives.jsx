@@ -21,8 +21,9 @@ export function PageTransition({ children, className = '' }) {
 
   return (
     <AnimatePresence mode="wait" initial={false}>
+      {/* Query-string modals should not re-trigger the page transition. */}
       <motion.div
-        key={`${location.pathname}${location.search}`}
+        key={location.pathname}
         className={`site-route-motion ${className}`.trim()}
         initial={shouldReduceMotion ? { opacity: 0 } : { opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}

@@ -33,6 +33,64 @@ const orderItemSchema = new mongoose.Schema(
       ],
       default: []
     },
+    boxSnapshot: {
+      boxName: {
+        type: String,
+        default: null
+      },
+      thumbnail: {
+        type: String,
+        default: null
+      },
+      category: {
+        type: String,
+        default: null
+      },
+      products: {
+        type: [
+          {
+            productId: {
+              type: mongoose.Schema.Types.ObjectId,
+              ref: 'Product',
+              required: true
+            },
+            productName: {
+              type: String,
+              required: true
+            },
+            unit: {
+              type: String,
+              default: null
+            },
+            thumbnail: {
+              type: String,
+              default: null
+            },
+            price: {
+              type: Number,
+              default: 0,
+              min: 0
+            },
+            quantity: {
+              type: Number,
+              min: 1,
+              default: 1
+            },
+            isCustomizable: {
+              type: Boolean,
+              default: false
+            },
+            selectionGroup: {
+              type: String,
+              trim: true,
+              default: null,
+              maxlength: 100
+            }
+          }
+        ],
+        default: []
+      }
+    },
     price: {
       type: Number,
       required: true,
@@ -61,6 +119,27 @@ const orderSchema = new mongoose.Schema(
       type: Number,
       required: true,
       min: 0
+    },
+    subtotalAmount: {
+      type: Number,
+      required: false,
+      min: 0
+    },
+    subscriptionMonths: {
+      type: Number,
+      enum: [1, 3, 6, 12],
+      default: 1
+    },
+    discountPercent: {
+      type: Number,
+      min: 0,
+      max: 100,
+      default: 0
+    },
+    discountAmount: {
+      type: Number,
+      min: 0,
+      default: 0
     },
     paymentMethod: {
       type: String,

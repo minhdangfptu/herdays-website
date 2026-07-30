@@ -17,21 +17,46 @@ const assertStockAvailable = (box, quantity) => {
   }
 };
 
+const getProductId = (item) => item.productId._id?.toString() || item.productId.toString();
+
+const getDefaultSelectedItems = (box) => {
+  const selectedItems = [];
+  const selectedGroups = new Set();
+
+  box.products.forEach((item) => {
+    if (item.isCustomizable === true) {
+      return;
+    }
+
+    if (
+      item.selectionGroup &&
+      !selectedGroups.has(item.selectionGroup) &&
+      Number(item.productId.quantity) > 0
+    ) {
+      selectedGroups.add(item.selectionGroup);
+      selectedItems.push({ productId: item.productId._id || item.productId, quantity: item.quantity });
+    }
+  });
+
+  return selectedItems;
+};
+
 const normalizeCustomizedProducts = (box, customizedProducts) => {
   const customizableItems = box.products.filter((item) => item.isCustomizable === true);
+  const selectableFixedItems = box.products.filter(
+    (item) => item.isCustomizable !== true && item.selectionGroup
+  );
+  const selectableItems = [...customizableItems, ...selectableFixedItems];
   const selectedItems = customizedProducts === undefined
-    ? customizableItems.map((item) => ({
-      productId: item.productId._id || item.productId,
-      quantity: item.quantity
-    }))
+    ? getDefaultSelectedItems(box)
     : customizedProducts;
 
   if (!Array.isArray(selectedItems)) {
     throw new HttpError(400, 'customizedProducts must be an array');
   }
 
-  const allowed = new Map(customizableItems.map((item) => [
-    item.productId._id?.toString() || item.productId.toString(),
+  const allowed = new Map(selectableItems.map((item) => [
+    getProductId(item),
     item
   ]));
   const selectedById = new Map();
@@ -46,42 +71,50 @@ const normalizeCustomizedProducts = (box, customizedProducts) => {
     if (!Number.isInteger(quantity) || quantity < 1) {
       throw new HttpError(400, 'Customized product quantity must be an integer >= 1');
     }
+    if (Number.isFinite(Number(boxItem.productId.quantity)) && quantity > Number(boxItem.productId.quantity)) {
+      throw new HttpError(400, 'Customized product quantity exceeds available stock');
+    }
 
     selectedById.set(key, (selectedById.get(key) || 0) + quantity);
   });
 
-  const requiredByCategory = new Map();
-  const fixedByCategory = new Map();
-  box.products.forEach((item) => {
-    const category = item.productId.category || 'Sản phẩm khác';
-    requiredByCategory.set(category, (requiredByCategory.get(category) || 0) + item.quantity);
-    if (item.isCustomizable !== true) {
-      fixedByCategory.set(category, (fixedByCategory.get(category) || 0) + item.quantity);
-    }
-  });
-
-  const selectedByCategory = new Map(fixedByCategory);
+  const selectedGroupCounts = new Map();
   selectedById.forEach((quantity, productId) => {
-    const category = allowed.get(productId).productId.category || 'Sản phẩm khác';
-    selectedByCategory.set(category, (selectedByCategory.get(category) || 0) + quantity);
+    const boxItem = allowed.get(productId);
+    if (boxItem?.selectionGroup) {
+      selectedGroupCounts.set(
+        boxItem.selectionGroup,
+        (selectedGroupCounts.get(boxItem.selectionGroup) || 0) + 1
+      );
+    }
   });
 
-  for (const [category, requiredQuantity] of requiredByCategory) {
-    if ((selectedByCategory.get(category) || 0) !== requiredQuantity) {
-      throw new HttpError(400, 'Please select the required product quantities for each category');
+  const selectionGroups = new Set(selectableFixedItems.map((item) => item.selectionGroup));
+  selectionGroups.forEach((selectionGroup) => {
+    if (selectedGroupCounts.get(selectionGroup) !== 1) {
+      throw new HttpError(400, `Please select exactly one product from ${selectionGroup}`);
     }
-  }
+  });
 
   return [...selectedById.entries()].map(([productId, quantity]) => ({ productId, quantity }));
 };
 
+const populateCart = async (cart) => {
+  await cart.populate('items.boxId');
+  await cart.populate({
+    path: 'items.customizedProducts.productId',
+    select: 'productName price thumbnail'
+  });
+  return cart;
+};
+
 export const getCart = async (userId) => {
-  let cart = await Cart.findOne({ userId }).populate('items.boxId');
+  let cart = await Cart.findOne({ userId });
   if (!cart) {
     cart = await Cart.create({ userId, items: [] });
   }
 
-  return cart;
+  return populateCart(cart);
 };
 
 export const addToCart = async (userId, boxId, quantity = 1, customizedProducts) => {
@@ -91,7 +124,7 @@ export const addToCart = async (userId, boxId, quantity = 1, customizedProducts)
     throw new HttpError(400, 'Invalid boxId');
   }
 
-  const box = await Box.findById(boxId).populate('products.productId', 'category');
+  const box = await Box.findById(boxId).populate('products.productId', 'category price quantity');
   if (!box) throw new HttpError(404, 'Box not found');
   const normalizedCustomizedProducts = normalizeCustomizedProducts(box, customizedProducts);
 
@@ -116,9 +149,7 @@ export const addToCart = async (userId, boxId, quantity = 1, customizedProducts)
   }
 
   await cart.save();
-  await cart.populate('items.boxId');
-
-  return cart;
+  return populateCart(cart);
 };
 
 export const updateCartItem = async (userId, boxId, quantity) => {
@@ -143,9 +174,7 @@ export const updateCartItem = async (userId, boxId, quantity) => {
 
   item.quantity = nextQuantity;
   await cart.save();
-  await cart.populate('items.boxId');
-
-  return cart;
+  return populateCart(cart);
 };
 
 export const removeFromCart = async (userId, boxId) => {
@@ -161,9 +190,7 @@ export const removeFromCart = async (userId, boxId) => {
 
   cart.items.splice(itemIndex, 1);
   await cart.save();
-  await cart.populate('items.boxId');
-
-  return cart;
+  return populateCart(cart);
 };
 
 export const clearCart = async (userId) => {
@@ -173,5 +200,5 @@ export const clearCart = async (userId) => {
   cart.items = [];
   await cart.save();
 
-  return cart;
+  return populateCart(cart);
 };

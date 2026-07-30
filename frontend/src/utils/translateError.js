@@ -50,6 +50,7 @@ const TRANSLATIONS = {
   'E12000': 'Email đã được sử dụng cho tài khoản khác.',
   'P12000': 'Số điện thoại đã được sử dụng cho tài khoản khác.',
   'Invalid Vietnamese phone format': 'Số điện thoại Việt Nam phải có 10 chữ số và bắt đầu bằng 0.',
+  'subscriptionMonths must be one of: 1, 3, 6, 12': 'Gói đăng ký phải là 1, 3, 6 hoặc 12 tháng.',
 
   // Network
   'failed to fetch': 'Vui lòng kiểm tra kết nối và thử lại sau.',
@@ -60,6 +61,7 @@ const TRANSLATIONS = {
   'Please select the required product quantities for each category': 'Vui lĂ²ng chá»n Ä‘Ăºng sá»‘ lÆ°á»£ng sáº£n pháº©m trong tá»«ng danh má»¥c.',
   'Box is out of stock': 'Box nay da het hang.',
   'Requested quantity exceeds available stock': 'Số lượng hàng vượt quá hàng có sẵn.',
+  'Customized product quantity exceeds available stock': 'Số lượng sản phẩm thêm vượt quá tồn kho hiện có.',
   'Quantity must be an integer': 'Số lượng phải là số nguyên.',
   'Quantity must be at least 1': 'Số lượng phải lớn hơn hoặc bằng 1.',
 

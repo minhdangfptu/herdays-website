@@ -5,22 +5,18 @@ import {
   Building2,
   CheckCircle,
   CreditCard,
-  Edit3,
   Headphones,
-  Loader2,
-  MapPin,
   QrCode,
-  Save,
   Smartphone,
   User,
   XCircle
 } from 'lucide-react';
-import { orderApi, profileApi } from '../../services/apiService.js';
-import { Skeleton } from '../../components/Skeleton.jsx';
+import { orderApi } from '../../services/apiService.js';
 import './QRPayment.scss';
 
 const QR_EXPIRES_SECONDS = 10 * 60;
 const POLL_INTERVAL_MS = 4000;
+const COMPLETE_TRANSACTION_DELAY_MS = 15 * 1000;
 
 const BANK_CODE = 'MB';
 const BANK_NAME = 'MB Bank';
@@ -52,11 +48,6 @@ export default function QRPayment() {
   const [isCancelling, setIsCancelling] = useState(false);
   const [isCancelModalOpen, setIsCancelModalOpen] = useState(false);
   const [statusError, setStatusError] = useState('');
-  const [shippingAddress, setShippingAddress] = useState('');
-  const [isAddressEditing, setIsAddressEditing] = useState(false);
-  const [isAddressLoading, setIsAddressLoading] = useState(true);
-  const [isSavingAddress, setIsSavingAddress] = useState(false);
-  const [addressError, setAddressError] = useState('');
 
   const amount = Number(state?.amount) || 0;
   const orderId = state?.orderId || '';
@@ -64,6 +55,19 @@ export default function QRPayment() {
   const isExpired = secondsRemaining <= 0;
   const isPaymentSuccess = SUCCESS_STATUSES.includes(orderStatus);
   const isCancelled = orderStatus === 'cancelled';
+
+  useEffect(() => {
+    if (isCancelled || isCancelModalOpen || isCancelling) return undefined;
+
+    const timeoutId = window.setTimeout(() => {
+      navigate('/complete-transaction', {
+        replace: true,
+        state: { amount, orderCode, orderId }
+      });
+    }, COMPLETE_TRANSACTION_DELAY_MS);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [amount, isCancelled, isCancelModalOpen, isCancelling, navigate, orderCode, orderId]);
 
   const transferContent = useMemo(
     () => `${orderCode} - Thanh toán đơn hàng`,
@@ -80,31 +84,6 @@ export default function QRPayment() {
 
     return `https://img.vietqr.io/image/${BANK_CODE}-${BANK_ACCOUNT_NUMBER}-compact2.png?${searchParams.toString()}`;
   }, [amount, transferContent]);
-
-  useEffect(() => {
-    let isActive = true;
-
-    profileApi.getProfile()
-      .then((profile) => {
-        if (!isActive) return;
-        const nextAddress = profile?.address || '';
-        setShippingAddress(nextAddress);
-        setIsAddressEditing(!nextAddress.trim());
-        setAddressError('');
-      })
-      .catch((error) => {
-        if (!isActive) return;
-        setAddressError(error.message || 'Không thể tải địa chỉ giao hàng.');
-        setIsAddressEditing(true);
-      })
-      .finally(() => {
-        if (isActive) setIsAddressLoading(false);
-      });
-
-    return () => {
-      isActive = false;
-    };
-  }, []);
 
   useEffect(() => {
     if (isPaymentSuccess || isCancelled) return undefined;
@@ -168,28 +147,6 @@ export default function QRPayment() {
   const handleCloseCancelModal = () => {
     if (isCancelling) return;
     setIsCancelModalOpen(false);
-  };
-
-  const handleSaveAddress = async () => {
-    const trimmedAddress = shippingAddress.trim();
-    if (!trimmedAddress) {
-      toast.error('Vui lòng nhập địa chỉ giao hàng.');
-      return;
-    }
-
-    setIsSavingAddress(true);
-    try {
-      const result = await profileApi.updateProfile({ address: trimmedAddress });
-      const nextAddress = result.profile?.address || trimmedAddress;
-      setShippingAddress(nextAddress);
-      setIsAddressEditing(false);
-      setAddressError('');
-      toast.success('Đã lưu địa chỉ giao hàng.');
-    } catch (error) {
-      toast.error(error.message || 'Không thể lưu địa chỉ giao hàng.');
-    } finally {
-      setIsSavingAddress(false);
-    }
   };
 
   const handleConfirmCancelOrder = async () => {
@@ -289,54 +246,6 @@ export default function QRPayment() {
               </div>
             </div>
 
-            <div className="mt-6 rounded-2xl border border-pink-100 bg-white p-5 shadow-sm">
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div className="flex items-center gap-2">
-                  <span className="flex h-9 w-9 items-center justify-center rounded-full bg-pink-50 text-[#ed77a5]">
-                    <MapPin size={17} />
-                  </span>
-                  <div>
-                    <p className="m-0 text-sm font-bold text-slate-800">Địa chỉ giao hàng</p>
-                    <p className="m-0 text-xs font-medium text-slate-400">Dùng địa chỉ trong hồ sơ của bạn</p>
-                  </div>
-                </div>
-                {isAddressEditing ? (
-                  <button
-                    type="button"
-                    className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-[#ed77a5] px-3 text-xs font-bold text-white transition hover:bg-[#d95f91] disabled:cursor-not-allowed disabled:opacity-60"
-                    disabled={isSavingAddress || isAddressLoading}
-                    onClick={handleSaveAddress}
-                  >
-                    {isSavingAddress ? <Loader2 className="animate-spin" size={14} /> : <Save size={14} />}
-                    Lưu
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg border border-pink-200 bg-white px-3 text-xs font-bold text-[#ed77a5] transition hover:bg-pink-50"
-                    disabled={isAddressLoading}
-                    onClick={() => setIsAddressEditing(true)}
-                  >
-                    <Edit3 size={14} />
-                    Sửa
-                  </button>
-                )}
-              </div>
-
-              {isAddressLoading ? (
-                <Skeleton className="h-[82px] w-full rounded-xl" />
-              ) : (
-                <textarea
-                  className="min-h-[82px] w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:ring-4 focus:ring-pink-50 disabled:bg-slate-50 disabled:text-slate-500"
-                  value={shippingAddress}
-                  disabled={!isAddressEditing || isSavingAddress}
-                  maxLength={255}
-                  placeholder="Nhập địa chỉ nhận hàng của bạn"
-                  onChange={(event) => setShippingAddress(event.target.value)}
-                />
-              )}
-              {addressError && <p className="mt-2 text-xs font-semibold text-red-500">{addressError}</p>}
-            </div>
           </div>
 
           <div className="herdays-qrpayment-right">

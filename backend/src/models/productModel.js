@@ -7,6 +7,12 @@ const productSchema = new mongoose.Schema(
       required: true,
       trim: true
     },
+    unit: {
+      type: String,
+      required: true,
+      trim: true,
+      maxlength: 100
+    },
     thumbnail: {
       type: String,
       required: true

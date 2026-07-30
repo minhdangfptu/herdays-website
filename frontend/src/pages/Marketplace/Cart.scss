@@ -774,3 +774,125 @@ $font-primary: 'Roboto', sans-serif;
     cursor: not-allowed;
   }
 }
+
+@media (max-width: 600px) {
+  // Replace the desktop table grid with a readable two-row product card.
+  .cart-table-header {
+    display: none;
+  }
+
+  .cart-table-row {
+    grid-template-areas:
+      "product quantity"
+      "price total";
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 14px 12px;
+    padding: 18px 0;
+  }
+
+  .cart-col-product {
+    grid-area: product;
+    min-width: 0;
+  }
+
+  .cart-col-price {
+    grid-area: price;
+    min-width: 0;
+    gap: 6px;
+  }
+
+  .cart-col-quantity {
+    grid-area: quantity;
+    align-items: flex-start;
+  }
+
+  .cart-col-total {
+    grid-area: total;
+    align-items: flex-end;
+    justify-content: flex-start;
+    gap: 8px;
+  }
+
+  .cart-product-info {
+    min-width: 0;
+    gap: 10px;
+  }
+
+  .cart-product-image {
+    width: 72px;
+    height: 72px;
+  }
+
+  .cart-product-details {
+    min-width: 0;
+  }
+
+  .cart-product-name,
+  .cart-product-attr {
+    overflow-wrap: anywhere;
+  }
+
+  .cart-stock-status {
+    flex-wrap: wrap;
+    line-height: 1.35;
+  }
+
+  .cart-stock-remaining {
+    max-width: 100%;
+    line-height: 1.3;
+  }
+
+  .cart-quantity-control {
+    gap: 2px;
+    padding: 2px;
+  }
+
+  .cart-quantity-btn {
+    min-width: 30px;
+    min-height: 32px;
+    padding: 4px;
+  }
+
+  .cart-quantity-input {
+    width: 28px;
+  }
+
+  .cart-item-total {
+    white-space: nowrap;
+  }
+
+  .cart-checkout-section {
+    align-items: stretch;
+  }
+
+  .cart-subtotal-box {
+    margin-right: 0;
+  }
+
+  .cart-subtotal-row {
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 14px;
+  }
+
+  .cart-subtotal-row > span:first-child {
+    max-width: 58%;
+    line-height: 1.4;
+  }
+
+  .cart-subtotal-amount {
+    font-size: 20px;
+    white-space: nowrap;
+  }
+
+  .cart-action-buttons {
+    width: 100%;
+    gap: 10px;
+  }
+
+  .cart-btn-continue,
+  .cart-btn-checkout {
+    width: 100%;
+    min-height: 44px;
+  }
+}

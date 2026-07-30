@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { FiEdit2, FiTrash2, FiInfo, FiX } from "react-icons/fi";
 import { AiOutlineUser, AiOutlineCheck } from "react-icons/ai";
-import { Briefcase, Calendar, Eye, Heart, Mail, MapPin, Package, Phone, X } from "lucide-react";
+import { Briefcase, Calendar, Heart, Mail, MapPin, Package, Phone, X } from "lucide-react";
 import DeleteAccountModal from "../../components/DeleteAccountModal";
+import OrderCustomizationDetails from "../../components/OrderCustomizationDetails.jsx";
 import toast from "react-hot-toast";
 import { orderApi, profileApi } from "../../services/apiService.js";
 import { Skeleton, TableSkeleton } from "../../components/Skeleton.jsx";
@@ -78,9 +79,9 @@ function OrderDetailModal({ order, isLoading, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/40 px-4 py-6" onClick={onClose}>
+    <div className="fixed inset-x-0 bottom-0 top-[65px] z-50 flex items-start justify-center overflow-y-auto bg-slate-950/40 px-4 py-6" onClick={onClose}>
       <section
-        className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
+        className="max-h-[calc(100vh-65px-3rem)] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white shadow-2xl"
         role="dialog"
         aria-modal="true"
         aria-labelledby="order-detail-title"
@@ -138,21 +139,28 @@ function OrderDetailModal({ order, isLoading, onClose }) {
               <h3 className="mb-3 text-sm font-extrabold text-slate-800">Sản phẩm</h3>
               <div className="divide-y divide-slate-100 rounded-xl border border-slate-100">
                 {(order.items || []).map((item) => (
-                  <div key={String(item.itemId)} className="flex items-center gap-4 p-4">
-                    {item.thumbnail ? (
-                      <img className="h-16 w-16 rounded-lg border border-slate-100 object-cover" src={item.thumbnail} alt={item.itemName || "Sản phẩm"} />
-                    ) : (
-                      <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-pink-50 text-[#ed77a5]">
-                        <Package size={24} />
-                      </span>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="truncate text-sm font-bold text-slate-800">{item.itemName || "Sản phẩm"}</p>
-                      <p className="mt-1 text-xs font-medium text-slate-400">Số lượng: {item.quantity}</p>
+                  <div key={String(item.itemId)}>
+                    <div className="flex items-center gap-4 p-4">
+                      {item.thumbnail ? (
+                        <img className="h-16 w-16 rounded-lg border border-slate-100 object-cover" src={item.thumbnail} alt={item.itemName || "Sản phẩm"} />
+                      ) : (
+                        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-lg bg-pink-50 text-[#ed77a5]">
+                          <Package size={24} />
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-bold text-slate-800">{item.itemName || (item.isBox ? "Box trong đơn hàng" : "Sản phẩm")}</p>
+                        <p className="mt-1 text-xs font-medium text-slate-400">Số lượng: {item.quantity}</p>
+                      </div>
+                      <p className="text-right text-sm font-extrabold text-slate-700">
+                        {formatOrderCurrency(Number(item.price) * Number(item.quantity))}
+                      </p>
                     </div>
-                    <p className="text-right text-sm font-extrabold text-slate-700">
-                      {formatOrderCurrency(Number(item.price) * Number(item.quantity))}
-                    </p>
+                    {item.isBox && (
+                      <div className="px-4 pb-4">
+                        <OrderCustomizationDetails item={item} showProductStatus={false} />
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -327,7 +335,7 @@ export default function UserProfile() {
   const handleCloseOrderDetail = () => {
     setSelectedOrder(null);
     setOrderDetailError(null);
-    setSearchParams({});
+    setSearchParams({}, { replace: true });
   };
 
   const userData = {
@@ -671,10 +679,9 @@ export default function UserProfile() {
                         <button
                           type="button"
                           onClick={() => handleViewOrder(order.id)}
-                          className="inline-flex items-center gap-2 rounded-lg border border-pink-200 px-3 py-2 text-xs font-bold text-[#ed77a5] transition hover:bg-pink-50"
+                          className="user-profile-order-view-btn inline-flex min-h-10 items-center justify-center rounded-lg bg-[#ed77a5] px-4 py-2 text-sm font-bold text-white shadow-sm transition-colors hover:bg-[#d95f91] focus:outline-none focus:ring-4 focus:ring-pink-100"
                         >
-                          <Eye size={15} />
-                          Xem chi tiết
+                          Xem
                         </button>
                       </td>
                     </tr>

@@ -12,6 +12,62 @@ import {
 import HttpError from '../utils/httpError.js';
 
 const DELETED_ORDER_TTL_MS = 10 * 60 * 1000;
+const SUBSCRIPTION_DISCOUNTS = new Map([
+  [1, 0],
+  [3, 10],
+  [6, 15],
+  [12, 20]
+]);
+
+const LEGACY_BOX_DETAILS_BY_PRICE = new Map([
+  [329000, {
+    itemName: 'Box chăm sóc ngày dâu',
+    thumbnail: null,
+    category: 'Chăm sóc kỳ kinh',
+    boxProducts: [
+      { productName: 'Dầu ấm thư giãn HerDays', unit: 'chai', quantity: 1, boxQuantity: 1 },
+      { productName: 'Túi chườm bụng mini', unit: 'túi', quantity: 1, boxQuantity: 1 },
+      { productName: 'Trà gừng mật ong', unit: 'túi', quantity: 2, boxQuantity: 2 },
+      { productName: 'Khăn ướt dịu nhẹ', unit: 'gói', quantity: 1, boxQuantity: 1 }
+    ]
+  }]
+]);
+
+const getCustomizedBoxPrice = (box, customizedProducts = []) => {
+  const selectedById = new Map(
+    customizedProducts.map((item) => [item.productId.toString(), Number(item.quantity) || 0])
+  );
+
+  const customizationExtra = box.products
+    .filter((item) => item.isCustomizable === true)
+    .reduce((total, item) => {
+      const productId = item.productId._id?.toString() || item.productId.toString();
+      const selectedQuantity = selectedById.get(productId) || 0;
+      return total + selectedQuantity * (Number(item.productId.price) || 0);
+    }, 0);
+
+  return (Number(box.price) || 0) + customizationExtra;
+};
+
+const getSubscriptionDiscount = (subscriptionMonths = 1) => (
+  SUBSCRIPTION_DISCOUNTS.get(Number(subscriptionMonths)) || 0
+);
+
+const createBoxSnapshot = (box) => ({
+  boxName: box.boxName,
+  thumbnail: box.thumbnail,
+  category: box.category,
+  products: (box.products || []).map((boxProduct) => ({
+    productId: boxProduct.productId._id || boxProduct.productId,
+    productName: boxProduct.productId.productName || 'Sản phẩm trong box',
+    unit: boxProduct.productId.unit || null,
+    thumbnail: boxProduct.productId.thumbnail || null,
+    price: Number(boxProduct.productId.price) || 0,
+    quantity: Number(boxProduct.quantity) || 1,
+    isCustomizable: boxProduct.isCustomizable === true,
+    selectionGroup: boxProduct.selectionGroup || null
+  }))
+});
 
 const getStatusFilter = (status) => {
   if (status === ORDER_STATUS.CONFIRMED) {
@@ -41,14 +97,82 @@ const mapUser = (user) => {
 };
 
 const mapOrderItem = (item, itemMap = new Map()) => {
-  const detail = itemMap.get(item.itemId.toString());
+  const snapshotDetail = item.isBox && item.boxSnapshot?.boxName
+    ? {
+        itemName: item.boxSnapshot.boxName,
+        thumbnail: item.boxSnapshot.thumbnail,
+        category: item.boxSnapshot.category,
+        boxProducts: item.boxSnapshot.products || []
+      }
+    : null;
+  const detail = snapshotDetail
+    || itemMap.get(item.itemId.toString())
+    || (item.isBox ? LEGACY_BOX_DETAILS_BY_PRICE.get(Number(item.price)) : null);
+  const selectedById = new Map(
+    (item.customizedProducts || []).map((customizedProduct) => [
+      customizedProduct.productId?._id?.toString() || customizedProduct.productId?.toString(),
+      customizedProduct
+    ])
+  );
+  const customizedProducts = (item.customizedProducts || []).map((customizedProduct) => {
+    const productId = customizedProduct.productId?._id?.toString()
+      || customizedProduct.productId?.toString();
+    const product = itemMap.get(productId);
+    const boxProduct = detail?.boxProducts?.find((boxItem) => (
+      boxItem.productId?._id?.toString() || boxItem.productId?.toString()
+    ) === productId);
+    const boxProductDetail = boxProduct?.productId?.productName
+      ? boxProduct.productId
+      : null;
+    const quantity = Number(customizedProduct.quantity) || 0;
+    const baseQuantity = Number(boxProduct?.quantity) || 1;
+
+    return {
+      productId: customizedProduct.productId,
+      quantity,
+      baseQuantity,
+      productName: boxProductDetail?.productName || product?.itemName || 'Sản phẩm trong box',
+      unit: boxProductDetail?.unit || product?.unit || null,
+      thumbnail: boxProductDetail?.thumbnail || product?.thumbnail || null,
+      price: boxProductDetail?.price || product?.price || 0,
+      isCustomizable: boxProduct?.isCustomizable === true,
+      isQuantityChanged: boxProduct?.isCustomizable === true && quantity !== baseQuantity,
+      selectionGroup: boxProduct?.selectionGroup || null
+    };
+  });
+  const boxProducts = (detail?.boxProducts || []).map((boxItem) => {
+    const productId = boxItem.productId?._id?.toString() || boxItem.productId?.toString();
+    const product = itemMap.get(productId);
+    const populatedProduct = boxItem.productId?.productName ? boxItem.productId : null;
+    const snapshotProduct = boxItem.productName ? boxItem : null;
+    const selectedProduct = selectedById.get(productId);
+
+    return {
+      productId: boxItem.productId?._id || boxItem.productId,
+      productName: populatedProduct?.productName || snapshotProduct?.productName || product?.itemName || 'Sản phẩm trong box',
+      unit: populatedProduct?.unit || snapshotProduct?.unit || product?.unit || null,
+      thumbnail: populatedProduct?.thumbnail || snapshotProduct?.thumbnail || product?.thumbnail || null,
+      quantity: Number(selectedProduct?.quantity) || Number(boxItem.quantity) || 1,
+      boxQuantity: Number(boxItem.quantity) || 1,
+      price: populatedProduct?.price || snapshotProduct?.price || product?.price || 0,
+      isCustomizable: boxItem.isCustomizable === true,
+      selectionGroup: boxItem.selectionGroup || null,
+      isSelected: Boolean(selectedProduct) || (
+        boxItem.isCustomizable !== true && !boxItem.selectionGroup
+      )
+    };
+  });
+
   return {
     itemId: item.itemId,
     isBox: item.isBox,
     quantity: item.quantity,
-    customizedProducts: item.customizedProducts || [],
+    boxProducts,
+    customizedProducts,
+    hasCustomization: customizedProducts.some((product) => product.isQuantityChanged),
+    hasFixedSelection: customizedProducts.some((product) => Boolean(product.selectionGroup)),
     price: item.price,
-    itemName: detail?.itemName || null,
+    itemName: detail?.itemName || (item.isBox ? 'Box trong đơn hàng' : 'Sản phẩm'),
     thumbnail: detail?.thumbnail || null,
     category: detail?.category || null
   };
@@ -62,23 +186,36 @@ const getOrderItemMap = async (orders) => {
     order.items.forEach((item) => {
       if (item.isBox) boxIds.add(item.itemId.toString());
       else productIds.add(item.itemId.toString());
+
+      (item.customizedProducts || []).forEach((customizedProduct) => {
+        productIds.add(customizedProduct.productId.toString());
+      });
     });
   });
 
   const [boxes, products] = await Promise.all([
-    boxIds.size ? Box.find({ _id: { $in: [...boxIds] } }).select('boxName thumbnail category') : [],
-    productIds.size ? Product.find({ _id: { $in: [...productIds] } }).select('productName thumbnail category') : []
+    boxIds.size
+      ? Box.find({ _id: { $in: [...boxIds] } })
+        .select('boxName thumbnail category products')
+        .populate('products.productId', 'productName unit thumbnail price category')
+      : [],
+    productIds.size
+      ? Product.find({ _id: { $in: [...productIds] } }).select('productName thumbnail unit price category')
+      : []
   ]);
 
   return new Map([
     ...boxes.map((box) => [box._id.toString(), {
       itemName: box.boxName,
       thumbnail: box.thumbnail,
-      category: box.category
+      category: box.category,
+      boxProducts: box.products || []
     }]),
     ...products.map((product) => [product._id.toString(), {
       itemName: product.productName,
       thumbnail: product.thumbnail,
+      unit: product.unit,
+      price: product.price,
       category: product.category
     }])
   ]);
@@ -90,6 +227,10 @@ const mapOrder = (order, itemMap) => ({
   user: mapUser(order.userId),
   items: order.items.map((item) => mapOrderItem(item, itemMap)),
   totalAmount: order.totalAmount,
+  subtotalAmount: order.subtotalAmount ?? order.totalAmount,
+  subscriptionMonths: order.subscriptionMonths || 1,
+  discountPercent: order.discountPercent || 0,
+  discountAmount: order.discountAmount || 0,
   paymentMethod: order.paymentMethod,
   orderStatus: normalizeOrderStatus(order.orderStatus),
   lovelyMessage: order.lovelyMessage,
@@ -140,7 +281,12 @@ export const getOrdersByUser = async (userId) => {
   return orders.map((order) => mapOrder(order, itemMap));
 };
 
-export const createOrderFromCart = async (userId, { paymentMethod = 'bank_transfer', lovelyMessage = '', boxIds } = {}) => {
+export const createOrderFromCart = async (userId, {
+  paymentMethod = 'bank_transfer',
+  lovelyMessage = '',
+  boxIds,
+  subscriptionMonths = 1
+} = {}) => {
   const session = await Order.startSession();
   let createdOrder;
 
@@ -163,7 +309,9 @@ export const createOrderFromCart = async (userId, { paymentMethod = 'bank_transf
       }
 
       const cartBoxIds = selectedCartItems.map((item) => item.boxId);
-      const boxes = await Box.find({ _id: { $in: cartBoxIds } }).session(session);
+      const boxes = await Box.find({ _id: { $in: cartBoxIds } })
+        .populate('products.productId', 'productName unit thumbnail price category quantity')
+        .session(session);
       const boxById = new Map(boxes.map((box) => [box._id.toString(), box]));
 
       const items = selectedCartItems.map((cartItem) => {
@@ -178,16 +326,24 @@ export const createOrderFromCart = async (userId, { paymentMethod = 'bank_transf
           isBox: true,
           quantity: cartItem.quantity,
           customizedProducts: cartItem.customizedProducts || [],
-          price: box.price
+          boxSnapshot: createBoxSnapshot(box),
+          price: getCustomizedBoxPrice(box, cartItem.customizedProducts || [])
         };
       });
 
-      const totalAmount = items.reduce((total, item) => total + item.price * item.quantity, 0);
+      const subtotalAmount = items.reduce((total, item) => total + item.price * item.quantity, 0);
+      const discountPercent = getSubscriptionDiscount(subscriptionMonths);
+      const discountAmount = Math.round((subtotalAmount * discountPercent) / 100);
+      const totalAmount = subtotalAmount - discountAmount;
 
       [createdOrder] = await Order.create([{
         userId,
         items,
         totalAmount,
+        subtotalAmount,
+        subscriptionMonths: Number(subscriptionMonths),
+        discountPercent,
+        discountAmount,
         paymentMethod,
         lovelyMessage
       }], { session });

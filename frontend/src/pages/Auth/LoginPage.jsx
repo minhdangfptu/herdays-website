@@ -1,20 +1,20 @@
-import { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import herdaysLogo from '../../assets/herdays-logo.png'
-import { authApi, setAuthSession } from '../../services/apiService.js'
-import { translateError } from '../../utils/translateError.js'
-import FacebookAuthButton from './FacebookAuthButton.jsx'
-import GoogleAuthButton from './GoogleAuthButton.jsx'
-import './LoginPage.scss'
+import { useCallback, useState } from "react";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
+import herdaysLogo from "../../assets/herdays-logo.png";
+import { authApi, setAuthSession } from "../../services/apiService.js";
+import { translateError } from "../../utils/translateError.js";
+import FacebookAuthButton from "./FacebookAuthButton.jsx";
+import GoogleAuthButton from "./GoogleAuthButton.jsx";
+import "./LoginPage.scss";
 
 function FieldIcon({ type }) {
-  if (type === 'email') {
+  if (type === "email") {
     return (
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M15.8 15.6c-1.2 0-1.8-.7-1.8-1.7v-4.1m0 0a3.2 3.2 0 1 0 0 4.4m0-4.4v4.1c0 1 .6 1.7 1.8 1.7 2.1 0 3.7-1.8 3.7-4.3A7.6 7.6 0 1 0 16.6 17" />
       </svg>
-    )
+    );
   }
 
   return (
@@ -22,7 +22,7 @@ function FieldIcon({ type }) {
       <rect x="4.5" y="9.5" width="15" height="11" rx="2.5" />
       <path d="M7.5 9.5V7a4.5 4.5 0 0 1 9 0v2.5M12 14v2" />
     </svg>
-  )
+  );
 }
 
 function PasswordToggleIcon({ isVisible }) {
@@ -32,7 +32,7 @@ function PasswordToggleIcon({ isVisible }) {
       <circle cx="12" cy="12" r="2.5" />
       {!isVisible && <path d="m4 4 16 16" />}
     </svg>
-  )
+  );
 }
 
 function MoodCard() {
@@ -43,7 +43,10 @@ function MoodCard() {
         <span className="mood-card__key" />
       </div>
       <svg viewBox="0 0 118 88" role="presentation">
-        <path className="mood-card__axis" d="M15 6v68h96M15 20h-4M15 38h-4M15 56h-4" />
+        <path
+          className="mood-card__axis"
+          d="M15 6v68h96M15 20h-4M15 38h-4M15 56h-4"
+        />
         <path className="mood-card__grid" d="M43 28v46M72 28v46M101 14v60" />
         <path className="mood-card__line" d="m15 58 28-19h29l29-16" />
         <g className="mood-card__points">
@@ -53,45 +56,68 @@ function MoodCard() {
           <circle cx="101" cy="23" r="4" />
         </g>
         <g className="mood-card__labels">
-          <text x="4" y="61">1</text>
-          <text x="4" y="42">2</text>
-          <text x="4" y="24">3</text>
-          <text x="4" y="8">4</text>
-          <text x="10" y="86">T9</text>
-          <text x="36" y="86">T10</text>
-          <text x="65" y="86">T11</text>
-          <text x="94" y="86">T12</text>
+          <text x="4" y="61">
+            1
+          </text>
+          <text x="4" y="42">
+            2
+          </text>
+          <text x="4" y="24">
+            3
+          </text>
+          <text x="4" y="8">
+            4
+          </text>
+          <text x="10" y="86">
+            T9
+          </text>
+          <text x="36" y="86">
+            T10
+          </text>
+          <text x="65" y="86">
+            T11
+          </text>
+          <text x="94" y="86">
+            T12
+          </text>
         </g>
       </svg>
     </div>
-  )
+  );
 }
 
 function CycleChart() {
-  const bars = [54, 76, 36, 54, 78]
+  const bars = [54, 76, 36, 54, 78];
 
   return (
     <div className="cycle-visual" aria-hidden="true">
       <div className="cycle-card">
         <div className="cycle-card__header">
           <strong>Xu hướng độ dài kì kinh</strong>
-          <span><i />Số ngày hành kinh</span>
+          <span>
+            <i />
+            Số ngày hành kinh
+          </span>
         </div>
 
         <img className="cycle-card__watermark" src={herdaysLogo} alt="" />
 
         <div className="cycle-card__y-labels">
-          {[7, 6, 5, 4, 3, 2].map((value) => <span key={value}>{value} ng</span>)}
+          {[7, 6, 5, 4, 3, 2].map((value) => (
+            <span key={value}>{value} ng</span>
+          ))}
         </div>
 
         <div className="cycle-card__plot">
           <div className="cycle-card__bars">
             {bars.map((height, index) => (
-              <span key={index} style={{ '--bar-height': `${height}%` }} />
+              <span key={index} style={{ "--bar-height": `${height}%` }} />
             ))}
           </div>
           <div className="cycle-card__x-labels">
-            {['T1', 'T2', 'T3', 'T4', 'T5', 'T6'].map((label) => <span key={label}>{label}</span>)}
+            {["T1", "T2", "T3", "T4", "T5", "T6"].map((label) => (
+              <span key={label}>{label}</span>
+            ))}
           </div>
         </div>
       </div>
@@ -104,64 +130,79 @@ function CycleChart() {
         <span />
       </div>
     </div>
-  )
+  );
 }
 
 function LoginForm() {
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const navigate = useNavigate()
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const navigate = useNavigate();
 
-  const completeLogin = useCallback((result) => {
-    setAuthSession(result)
-    if (result.user.authProvider === 'google') {
-      toast('Tài khoản Google, vui lòng đăng nhập với Google')
-    }
-    toast.success(`Đăng nhập thành công`)
-    navigate(result.user.role === 'admin' ? '/admin/blog' : '/home')
-  }, [navigate])
+  const completeLogin = useCallback(
+    (result) => {
+      setAuthSession(result);
+      if (result.user.authProvider === "google") {
+        toast("Tài khoản Google, vui lòng đăng nhập với Google");
+      }
+      toast.success(`Đăng nhập thành công`);
+      navigate(result.user.role === "admin" ? "/admin" : "/home");
+    },
+    [navigate],
+  );
 
-  const completeSocialLogin = useCallback((result) => {
-    setAuthSession(result)
-    toast.success(`Đăng nhập thành công`)
-    const shouldCompleteQuiz = result.isNewUser || !result.user.targetStatus
-    if (result.user.role === 'admin') {
-      navigate('/admin/blog')
-      return
-    }
-    navigate(shouldCompleteQuiz ? '/welcome-quiz' : '/home')
-  }, [navigate])
+  const completeSocialLogin = useCallback(
+    (result) => {
+      setAuthSession(result);
+      toast.success(`Đăng nhập thành công`);
+      const shouldCompleteQuiz = result.isNewUser || !result.user.targetStatus;
+      if (result.user.role === "admin") {
+        navigate("/admin");
+        return;
+      }
+      navigate(shouldCompleteQuiz ? "/welcome-quiz" : "/home");
+    },
+    [navigate],
+  );
 
   const handleGoogleError = useCallback((message) => {
-    toast.error(message || 'Không thể đăng nhập bằng Google. Vui lòng thử lại.')
-  }, [])
+    toast.error(
+      message || "Không thể đăng nhập bằng Google. Vui lòng thử lại.",
+    );
+  }, []);
 
   const handleFacebookError = useCallback((message) => {
-    toast.error(message || 'Không thể đăng nhập bằng Facebook. Vui lòng thử lại.')
-  }, [])
+    toast.error(
+      message || "Không thể đăng nhập bằng Facebook. Vui lòng thử lại.",
+    );
+  }, []);
 
   async function handleSubmit(event) {
-    event.preventDefault()
-    const formData = new FormData(event.currentTarget)
-    setIsSubmitting(true)
+    event.preventDefault();
+    const formData = new FormData(event.currentTarget);
+    setIsSubmitting(true);
 
     try {
       const result = await authApi.login({
-        identifier: formData.get('identifier'),
-        password: formData.get('password')
-      })
-      completeLogin(result)
+        identifier: formData.get("identifier"),
+        password: formData.get("password"),
+      });
+      completeLogin(result);
     } catch (error) {
-      toast.error(translateError(error.message))
+      toast.error(translateError(error.message));
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
   return (
     <section className="login-form-panel" aria-labelledby="login-title">
       <div className="login-form-panel__content">
-        <img style={{marginTop: '40px'}} className="brand-logo" src={herdaysLogo} alt="Herdays" />
+        <img
+          style={{ marginTop: "40px" }}
+          className="brand-logo"
+          src={herdaysLogo}
+          alt="Herdays"
+        />
 
         <div className="login-copy">
           <h1 id="login-title">Đăng nhập</h1>
@@ -172,7 +213,9 @@ function LoginForm() {
           <label className="form-field">
             <span>Email/Số điện thoại</span>
             <span className="input-shell">
-              <span className="field-icon"><FieldIcon type="email" /></span>
+              <span className="field-icon">
+                <FieldIcon type="email" />
+              </span>
               <input
                 type="text"
                 name="identifier"
@@ -186,9 +229,11 @@ function LoginForm() {
           <label className="form-field">
             <span>Mật khẩu</span>
             <span className="input-shell">
-              <span className="field-icon"><FieldIcon type="password" /></span>
+              <span className="field-icon">
+                <FieldIcon type="password" />
+              </span>
               <input
-                type={isPasswordVisible ? 'text' : 'password'}
+                type={isPasswordVisible ? "text" : "password"}
                 name="password"
                 autoComplete="current-password"
                 placeholder="Nhập mật khẩu của bạn"
@@ -197,7 +242,7 @@ function LoginForm() {
               <button
                 className="password-toggle"
                 type="button"
-                aria-label={isPasswordVisible ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                aria-label={isPasswordVisible ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                 aria-pressed={isPasswordVisible}
                 onClick={() => setIsPasswordVisible((value) => !value)}
               >
@@ -211,14 +256,26 @@ function LoginForm() {
               <input type="checkbox" name="remember" />
               <span>Ghi nhớ tôi</span>
             </label>
-            <a style={{cursor: 'pointer'}} type="button" onClick={() => navigate('/choose-method')}>Quên mật khẩu?</a>
+            <a
+              style={{ cursor: "pointer" }}
+              type="button"
+              onClick={() => navigate("/choose-method")}
+            >
+              Quên mật khẩu?
+            </a>
           </div>
 
-          <button className="submit-button" type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Đang đăng nhập...' : 'Đăng nhập'}
+          <button
+            className="submit-button"
+            type="submit"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Đang đăng nhập..." : "Đăng nhập"}
           </button>
 
-          <div className="divider"><span>Hoặc</span></div>
+          <div className="divider">
+            <span>Hoặc</span>
+          </div>
 
           <div className="social-login">
             <GoogleAuthButton
@@ -234,13 +291,13 @@ function LoginForm() {
             />
           </div>
 
-          <p className="register-prompt">
+          <p className="login-register-prompt">
             Chưa có tài khoản? <a href="/register">Đăng ký</a>
           </p>
         </form>
       </div>
     </section>
-  )
+  );
 }
 
 function WelcomePanel() {
@@ -250,16 +307,19 @@ function WelcomePanel() {
         <div className="welcome-copy">
           <h2>CHÀO MỪNG BẠN!</h2>
           <p className="welcome-lead">
-            Hãy đăng nhập để sử dụng<br />toàn bộ tính năng của <u>HerDays</u>
+            Hãy đăng nhập để sử dụng
+            <br />
+            toàn bộ tính năng của <u>HerDays</u>
           </p>
           <p className="welcome-description">
-            HERDAYS - Nền tảng chăm sóc sức khoẻ nữ giới và<br />dịch vụ Subscription Box
+            HERDAYS - Nền tảng chăm sóc sức khoẻ nữ giới và
+            <br /> dịch vụ Subscription Box
           </p>
         </div>
         <CycleChart />
       </div>
     </aside>
-  )
+  );
 }
 
 function LoginPage() {
@@ -270,7 +330,7 @@ function LoginPage() {
         <WelcomePanel />
       </div>
     </main>
-  )
+  );
 }
 
-export default LoginPage
+export default LoginPage;

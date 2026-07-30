@@ -18,6 +18,7 @@
     "seed:quiz": "node ./src/seeds/quizQuestions.js",
     "seed:admin-users": "node ./src/seeds/adminUsers.js",
     "seed:box-modes": "node ./src/seeds/backfillBoxProductModes.js",
+    "seed:box-selection-groups": "node ./src/seeds/backfillBoxProductSelectionGroups.js",
     "seed:marketplace": "node ./src/seeds/marketplaceSamples.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

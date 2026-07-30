@@ -51,6 +51,13 @@ const validateCategory = (category) => {
   return trimmed;
 };
 
+const validateUnit = (unit) => {
+  const trimmed = typeof unit === 'string' ? unit.trim() : '';
+  if (!trimmed) throw new HttpError(400, 'unit is required');
+  if (trimmed.length > 100) throw new HttpError(400, 'unit must not exceed 100 characters');
+  return trimmed;
+};
+
 const MAX_PAGE_SIZE = 50;
 
 export const validateProductQuery = (query) => {
@@ -70,6 +77,7 @@ export const validateProductId = (id) => validateObjectId(id, 'productId');
 
 export const validateCreateProduct = (body) => ({
   productName: validateProductName(body.productName),
+  unit: validateUnit(body.unit),
   thumbnail: validateCloudinaryUrl(body.thumbnail, 'thumbnail'),
   price: validatePrice(body.price),
   quantity: validateQuantity(body.quantity),
@@ -78,12 +86,13 @@ export const validateCreateProduct = (body) => ({
 });
 
 export const validateUpdateProduct = (body) => {
-  const allowedFields = ['productName', 'thumbnail', 'price', 'quantity', 'description', 'category'];
+  const allowedFields = ['productName', 'unit', 'thumbnail', 'price', 'quantity', 'description', 'category'];
   const hasUpdate = allowedFields.some((field) => body[field] !== undefined);
   if (!hasUpdate) throw new HttpError(400, 'At least one product field is required');
 
   const update = {};
   if (body.productName !== undefined) update.productName = validateProductName(body.productName);
+  if (body.unit !== undefined) update.unit = validateUnit(body.unit);
   if (body.thumbnail !== undefined) update.thumbnail = validateCloudinaryUrl(body.thumbnail, 'thumbnail');
   if (body.price !== undefined) update.price = validatePrice(body.price);
   if (body.quantity !== undefined) update.quantity = validateQuantity(body.quantity);

@@ -127,6 +127,25 @@ const getProductMeta = (productName) => (
   }
 );
 
+const unitRules = [
+  { pattern: /băng vệ sinh|giấy lau/i, unit: 'gói' },
+  { pattern: /dung dịch vệ sinh|nước rửa tay|dầu dừa/i, unit: 'chai' },
+  { pattern: /que thử/i, unit: 'que' },
+  { pattern: /miếng dán/i, unit: 'miếng' },
+  { pattern: /giảm đau/i, unit: 'vỉ' },
+  { pattern: /trà|ngũ cốc/i, unit: 'túi' },
+  { pattern: /sữa|vitamin|canxi|sắt|acid folic|điều kinh|bánh|yến/i, unit: 'hộp' },
+  { pattern: /dầu chống rạn|kem chống rạn/i, unit: 'lọ' },
+  { pattern: /voucher/i, unit: 'cái' },
+  { pattern: /đai đỡ bầu/i, unit: 'cái' },
+  { pattern: /sổ lưu hình/i, unit: 'quyển' },
+  { pattern: /board game/i, unit: 'bộ' }
+];
+
+const getProductUnit = (productName) => (
+  unitRules.find(({ pattern }) => pattern.test(productName))?.unit || 'món'
+);
+
 const productNames = [
   ...new Set(boxDefinitions.flatMap(({ fixedProducts, optionalProducts }) => (
     [...fixedProducts, ...optionalProducts]
@@ -138,6 +157,7 @@ const productsToSeed = productNames.map((productName) => {
 
   return {
     productName,
+    unit: getProductUnit(productName),
     price,
     quantity: 100,
     description: `${productName} thuộc nhóm ${category.toLowerCase()}, được tuyển chọn cho các HerDays Box phù hợp với từng giai đoạn chăm sóc sức khỏe.`,

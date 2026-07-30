@@ -56,6 +56,14 @@ export const validateCreateOrder = (body) => {
     result.lovelyMessage = String(payload.lovelyMessage).trim().slice(0, 500);
   }
 
+  if (payload.subscriptionMonths !== undefined && payload.subscriptionMonths !== null) {
+    const subscriptionMonths = Number(payload.subscriptionMonths);
+    if (![1, 3, 6, 12].includes(subscriptionMonths)) {
+      throw new HttpError(400, 'subscriptionMonths must be one of: 1, 3, 6, 12');
+    }
+    result.subscriptionMonths = subscriptionMonths;
+  }
+
   if (payload.boxIds !== undefined && payload.boxIds !== null) {
     if (!Array.isArray(payload.boxIds)) throw new HttpError(400, 'boxIds must be an array');
 
