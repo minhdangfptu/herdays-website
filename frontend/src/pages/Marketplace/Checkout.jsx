@@ -349,10 +349,10 @@ export default function Checkout() {
             <div className="herdays-checkout-left">
               <div className="herdays-checkout-card">
                 <h2 className="herdays-checkout-card-title">
-                  Sản phẩm đặt mua ({cartItems.length})
+                  Sản phẩm đặt mua ({selectedCartItems.length})
                 </h2>
 
-                {cartItems.length === 0 ? (
+                {selectedCartItems.length === 0 ? (
                   <p className="herdays-checkout-empty">
                     Sản phẩm thanh toán của bạn đang trống.
                   </p>
