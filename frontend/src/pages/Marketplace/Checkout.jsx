@@ -31,6 +31,15 @@ const normalizeCartItem = (item) => {
     const productId = customizedProduct.productId?._id
       || customizedProduct.productId?.id
       || customizedProduct.productId;
+    const boxProduct = (box.products || []).find((product) => {
+      const boxProductId = product.productId?._id
+        || product.productId?.id
+        || product.productId;
+      return String(boxProductId) === String(productId);
+    });
+
+    if (!boxProduct?.isCustomizable) return total;
+
     const selectedQuantity = Number(customizedProduct.quantity) || 0;
     return total + selectedQuantity * (Number(customizedProduct.productId?.price) || 0);
   }, 0);
@@ -57,6 +66,7 @@ const SUBSCRIPTION_PLANS = [
 
 export default function Checkout() {
   const location = useLocation();
+  const hasSelectedBoxIds = Array.isArray(location.state?.selectedBoxIds);
   const initialSelectedBoxIds = useMemo(
     () =>
       Array.isArray(location.state?.selectedBoxIds)
@@ -101,7 +111,9 @@ export default function Checkout() {
 
         setCartItems(nextItems);
         setSelectedBoxIds(
-          filteredSelectedIds.length > 0 ? filteredSelectedIds : validIds,
+          hasSelectedBoxIds
+            ? filteredSelectedIds
+            : validIds,
         );
       })
       .catch((error) => {
@@ -117,7 +129,7 @@ export default function Checkout() {
     return () => {
       isMounted = false;
     };
-  }, [initialSelectedBoxIds, navigate]);
+  }, [hasSelectedBoxIds, initialSelectedBoxIds, navigate]);
 
   useEffect(() => {
     let isMounted = true;
@@ -337,16 +349,16 @@ export default function Checkout() {
             <div className="herdays-checkout-left">
               <div className="herdays-checkout-card">
                 <h2 className="herdays-checkout-card-title">
-                  Sản phẩm đặt mua ({cartItems.length})
+                  Sản phẩm đặt mua ({selectedCartItems.length})
                 </h2>
 
-                {cartItems.length === 0 ? (
+                {selectedCartItems.length === 0 ? (
                   <p className="herdays-checkout-empty">
                     Sản phẩm thanh toán của bạn đang trống.
                   </p>
                 ) : (
                   <div className="herdays-checkout-product-list">
-                    {cartItems.map((item) => (
+                    {selectedCartItems.map((item) => (
                       <div
                         key={item.id}
                         className="herdays-checkout-product-item"

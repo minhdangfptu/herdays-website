@@ -1,13 +1,24 @@
-import { useState } from "react";
 import herdaysLogo from "../assets/herdays-logo.png";
 import "./LogoutModal.scss";
 
-const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
+const LogoutModal = ({
+  isOpen,
+  onClose,
+  onConfirm,
+  title = "Đăng xuất",
+  description,
+  cancelLabel = "Không, đùa chút thôi",
+  confirmLabel = "Đúng, đăng xuất cho tôi",
+  cardClassName = "",
+}) => {
   if (!isOpen) return null;
 
   return (
     <div className="logout-modal-overlay" onClick={onClose}>
-      <div className="logout-modal-card" onClick={(e) => e.stopPropagation()}>
+      <div
+        className={`logout-modal-card ${cardClassName}`}
+        onClick={(e) => e.stopPropagation()}
+      >
         <button
           className="logout-modal-close"
           onClick={onClose}
@@ -26,20 +37,24 @@ const LogoutModal = ({ isOpen, onClose, onConfirm }) => {
 
         <img className="logout-modal-logo" src={herdaysLogo} alt="HerDays" />
 
-        <h2 className="logout-modal-title">Đăng xuất</h2>
+        <h2 className="logout-modal-title">{title}</h2>
 
         <p className="logout-modal-desc">
-          Bạn đang rời đi
-          <br />
-          Bạn chắc chắn chứ?
+          {description || (
+            <>
+              Bạn đang rời đi
+              <br />
+              Bạn chắc chắn chứ?
+            </>
+          )}
         </p>
 
         <div className="logout-modal-actions">
           <button className="logout-modal-cancel" onClick={onClose}>
-            Không, đùa chút thôi
+            {cancelLabel}
           </button>
           <button className="logout-modal-confirm" onClick={onConfirm}>
-            Đúng, đăng xuất cho tôi
+            {confirmLabel}
           </button>
         </div>
       </div>

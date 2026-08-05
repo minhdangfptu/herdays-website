@@ -505,10 +505,12 @@ $font-herdays: 'Lamoric Rowen', cursive;
 }
 
 .subscription-card-category {
-  font-size: 12px;
-  color: $light-gray;
-  margin: 0 0 $spacing-xs 0;
-  text-transform: capitalize;
+  margin: 0 0 8px;
+  color: #ed77a5;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
 }
 
 .subscription-card-title {
@@ -697,6 +699,8 @@ $font-herdays: 'Lamoric Rowen', cursive;
 
 .experts-cards {
   display: flex;
+  flex: 1 1 auto;
+  min-width: 0;
   gap: $spacing-lg;
   overflow-x: auto;
   scroll-snap-type: x mandatory;
@@ -730,7 +734,7 @@ $font-herdays: 'Lamoric Rowen', cursive;
   }
 
   @media (max-width: 768px) {
-    min-width: 260px;
+    min-width: 100%;
   }
 }
 

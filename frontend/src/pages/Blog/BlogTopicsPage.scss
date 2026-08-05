@@ -310,7 +310,12 @@ $font-primary: 'Be Vietnam Pro', 'Noto Sans', -apple-system, BlinkMacSystemFont,
   }
 
   .blog-topics-section__subtitle {
+    max-width: 360px;
+    margin-right: auto;
+    margin-left: auto;
+    padding: 0 16px;
     line-height: 1.6;
+    text-wrap: balance;
   }
 
   .blog-topics-section__link {

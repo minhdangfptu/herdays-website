@@ -3,7 +3,8 @@ import {
   validateCreateOrder,
   validateOrderQuery,
   validateOrderId,
-  validateOrderStatus
+  validateOrderStatus,
+  validateOrderCreatedAt
 } from '../validations/orderValidation.js';
 import { sendSuccess } from '../utils/response.js';
 
@@ -21,6 +22,22 @@ export const getOrders = async (req, res, next) => {
         totalPages: result.totalPages
       }
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const exportOrders = async (req, res, next) => {
+  try {
+    const { search, status } = validateOrderQuery(req.query);
+    const { buffer, fileName } = await orderService.exportOrders({ search, status });
+
+    res.set({
+      'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      'Content-Disposition': `attachment; filename="${fileName}"`,
+      'Content-Length': buffer.length
+    });
+    res.send(buffer);
   } catch (error) {
     next(error);
   }
@@ -101,6 +118,20 @@ export const updateStatus = async (req, res, next) => {
     const order = await orderService.updateOrderStatus(id, status);
     sendSuccess(res, {
       message: 'Cập nhật trạng thái đơn hàng thành công',
+      data: order
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateCreatedAt = async (req, res, next) => {
+  try {
+    const id = validateOrderId(req.params.id);
+    const createdAt = validateOrderCreatedAt(req.body?.createdAt);
+    const order = await orderService.updateOrderCreatedAt(id, createdAt);
+    sendSuccess(res, {
+      message: 'Cập nhật thời gian tạo đơn hàng thành công',
       data: order
     });
   } catch (error) {

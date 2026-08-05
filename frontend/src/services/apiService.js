@@ -114,7 +114,13 @@ const refreshAccessToken = async () => {
   return refreshTokenRequest
 }
 
-const request = async (path, { method = 'GET', body, isAuthenticated = false, headers: customHeaders = {} } = {}) => {
+const request = async (path, {
+  method = 'GET',
+  body,
+  isAuthenticated = false,
+  responseType = 'json',
+  headers: customHeaders = {}
+} = {}) => {
   const headers = { Accept: 'application/json', ...customHeaders }
   if (body !== undefined) headers['Content-Type'] = 'application/json'
 
@@ -131,14 +137,24 @@ const request = async (path, { method = 'GET', body, isAuthenticated = false, he
 
   const response = await fetch(`${API_BASE_URL}${path}`, requestConfig)
 
+  const parseRequestResponse = async (requestResponse) => {
+    if (responseType === 'blob' && requestResponse.ok) {
+      const blob = await requestResponse.blob()
+      const contentDisposition = requestResponse.headers.get('Content-Disposition') || ''
+      const fileName = contentDisposition.match(/filename="([^"]+)"/)?.[1] || ''
+      return { blob, fileName }
+    }
+    return parseResponse(requestResponse)
+  }
+
   try {
-    return await parseResponse(response)
+    return await parseRequestResponse(response)
   } catch (error) {
     if (!isAuthenticated || error.statusCode !== 401) throw error
 
     const accessToken = await refreshAccessToken()
     requestConfig.headers.Authorization = `Bearer ${accessToken}`
-    return parseResponse(await fetch(`${API_BASE_URL}${path}`, requestConfig))
+    return parseRequestResponse(await fetch(`${API_BASE_URL}${path}`, requestConfig))
   }
 }
 
@@ -534,6 +550,10 @@ export const adminApi = {
     const response = await request(`/admin/orders${buildQuery(params)}`, { isAuthenticated: true })
     return { orders: response.data, pagination: response.meta }
   },
+  exportOrders: async (params = {}) => request(`/admin/orders/export${buildQuery(params)}`, {
+    isAuthenticated: true,
+    responseType: 'blob'
+  }),
   getOrder: async (id) => {
     const response = await request(`/admin/orders/${id}`, { isAuthenticated: true })
     return response.data
@@ -546,6 +566,14 @@ export const adminApi = {
     const response = await request(`/admin/orders/${id}/status`, {
       method: 'PUT',
       body: { orderStatus },
+      isAuthenticated: true
+    })
+    return response.data
+  },
+  updateOrderCreatedAt: async (id, createdAt) => {
+    const response = await request(`/admin/orders/${id}/created-at`, {
+      method: 'PATCH',
+      body: { createdAt },
       isAuthenticated: true
     })
     return response.data
@@ -594,6 +622,13 @@ export const adminApi = {
     const response = await request(`/admin/products/boxes/${id}`, {
       method: 'PUT',
       body: payload,
+      isAuthenticated: true
+    })
+    return { message: response.message, box: response.data }
+  },
+  deleteBox: async (id) => {
+    const response = await request(`/admin/products/boxes/${id}`, {
+      method: 'DELETE',
       isAuthenticated: true
     })
     return { message: response.message, box: response.data }

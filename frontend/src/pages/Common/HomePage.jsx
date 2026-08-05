@@ -114,6 +114,26 @@ const HomePage = () => {
     },
   ];
 
+  const scrollExperts = (direction) => {
+    const element = expertsRef.current;
+    if (!element) return;
+
+    const card = element.querySelector('.expert-card');
+    const gap = Number.parseFloat(window.getComputedStyle(element).columnGap) || 0;
+    const step = (card?.getBoundingClientRect().width || element.clientWidth) + gap;
+    const halfWidth = element.scrollWidth / 2;
+
+    if (direction < 0 && element.scrollLeft <= 1) {
+      element.scrollLeft = halfWidth;
+    }
+
+    if (direction > 0 && element.scrollLeft >= halfWidth - step) {
+      element.scrollLeft = 0;
+    }
+
+    element.scrollBy({ left: direction * step, behavior: 'smooth' });
+  };
+
   return (
     <main className="home-page">
       {/* Hero Section */}
@@ -240,7 +260,7 @@ const HomePage = () => {
                 <img src={getBoxImage(box)} alt={getBoxName(box)} />
               </div>
               <div className="subscription-card-content">
-                <p className="subscription-card-category">{box.category || "Subscription Box"}</p>
+                <p className="subscription-card-category">Subscription Box</p>
                 <h3 className="subscription-card-title">{getBoxName(box)}</h3>
                 <p className="subscription-card-description">
                   {box.description || "Sản phẩm được tuyển chọn cho hành trình chăm sóc sức khỏe của bạn."}
@@ -312,14 +332,7 @@ const HomePage = () => {
         <div className="experts-carousel">
           <button
             className="carousel-button prev"
-            onClick={() => {
-              const el = expertsRef.current;
-              if (el.scrollLeft === 0) {
-                const totalWidth = el.scrollWidth / 2;
-                el.scrollLeft = totalWidth;
-              }
-              el.scrollBy({ left: -400, behavior: "smooth" });
-            }}
+            onClick={() => scrollExperts(-1)}
           >
             <FaChevronLeft />
           </button>
@@ -347,14 +360,7 @@ const HomePage = () => {
           </div>
           <button
             className="carousel-button next"
-            onClick={() => {
-              const el = expertsRef.current;
-              const halfWidth = el.scrollWidth / 2;
-              if (el.scrollLeft >= halfWidth - 10) {
-                el.scrollLeft = 0;
-              }
-              el.scrollBy({ left: 400, behavior: "smooth" });
-            }}
+            onClick={() => scrollExperts(1)}
           >
             <FaChevronRight />
           </button>
