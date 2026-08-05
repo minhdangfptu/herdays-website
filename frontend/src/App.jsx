@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -47,18 +47,51 @@ import BoxCustomize from "./pages/Marketplace/BoxCustomize.jsx";
 import ProductDetailPage from "./pages/Marketplace/ProductDetailPage.jsx";
 import BlogSearchPostPage from "./pages/Blog/BlogSearchPostPage.jsx";
 import Tools from "./pages/Tools/Tools.jsx";
-import { hasAuthSession } from "./services/apiService.js";
+import {
+  clearAuthSession,
+  hasAuthSession,
+  profileApi
+} from "./services/apiService.js";
 import { PageTransition } from "./motion/MotionPrimitives.jsx";
 import { SmoothScroll } from "./motion/SmoothScroll.jsx";
 import { getLenis } from "./motion/lenisInstance.js";
 
-function RequireAuth({ children }) {
-  return hasAuthSession() ? children : <Navigate to="/login" replace />;
+const BehindTheBloom = lazy(() => import("./pages/EasterEgg/BehindTheBloom.jsx"));
+
+function RequireAuth({ children, role }) {
+  if (!hasAuthSession()) return <Navigate to="/login" replace />;
+  if (role === "admin") return <Navigate to="/admin" replace />;
+  return children;
 }
 
-function RequireAdmin({ children }) {
-  const isAdmin = localStorage.getItem("userRole") === "admin";
-  return isAdmin ? children : <Navigate to="/blog" replace />;
+function RequireAdmin({ children, role }) {
+  if (!hasAuthSession()) return <Navigate to="/login" replace />;
+  return role === "admin" ? children : <Navigate to="/home" replace />;
+}
+
+function RequireNonAdmin({ children, role }) {
+  return role === "admin" ? <Navigate to="/admin" replace /> : children;
+}
+
+function RedirectAdmin({ children, role }) {
+  return role === "admin" ? <Navigate to="/admin" replace /> : children;
+}
+
+function SessionLoading() {
+  return (
+    <main
+      aria-live="polite"
+      style={{
+        minHeight: "100vh",
+        display: "grid",
+        placeItems: "center",
+        color: "#ed77a5",
+        fontWeight: 700
+      }}
+    >
+      Đang khôi phục phiên đăng nhập...
+    </main>
+  );
 }
 
 function ScrollToTop() {
@@ -121,30 +154,100 @@ function HeaderFooterLayout() {
   );
 }
 
-function AppRoutes() {
+function AppRoutes({ session }) {
   const location = useLocation();
 
   return (
     <PageTransition>
       <Routes location={location}>
         <Route path="/error-404" element={<Error404 />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/choose-method" element={<ChooseMethodPage />} />
-        <Route path="/confirmation-data" element={<EnterEmailPhoneNoPage />} />
-        <Route path="/confirmation-otp" element={<EnterOTP />} />
-        <Route path="/reset-password" element={<ResetPassword />} />
-        <Route path="/change-password" element={<ChangePassword />} />
-        <Route path="/welcome-quiz" element={<QuizPage />} />
+        <Route
+          path="/behind-the-bloom"
+          element={
+            <Suspense fallback={null}>
+              <BehindTheBloom />
+            </Suspense>
+          }
+        />
+        <Route
+          path="/login"
+          element={
+            <RedirectAdmin role={session.role}>
+              <LoginPage />
+            </RedirectAdmin>
+          }
+        />
+        <Route
+          path="/register"
+          element={
+            <RedirectAdmin role={session.role}>
+              <RegisterPage />
+            </RedirectAdmin>
+          }
+        />
+        <Route
+          path="/choose-method"
+          element={
+            <RedirectAdmin role={session.role}>
+              <ChooseMethodPage />
+            </RedirectAdmin>
+          }
+        />
+        <Route
+          path="/confirmation-data"
+          element={
+            <RedirectAdmin role={session.role}>
+              <EnterEmailPhoneNoPage />
+            </RedirectAdmin>
+          }
+        />
+        <Route
+          path="/confirmation-otp"
+          element={
+            <RedirectAdmin role={session.role}>
+              <EnterOTP />
+            </RedirectAdmin>
+          }
+        />
+        <Route
+          path="/reset-password"
+          element={
+            <RedirectAdmin role={session.role}>
+              <ResetPassword />
+            </RedirectAdmin>
+          }
+        />
+        <Route
+          path="/change-password"
+          element={
+            <RedirectAdmin role={session.role}>
+              <ChangePassword />
+            </RedirectAdmin>
+          }
+        />
+        <Route
+          path="/welcome-quiz"
+          element={
+            <RedirectAdmin role={session.role}>
+              <QuizPage />
+            </RedirectAdmin>
+          }
+        />
         <Route
           path="/admin/*"
           element={
-            <RequireAdmin>
+            <RequireAdmin role={session.role}>
               <AdminLayout />
             </RequireAdmin>
           }
         />
-        <Route element={<HeaderFooterLayout />}>
+        <Route
+          element={
+            <RequireNonAdmin role={session.role}>
+              <HeaderFooterLayout />
+            </RequireNonAdmin>
+          }
+        >
           <Route path="/" element={<Navigate to="/home" replace />} />
           <Route path="/contact-us" element={<ContactUs />} />
           <Route path="/upgrade-account" element={<SubscriptionStep1 />} />
@@ -164,7 +267,7 @@ function AppRoutes() {
           <Route path="/tools/:toolId" element={<Tools />} />
           <Route
             element={
-              <RequireAuth>
+              <RequireAuth role={session.role}>
                 <Outlet />
               </RequireAuth>
             }
@@ -197,12 +300,65 @@ function AppRoutes() {
 }
 
 function App() {
+  const [session, setSession] = useState(() => {
+    const hasStoredSession = hasAuthSession();
+    return {
+      isLoading: hasStoredSession,
+      role: hasStoredSession ? localStorage.getItem("userRole") || "" : ""
+    };
+  });
+
+  useEffect(() => {
+    let isMounted = true;
+    let isRestoring = true;
+
+    const updateSessionFromStorage = () => {
+      if (!isMounted || isRestoring) return;
+      setSession({
+        isLoading: false,
+        role: hasAuthSession() ? localStorage.getItem("userRole") || "" : ""
+      });
+    };
+
+    const restoreSession = async () => {
+      if (!hasAuthSession()) {
+        isRestoring = false;
+        if (isMounted) setSession({ isLoading: false, role: "" });
+        return;
+      }
+
+      try {
+        const profile = await profileApi.getProfile();
+        const role = profile.accountClass || "";
+        if (role) localStorage.setItem("userRole", role);
+        if (isMounted) setSession({ isLoading: false, role });
+      } catch {
+        clearAuthSession();
+        if (isMounted) setSession({ isLoading: false, role: "" });
+      } finally {
+        isRestoring = false;
+      }
+    };
+
+    window.addEventListener("auth-state-change", updateSessionFromStorage);
+    window.addEventListener("storage", updateSessionFromStorage);
+    restoreSession();
+
+    return () => {
+      isMounted = false;
+      window.removeEventListener("auth-state-change", updateSessionFromStorage);
+      window.removeEventListener("storage", updateSessionFromStorage);
+    };
+  }, []);
+
+  if (session.isLoading) return <SessionLoading />;
+
   return (
     <BrowserRouter>
       <Toaster position="top-center" reverseOrder={false} />
       <SmoothScroll />
       <ScrollToTop />
-      <AppRoutes />
+      <AppRoutes session={session} />
     </BrowserRouter>
   );
 }

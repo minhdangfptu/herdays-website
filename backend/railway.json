@@ -4,8 +4,8 @@
     "builder": "RAILPACK"
   },
   "deploy": {
-    "startCommand": "uvicorn app.main:app --host :: --port ${PORT:-8090}",
-    "healthcheckPath": "/health",
+    "startCommand": "npm start",
+    "healthcheckPath": "/herdays-api/status",
     "healthcheckTimeout": 300,
     "restartPolicyType": "ON_FAILURE",
     "restartPolicyMaxRetries": 10

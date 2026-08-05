@@ -53,6 +53,10 @@ const mapBox = (b) => ({
 const buildBoxPayload = async (data) => {
   if (!data.products) return data;
 
+  if (!data.category) {
+    throw new HttpError(400, 'Box category is required');
+  }
+
   const productIds = [...new Set(data.products.map((item) => item.productId.toString()))];
   const products = await Product.find({ _id: { $in: productIds } }).select('category');
   if (products.length !== productIds.length) {
@@ -66,7 +70,7 @@ const buildBoxPayload = async (data) => {
   return {
     ...data,
     productCategories,
-    category: data.category ?? productCategories[0] ?? null
+    category: data.category
   };
 };
 

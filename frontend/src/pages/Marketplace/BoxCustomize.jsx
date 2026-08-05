@@ -18,7 +18,9 @@ import {
   getCartBoxQuantities,
   hasAuthSession,
   marketplaceApi,
+  profileApi,
 } from "../../services/apiService.js";
+import { isBoxCompatibleWithTarget } from "../../utils/boxTarget.js";
 import { Skeleton } from "../../components/Skeleton.jsx";
 import { ShimmerButton } from "../../components/magic-ui/ShimmerButton.jsx";
 import { MotionCard } from "../../motion/MotionPrimitives.jsx";
@@ -76,6 +78,24 @@ const selectionGroupLabels = {
 
 const getSelectionGroupLabel = (selectionGroup) =>
   selectionGroupLabels[selectionGroup] || `${selectionGroup} · Chọn 1 sản phẩm`;
+
+const getAllMarketplaceItems = async (listItems) => {
+  const firstPage = await listItems({ page: 1, limit: 50 })
+  const totalPages = firstPage.pagination?.totalPages || 1
+
+  if (totalPages === 1) return firstPage.items || []
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) => (
+      listItems({ page: index + 2, limit: 50 })
+    ))
+  )
+
+  return [
+    ...(firstPage.items || []),
+    ...remainingPages.flatMap((result) => result.items || [])
+  ]
+}
 
 const getCategoryIcon = (category) => {
   const normalizedCategory = String(category || "")
@@ -223,6 +243,7 @@ export default function BoxCustomize() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [cartBoxQuantities, setCartBoxQuantities] = useState({});
+  const [targetStatus, setTargetStatus] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
   const [isBoxPickerOpen, setIsBoxPickerOpen] = useState(false);
   const [highlightedBoxId, setHighlightedBoxId] = useState(boxId || "");
@@ -240,19 +261,21 @@ export default function BoxCustomize() {
       setErrorMessage("");
 
       try {
-        const [boxListResult, productResult, boxResult, cartResult] =
-          await Promise.all([
-            marketplaceApi.listBoxes({ limit: 100 }),
-            marketplaceApi.listProducts({ limit: 100 }),
-            boxId ? marketplaceApi.getBox(boxId) : Promise.resolve(null),
-            hasAuthSession()
-              ? cartApi.getCart().catch(() => null)
-              : Promise.resolve(null),
-          ]);
+        const [boxList, productList, boxResult, cartResult, profileResult] = await Promise.all([
+          getAllMarketplaceItems(marketplaceApi.listBoxes),
+          getAllMarketplaceItems(marketplaceApi.listProducts),
+          boxId ? marketplaceApi.getBox(boxId) : Promise.resolve(null),
+          hasAuthSession()
+            ? cartApi.getCart().catch(() => null)
+            : Promise.resolve(null),
+          hasAuthSession()
+            ? profileApi.getProfile()
+            : Promise.resolve(null)
+        ]);
 
         if (!isMounted) return;
 
-        const nextProducts = productResult.items || [];
+        const nextProducts = productList;
         const availableProductIds = new Set(
           nextProducts
             .filter(isProductInStock)
@@ -274,11 +297,39 @@ export default function BoxCustomize() {
             });
           });
 
-        setBoxes(boxListResult.items || []);
-        setProducts(nextProducts);
-        setBox(boxResult);
+        const nextTargetStatus = profileResult?.targetStatus || '';
+        const allowedBoxes = boxList.filter((boxOption) => (
+          isBoxCompatibleWithTarget(boxOption, nextTargetStatus)
+        ))
+
+        setTargetStatus(nextTargetStatus)
+        setBoxes(allowedBoxes)
+        setProducts(nextProducts)
+        setCartBoxQuantities(getCartBoxQuantities(cartResult))
+
+        if (!hasAuthSession()) {
+          setBox(null)
+          setSelectedItems([])
+          setErrorMessage('Vui lòng đăng nhập để tùy chỉnh box.')
+          return
+        }
+
+        if (!nextTargetStatus) {
+          setBox(null)
+          setSelectedItems([])
+          setErrorMessage('Vui lòng hoàn thành mục tiêu cá nhân trước khi tùy chỉnh box.')
+          return
+        }
+
+        if (boxResult && !isBoxCompatibleWithTarget(boxResult, nextTargetStatus)) {
+          setBox(null)
+          setSelectedItems([])
+          setErrorMessage('Bạn chỉ có thể tùy chỉnh box phù hợp với mục tiêu của mình.')
+          return
+        }
+
+        setBox(boxResult)
         setSelectedItems(initialProducts);
-        setCartBoxQuantities(getCartBoxQuantities(cartResult));
       } catch (error) {
         if (isMounted)
           setErrorMessage(
@@ -679,6 +730,11 @@ export default function BoxCustomize() {
     if (!box?.id) {
       toast.error("Vui lòng chọn một box trước khi mua.");
       return;
+    }
+
+    if (!isBoxCompatibleWithTarget(box, targetStatus)) {
+      toast.error('Bạn chỉ có thể tùy chỉnh box phù hợp với mục tiêu của mình.')
+      return
     }
 
     if (availableBoxQuantity <= 0) {
