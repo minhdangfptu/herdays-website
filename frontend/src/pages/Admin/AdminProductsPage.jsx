@@ -20,6 +20,13 @@ import LogoutModal from "../../components/LogoutModal.jsx";
 const PAGE_SIZE = 10;
 const ADMIN_FONT_FAMILY =
   "-apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif";
+const BOX_TARGET_CATEGORIES = [
+  "Đang mong con",
+  "Đang trong thai kỳ",
+  "IVF",
+  "Chăm sóc sức khỏe",
+  "Theo dõi chu kỳ",
+];
 const PRODUCT_CATEGORIES = [
   "Sức khỏe",
   "Dinh dưỡng",
@@ -43,6 +50,7 @@ const emptyProductForm = {
 const emptyBoxForm = {
   boxName: "",
   thumbnail: "",
+  category: "",
   price: "",
   quantity: "",
   description: "",
@@ -73,6 +81,24 @@ const getProductRefId = (item) => {
   return String(ref.id || ref._id || ref);
 };
 
+const getAllProductOptions = async () => {
+  const firstPage = await adminApi.getSingleProducts({ page: 1, limit: 50 });
+  const totalPages = firstPage.pagination?.totalPages || 1;
+
+  if (totalPages === 1) return firstPage.products || [];
+
+  const remainingPages = await Promise.all(
+    Array.from({ length: totalPages - 1 }, (_, index) =>
+      adminApi.getSingleProducts({ page: index + 2, limit: 50 }),
+    ),
+  );
+
+  return [
+    ...(firstPage.products || []),
+    ...remainingPages.flatMap((result) => result.products || []),
+  ];
+};
+
 function AdminProductsPage() {
   const [activeTab, setActiveTab] = useState("boxes");
   const [products, setProducts] = useState([]);
@@ -100,6 +126,7 @@ function AdminProductsPage() {
   const [productImageFile, setProductImageFile] = useState(null);
   const [boxImageFile, setBoxImageFile] = useState(null);
   const [boxProducts, setBoxProducts] = useState({});
+  const [boxProductCategoryFilter, setBoxProductCategoryFilter] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isDeleteBoxModalOpen, setIsDeleteBoxModalOpen] = useState(false);
 
@@ -127,14 +154,19 @@ function AdminProductsPage() {
 
   const filteredBoxProducts = useMemo(() => {
     const query = boxProductSearch.trim().toLocaleLowerCase("vi");
-    if (!query) return productOptions;
+    return productOptions.filter((product) => {
+      const matchesCategory =
+        !boxProductCategoryFilter ||
+        product.category === boxProductCategoryFilter;
+      const matchesSearch =
+        !query ||
+        String(product.productName || "")
+          .toLocaleLowerCase("vi")
+          .includes(query);
 
-    return productOptions.filter((product) =>
-      String(product.productName || "")
-        .toLocaleLowerCase("vi")
-        .includes(query),
-    );
-  }, [boxProductSearch, productOptions]);
+      return matchesCategory && matchesSearch;
+    });
+  }, [boxProductCategoryFilter, boxProductSearch, productOptions]);
 
   useEffect(() => {
     const timer = window.setTimeout(() => {
@@ -146,8 +178,7 @@ function AdminProductsPage() {
   }, [search]);
 
   const fetchProductOptions = async () => {
-    const result = await adminApi.getSingleProducts({ page: 1, limit: 50 });
-    setProductOptions(result.products || []);
+    setProductOptions(await getAllProductOptions());
   };
 
   const fetchProductCategories = async () => {
@@ -191,12 +222,12 @@ function AdminProductsPage() {
     let isActive = true;
 
     Promise.all([
-      adminApi.getSingleProducts({ page: 1, limit: 50 }),
+      getAllProductOptions(),
       adminApi.getProductCategories(),
     ])
-      .then(([productResult, categories]) => {
+      .then(([allProductOptions, categories]) => {
         if (!isActive) return;
-        setProductOptions(productResult.products || []);
+        setProductOptions(allProductOptions);
         setProductCategories(
           categories?.length ? categories : PRODUCT_CATEGORIES,
         );
@@ -234,6 +265,7 @@ function AdminProductsPage() {
     setBoxForm(emptyBoxForm);
     setBoxImageFile(null);
     setBoxProducts({});
+    setBoxProductCategoryFilter("");
   };
 
   const handleProductFieldChange = (field, value) => {
@@ -370,6 +402,7 @@ function AdminProductsPage() {
       const payload = {
         boxName: boxForm.boxName,
         thumbnail,
+        category: boxForm.category,
         price: Number(boxForm.price),
         quantity: Number(boxForm.quantity),
         description: boxForm.description,
@@ -422,6 +455,7 @@ function AdminProductsPage() {
       setBoxImageFile(null);
       setBoxProducts({});
       setBoxProductSearch("");
+      setBoxProductCategoryFilter("");
       setIsBoxModalOpen(true);
     } else {
       closeBoxModal();
@@ -466,12 +500,16 @@ function AdminProductsPage() {
     setBoxForm({
       boxName: box.boxName || box.productName || "",
       thumbnail: box.thumbnail || "",
+      category: BOX_TARGET_CATEGORIES.includes(box.category)
+        ? box.category
+        : "",
       price: box.price ?? "",
       quantity: box.quantity ?? "",
       description: box.description || "",
     });
     setBoxImageFile(null);
     setBoxProducts(currentProducts);
+    setBoxProductCategoryFilter("");
     setIsBoxModalOpen(true);
   };
 
@@ -622,7 +660,7 @@ function AdminProductsPage() {
                           <img
                             className="h-10 w-10 rounded-md object-cover"
                             src={item.thumbnail}
-                            alt={item.productName}
+                            alt={item.boxName || item.productName}
                           />
                         ) : (
                           <div className="flex h-10 w-10 items-center justify-center rounded-md bg-pink-50 text-pink-400">
@@ -635,7 +673,7 @@ function AdminProductsPage() {
                         )}
                         <div className="min-w-0">
                           <p className="line-clamp-2 break-words font-semibold text-slate-900">
-                            {item.productName}
+                            {item.boxName || item.productName}
                           </p>
                           {isBoxTab && (
                             <p className="mt-1 line-clamp-1 break-words text-xs font-medium text-slate-400">
@@ -837,6 +875,13 @@ function AdminProductsPage() {
                 required={!editingBox}
                 onChange={setBoxImageFile}
               />
+              <FormSelect
+                label="Mục tiêu của box"
+                options={BOX_TARGET_CATEGORIES}
+                required
+                value={boxForm.category}
+                onChange={(value) => handleBoxFieldChange("category", value)}
+              />
               <div className="grid gap-4 sm:grid-cols-2">
                 <FormInput
                   label="Giá"
@@ -875,6 +920,25 @@ function AdminProductsPage() {
                 <span className="shrink-0 rounded-full bg-pink-50 px-2.5 py-1 text-xs font-bold text-pink-500">
                   {selectedBoxProducts.length}/{productOptions.length}
                 </span>
+              </div>
+              <div
+                className="mb-3 flex flex-wrap gap-2"
+                aria-label="Lọc sản phẩm theo danh mục"
+              >
+                {["", ...productCategories].map((category) => (
+                  <button
+                    key={category || "all"}
+                    type="button"
+                    onClick={() => setBoxProductCategoryFilter(category)}
+                    className={`rounded-full border px-3 py-1.5 text-xs font-bold transition ${
+                      boxProductCategoryFilter === category
+                        ? "border-pink-500 bg-pink-500 text-white"
+                        : "border-slate-200 bg-white text-slate-600 hover:border-pink-300 hover:text-pink-500"
+                    }`}
+                  >
+                    {category || "Tất cả"}
+                  </button>
+                ))}
               </div>
               <div className="relative mb-3">
                 <Search
