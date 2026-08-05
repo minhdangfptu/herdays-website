@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
@@ -55,6 +55,8 @@ import {
 import { PageTransition } from "./motion/MotionPrimitives.jsx";
 import { SmoothScroll } from "./motion/SmoothScroll.jsx";
 import { getLenis } from "./motion/lenisInstance.js";
+
+const BehindTheBloom = lazy(() => import("./pages/EasterEgg/BehindTheBloom.jsx"));
 
 function RequireAuth({ children, role }) {
   if (!hasAuthSession()) return <Navigate to="/login" replace />;
@@ -159,6 +161,14 @@ function AppRoutes({ session }) {
     <PageTransition>
       <Routes location={location}>
         <Route path="/error-404" element={<Error404 />} />
+        <Route
+          path="/behind-the-bloom"
+          element={
+            <Suspense fallback={null}>
+              <BehindTheBloom />
+            </Suspense>
+          }
+        />
         <Route
           path="/login"
           element={

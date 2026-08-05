@@ -1,9 +1,9 @@
 {
-  "date": "2026-07-28",
-  "fontStack": "Be Vietnam Pro with existing page-level fallbacks",
-  "palette": "HerDays pink, white and neutral gray",
+  "date": "2026-08-02",
+  "fontStack": "Be Vietnam Pro body with Lamoric Rowen brand display and existing page-level fallbacks",
+  "palette": "HerDays dusty pink, tinted paper and warm neutral ink",
   "motion": "motion ^12.43.0",
-  "framework": "React 19 + Vite + React Router + Tailwind 4",
-  "spacing": "Existing page-level SCSS spacing preserved",
-  "preserved": ["font stack", "palette", "existing layout and business logic"]
+  "framework": "React 19 + Vite 8 + React Router 7 + Tailwind 4 + Sass",
+  "spacing": "Existing token scale preserved; easter egg adds a scoped 4pt-based scale",
+  "preserved": ["brand font", "HerDays palette", "existing routes", "business logic"]
 }
