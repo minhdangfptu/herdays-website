@@ -461,16 +461,9 @@ export const exportOrders = async ({ search, status }) => {
   const datePart = [exportDate.day, exportDate.month, exportDate.year]
     .map((part) => String(part).padStart(2, '0'))
     .join('-');
-  const timePart = [exportDate.hour, exportDate.minute]
-    .map((part) => String(part).padStart(2, '0'))
-    .join('-');
-  const dataAsOfDate = [exportDate.year, exportDate.month, exportDate.day]
-    .map((part) => String(part).padStart(2, '0'))
-    .join('-');
-
   return {
     buffer,
-    fileName: `${datePart}_${timePart}_data-to-${dataAsOfDate}.xlsx`
+    fileName: `du-lieu-don-hang-her-days-to_${datePart}.xlsx`
   };
 };
 

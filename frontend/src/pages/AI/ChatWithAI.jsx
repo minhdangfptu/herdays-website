@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import toast from 'react-hot-toast';
 import {
   FiBookOpen,
   FiExternalLink,
+  FiMenu,
   FiShoppingBag,
   FiSearch,
   FiSettings,
@@ -9,11 +11,13 @@ import {
   FiSend,
   FiTrash2,
   FiThumbsUp,
-  FiThumbsDown
+  FiThumbsDown,
+  FiX
 } from 'react-icons/fi';
 
 import { blogApi, chatApi, hasAuthSession, profileApi } from '../../services/apiService.js';
 import { Skeleton } from '../../components/Skeleton.jsx';
+import LogoutModal from '../../components/LogoutModal.jsx';
 import avatarDefault from '../../assets/avatar_default.png';
 import './ChatWithAI.scss';
 
@@ -58,6 +62,118 @@ const formatCurrency = (value, currency = 'VND') => (
     maximumFractionDigits: 0
   }).format(Number(value) || 0)
 );
+
+const getAiResponseBlocks = (value = '') => {
+  const lines = String(value)
+    .replace(/\r\n?/g, '\n')
+    .trim()
+    .split(/\n+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const blocks = [];
+  let currentList = null;
+
+  const flushList = () => {
+    if (!currentList) return;
+    blocks.push(currentList);
+    currentList = null;
+  };
+
+  const addListItem = (text, ordered = false) => {
+    if (!currentList || currentList.ordered !== ordered) {
+      flushList();
+      currentList = { type: 'list', ordered, items: [] };
+    }
+    currentList.items.push(text.trim());
+  };
+
+  lines.forEach((line) => {
+    const headingMatch = line.match(/^#{1,3}\s+(.+)$/);
+    const bulletMatch = line.match(/^[-•*]\s+(.+)$/);
+    const numberedMatch = line.match(/^\d+[.)]\s+(.+)$/);
+
+    if (headingMatch) {
+      flushList();
+      blocks.push({ type: 'heading', text: headingMatch[1] });
+      return;
+    }
+
+    if (bulletMatch) {
+      addListItem(bulletMatch[1]);
+      return;
+    }
+
+    if (numberedMatch) {
+      addListItem(numberedMatch[1], true);
+      return;
+    }
+
+    const inlineBulletParts = line.split(/\s+-\s+/);
+    if (inlineBulletParts.length > 1) {
+      flushList();
+      const introduction = inlineBulletParts.shift()?.trim();
+      if (introduction) blocks.push({ type: 'paragraph', text: introduction });
+      inlineBulletParts
+        .map((part) => part.trim())
+        .filter(Boolean)
+        .forEach((part) => addListItem(part));
+      return;
+    }
+
+    flushList();
+    blocks.push({ type: 'paragraph', text: line });
+  });
+
+  flushList();
+  return blocks;
+};
+
+const renderAiInlineText = (text) => (
+  String(text)
+    .split(/(\*\*[^*]+\*\*)/g)
+    .map((part, index) => (
+      part.startsWith('**') && part.endsWith('**')
+        ? <strong key={`${part}-${index}`}>{part.slice(2, -2)}</strong>
+        : <span key={`${part}-${index}`}>{part}</span>
+    ))
+);
+
+function AiResponseContent({ text }) {
+  const blocks = getAiResponseBlocks(text);
+
+  return (
+    <div className="chat-ai-rich-text">
+      {blocks.map((block, index) => {
+        if (block.type === 'heading') {
+          return (
+            <h3 key={`heading-${index}`} className="chat-ai-rich-text__heading">
+              {renderAiInlineText(block.text)}
+            </h3>
+          );
+        }
+
+        if (block.type === 'list') {
+          const ListTag = block.ordered ? 'ol' : 'ul';
+          return (
+            <ListTag key={`list-${index}`} className="chat-ai-rich-text__list">
+              {block.items.map((item, itemIndex) => (
+                <li key={`item-${itemIndex}`}>
+                  {renderAiInlineText(item)}
+                </li>
+              ))}
+            </ListTag>
+          );
+        }
+
+        return (
+          <p key={`paragraph-${index}`} className="chat-ai-rich-text__paragraph">
+            {renderAiInlineText(block.text)}
+          </p>
+        );
+      })}
+    </div>
+  );
+}
 
 const normalizeText = (value = '') => (
   value
@@ -163,7 +279,11 @@ export default function ChatWithAI() {
   const [conversationHistory, setConversationHistory] = useState([]);
   const [userProfile, setUserProfile] = useState(null);
   const [isSending, setIsSending] = useState(false);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
+  const [isLoadingConversations, setIsLoadingConversations] = useState(false);
+  const [isLoadingMessages, setIsLoadingMessages] = useState(false);
+  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const [conversationToDelete, setConversationToDelete] = useState(null);
+  const [isDeletingConversation, setIsDeletingConversation] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const blogSuggestionPoolRef = useRef(null);
   const messagesContainerRef = useRef(null);
@@ -191,6 +311,17 @@ export default function ChatWithAI() {
   }, [isLoggedIn]);
 
   useEffect(() => {
+    if (!isMobileSidebarOpen) return undefined;
+
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') setIsMobileSidebarOpen(false);
+    };
+
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [isMobileSidebarOpen]);
+
+  useEffect(() => {
     const messagesContainer = messagesContainerRef.current;
     if (!messagesContainer) return;
 
@@ -206,7 +337,7 @@ export default function ChatWithAI() {
     let isActive = true;
 
     const fetchHistory = async () => {
-      setIsLoadingHistory(true);
+      setIsLoadingConversations(true);
 
       try {
         const result = await chatApi.getConversations();
@@ -214,7 +345,7 @@ export default function ChatWithAI() {
       } catch (error) {
         if (isActive) setErrorMessage(error.message);
       } finally {
-        if (isActive) setIsLoadingHistory(false);
+        if (isActive) setIsLoadingConversations(false);
       }
     };
 
@@ -338,9 +469,10 @@ export default function ChatWithAI() {
   };
 
   const handleSelectConversation = async (selectedConversationId) => {
+    setIsMobileSidebarOpen(false);
     setConversationId(selectedConversationId);
     setErrorMessage('');
-    setIsLoadingHistory(true);
+    setIsLoadingMessages(true);
 
     try {
       const result = await chatApi.getMessages(selectedConversationId);
@@ -349,12 +481,21 @@ export default function ChatWithAI() {
     } catch (error) {
       setErrorMessage(error.message);
     } finally {
-      setIsLoadingHistory(false);
+      setIsLoadingMessages(false);
     }
   };
 
-  const handleDeleteConversation = async (event, selectedConversationId) => {
+  const handleRequestDeleteConversation = (event, conversation) => {
     event.stopPropagation();
+    setConversationToDelete(conversation);
+  };
+
+  const handleConfirmDeleteConversation = async () => {
+    if (!conversationToDelete || isDeletingConversation) return;
+
+    const selectedConversationId = conversationToDelete.id;
+    setIsDeletingConversation(true);
+
     try {
       await chatApi.deleteConversation(selectedConversationId);
       setConversationHistory((items) => items.filter((item) => item.id !== selectedConversationId));
@@ -362,12 +503,17 @@ export default function ChatWithAI() {
         setConversationId(null);
         setMessages([]);
       }
+      toast.success('Đã xóa cuộc trò chuyện.');
+      setConversationToDelete(null);
     } catch (error) {
       setErrorMessage(error.message);
     }
+    setIsDeletingConversation(false);
   };
 
   const handleNewChat = () => {
+    setIsMobileSidebarOpen(false);
+    setIsLoadingMessages(false);
     setConversationId(null);
     setMessages([
       {
@@ -388,8 +534,27 @@ export default function ChatWithAI() {
     : 'Khách';
 
   return (
-    <div className="chat-ai-container">
-      <div className="chat-ai-sidebar" data-lenis-prevent>
+    <div className={`chat-ai-container ${isMobileSidebarOpen ? 'mobile-sidebar-open' : ''}`}>
+      <button
+        className="chat-ai-mobile-backdrop"
+        type="button"
+        aria-label="Đóng danh sách cuộc trò chuyện"
+        onClick={() => setIsMobileSidebarOpen(false)}
+      />
+
+      <div className={`chat-ai-sidebar ${isMobileSidebarOpen ? 'is-open' : ''}`} data-lenis-prevent>
+        <div className="chat-ai-sidebar-mobile-header">
+          <strong>Cuộc trò chuyện</strong>
+          <button
+            className="chat-ai-sidebar-close-btn"
+            type="button"
+            aria-label="Đóng danh sách cuộc trò chuyện"
+            onClick={() => setIsMobileSidebarOpen(false)}
+          >
+            <FiX />
+          </button>
+        </div>
+
         <div className="chat-ai-user-profile">
           <img className="chat-ai-user-avatar" src={avatarDefault} alt={userDisplayName} />
           <div className="chat-ai-user-info">
@@ -411,17 +576,17 @@ export default function ChatWithAI() {
           <div className="chat-ai-section">
             <h4 className="chat-ai-section-title">Trò chuyện gần đây</h4>
             <div className="chat-ai-history-list">
-              {isLoadingHistory && (
+              {isLoadingConversations && (
                 <div className="space-y-2" role="status" aria-label="Đang tải lịch sử hội thoại">
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
                   <Skeleton className="h-10 w-full" />
                 </div>
               )}
-              {!isLoadingHistory && conversationHistory.length === 0 && (
+              {!isLoadingConversations && conversationHistory.length === 0 && (
                 <p className="chat-ai-history-empty">Chưa có hội thoại.</p>
               )}
-              {!isLoadingHistory && conversationHistory.map((item) => (
+              {!isLoadingConversations && conversationHistory.map((item) => (
                 <button
                   key={item.id}
                   className={`chat-ai-history-item ${
@@ -436,7 +601,7 @@ export default function ChatWithAI() {
                   </div>
                   <FiTrash2
                     className="chat-ai-history-action"
-                    onClick={(event) => handleDeleteConversation(event, item.id)}
+                    onClick={(event) => handleRequestDeleteConversation(event, item)}
                   />
                 </button>
               ))}
@@ -447,6 +612,15 @@ export default function ChatWithAI() {
 
       <div className="chat-ai-main">
         <div className="chat-ai-header">
+          <button
+            className="chat-ai-mobile-menu-btn"
+            type="button"
+            aria-label="Mở danh sách cuộc trò chuyện"
+            aria-expanded={isMobileSidebarOpen}
+            onClick={() => setIsMobileSidebarOpen(true)}
+          >
+            <FiMenu />
+          </button>
           <h2 style={{ color: '#F176A9' }}>HerBotAI</h2>
           <div className="chat-ai-header-actions">
             <FiSearch className="chat-ai-icon" />
@@ -459,12 +633,23 @@ export default function ChatWithAI() {
 
         <div className="chat-ai-messages" ref={messagesContainerRef} data-lenis-prevent>
           {errorMessage && <div className="chat-ai-error">{errorMessage}</div>}
-          {messages.map((message) => (
+          {isLoadingMessages && (
+            <div className="chat-ai-message-loading" role="status" aria-label="Đang tải tin nhắn">
+              <Skeleton className="h-4 w-2/3" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-1/2" />
+            </div>
+          )}
+          {!isLoadingMessages && messages.map((message) => (
             <div key={message.id} className={`chat-ai-message-group ${message.type}`}>
               {message.type === 'ai' && <div className="chat-ai-ai-badge">HBI</div>}
               <div className={`chat-ai-message ${message.type}`}>
                 <div className="chat-ai-message-body">
-                  <p>{message.text}</p>
+                  {message.type === 'ai' ? (
+                    <AiResponseContent text={message.text} />
+                  ) : (
+                    <p>{message.text}</p>
+                  )}
 
                   {message.type === 'ai' && message.blogSuggestions?.length > 0 && (
                     <div className="chat-ai-blog-suggestions">
@@ -548,7 +733,7 @@ export default function ChatWithAI() {
               {message.type === 'user' && <div className="chat-ai-message-avatar">H</div>}
             </div>
           ))}
-          {isSending && (
+          {!isLoadingMessages && isSending && (
             <div className="chat-ai-typing" role="status" aria-label="HerBotAI đang trả lời">
               <Skeleton className="h-4 w-32" />
             </div>
@@ -579,6 +764,25 @@ export default function ChatWithAI() {
           </div>
         </div>
       </div>
+
+      <LogoutModal
+        isOpen={Boolean(conversationToDelete)}
+        onClose={() => {
+          if (!isDeletingConversation) setConversationToDelete(null);
+        }}
+        onConfirm={handleConfirmDeleteConversation}
+        title="Xóa cuộc trò chuyện?"
+        description={(
+          <>
+            Bạn có chắc muốn xóa cuộc trò chuyện
+            <br />
+            <strong>“{conversationToDelete?.title || 'này'}”</strong> không?
+          </>
+        )}
+        cancelLabel="Hủy"
+        confirmLabel={isDeletingConversation ? 'Đang xóa...' : 'Xóa cuộc trò chuyện'}
+        cardClassName="chat-ai-delete-modal"
+      />
     </div>
   );
 }

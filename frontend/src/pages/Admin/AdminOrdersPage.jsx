@@ -135,9 +135,6 @@ const getVietnamDownloadFileName = () => {
     year: "numeric",
     month: "2-digit",
     day: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-    hourCycle: "h23",
   }).formatToParts(new Date());
   const values = Object.fromEntries(
     parts
@@ -145,7 +142,7 @@ const getVietnamDownloadFileName = () => {
       .map(({ type, value }) => [type, value]),
   );
 
-  return `${values.day}-${values.month}-${values.year}_${values.hour}-${values.minute}_data-to-${values.year}-${values.month}-${values.day}.xlsx`;
+  return `du-lieu-don-hang-her-days-to_${values.day}-${values.month}-${values.year}.xlsx`;
 };
 
 const getPagination = (pagination, page) => ({

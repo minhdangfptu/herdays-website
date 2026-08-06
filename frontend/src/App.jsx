@@ -1,5 +1,12 @@
 import { lazy, Suspense, useEffect, useState } from "react";
-import { BrowserRouter, Navigate, Outlet, Route, Routes, useLocation } from "react-router-dom";
+import {
+  BrowserRouter,
+  Navigate,
+  Outlet,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
 import { Toaster } from "react-hot-toast";
 
 import Header from "./components/Header.jsx";
@@ -50,13 +57,17 @@ import Tools from "./pages/Tools/Tools.jsx";
 import {
   clearAuthSession,
   hasAuthSession,
-  profileApi
+  profileApi,
 } from "./services/apiService.js";
 import { PageTransition } from "./motion/MotionPrimitives.jsx";
 import { SmoothScroll } from "./motion/SmoothScroll.jsx";
 import { getLenis } from "./motion/lenisInstance.js";
+import logoTrang from "./assets/home/logo_trang.png";
+import "./App.scss";
 
-const BehindTheBloom = lazy(() => import("./pages/EasterEgg/BehindTheBloom.jsx"));
+const BehindTheBloom = lazy(
+  () => import("./pages/EasterEgg/BehindTheBloom.jsx"),
+);
 
 function RequireAuth({ children, role }) {
   if (!hasAuthSession()) return <Navigate to="/login" replace />;
@@ -79,17 +90,28 @@ function RedirectAdmin({ children, role }) {
 
 function SessionLoading() {
   return (
-    <main
-      aria-live="polite"
-      style={{
-        minHeight: "100vh",
-        display: "grid",
-        placeItems: "center",
-        color: "#ed77a5",
-        fontWeight: 700
-      }}
-    >
-      Đang khôi phục phiên đăng nhập...
+    <main className="session-loading" aria-live="polite" aria-busy="true">
+      <span
+        className="session-loading__glow session-loading__glow--top"
+        aria-hidden="true"
+      />
+      <span
+        className="session-loading__glow session-loading__glow--bottom"
+        aria-hidden="true"
+      />
+
+      <section className="session-loading__card" role="status">
+        <h1>Đang khôi phục phiên đăng nhập</h1>
+        <p>HerDays đang kiểm tra thông tin tài khoản của bạn.</p>
+
+        <div className="session-loading__dots" aria-hidden="true">
+          <span />
+          <span />
+          <span />
+        </div>
+
+        <small>Vui lòng chờ trong giây lát</small>
+      </section>
     </main>
   );
 }
@@ -114,7 +136,9 @@ function AdminLayout() {
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
-    <div className={`admin-layout ${isSidebarCollapsed ? "admin-layout--collapsed" : ""}`}>
+    <div
+      className={`admin-layout ${isSidebarCollapsed ? "admin-layout--collapsed" : ""}`}
+    >
       <AdminSidebar
         collapsed={isSidebarCollapsed}
         onToggleCollapsed={() => setIsSidebarCollapsed((value) => !value)}
@@ -124,16 +148,34 @@ function AdminLayout() {
           <Routes>
             <Route index element={<AdminHome />} />
             <Route path="blog" element={<AdminPostsPage />} />
-            <Route path="posts" element={<Navigate to="/admin/blog" replace />} />
-            <Route path="shop" element={<Navigate to="/admin/marketplace/products" replace />} />
-            <Route path="marketplace" element={<Navigate to="/admin/marketplace/products" replace />} />
-            <Route path="marketplace/products" element={<AdminProductsPage />} />
+            <Route
+              path="posts"
+              element={<Navigate to="/admin/blog" replace />}
+            />
+            <Route
+              path="shop"
+              element={<Navigate to="/admin/marketplace/products" replace />}
+            />
+            <Route
+              path="marketplace"
+              element={<Navigate to="/admin/marketplace/products" replace />}
+            />
+            <Route
+              path="marketplace/products"
+              element={<AdminProductsPage />}
+            />
             <Route path="marketplace/orders" element={<AdminOrdersPage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="users/:userId" element={<AdminUserDetailPage />} />
             <Route path="contacts" element={<AdminContactsPage />} />
-            <Route path="contact" element={<Navigate to="/admin/contacts" replace />} />
-            <Route path="lien-he" element={<Navigate to="/admin/contacts" replace />} />
+            <Route
+              path="contact"
+              element={<Navigate to="/admin/contacts" replace />}
+            />
+            <Route
+              path="lien-he"
+              element={<Navigate to="/admin/contacts" replace />}
+            />
             <Route path="*" element={<Navigate to="/admin" replace />} />
           </Routes>
         </div>
@@ -144,11 +186,14 @@ function AdminLayout() {
 }
 
 function HeaderFooterLayout() {
+  const { pathname } = useLocation();
+  const isChatPage = pathname === "/chat-with-herbot";
+
   return (
     <>
       <Header />
       <Outlet />
-      <Footer />
+      {!isChatPage && <Footer />}
       <MessengerButton />
     </>
   );
@@ -255,7 +300,10 @@ function AppRoutes({ session }) {
             path="/upgrade-account/continue"
             element={<SubscriptionStep2 />}
           />
-          <Route path="/upgrade-account/complete" element={<SubscriptionStep3 />} />
+          <Route
+            path="/upgrade-account/complete"
+            element={<SubscriptionStep3 />}
+          />
           <Route path="/term-of-use" element={<TermOfUse />} />
           <Route path="/policy" element={<Policy />} />
           <Route path="/home" element={<HomePage />} />
@@ -276,12 +324,21 @@ function AppRoutes({ session }) {
             <Route path="/chat-with-herbot" element={<ChatWithAI />} />
             <Route path="/check-out" element={<Checkout />} />
             <Route path="/qr-payment" element={<QRPayment />} />
-            <Route path="/complete-transaction" element={<CompleteTransactionPage />} />
+            <Route
+              path="/complete-transaction"
+              element={<CompleteTransactionPage />}
+            />
             <Route path="/cart" element={<Cart />} />
             <Route path="/box-customize" element={<BoxCustomize />} />
             <Route path="/box-customize/:boxId" element={<BoxCustomize />} />
-            <Route path="/product-detail/:type/:itemId" element={<ProductDetailPage />} />
-            <Route path="/product-detail/:productId" element={<ProductDetailPage />} />
+            <Route
+              path="/product-detail/:type/:itemId"
+              element={<ProductDetailPage />}
+            />
+            <Route
+              path="/product-detail/:productId"
+              element={<ProductDetailPage />}
+            />
             <Route element={<BlogShell />}>
               <Route path="/blog" element={<BlogTopicsPage />} />
               <Route path="/blog/:topicId/posts" element={<BlogPostsPage />} />
@@ -304,7 +361,7 @@ function App() {
     const hasStoredSession = hasAuthSession();
     return {
       isLoading: hasStoredSession,
-      role: hasStoredSession ? localStorage.getItem("userRole") || "" : ""
+      role: hasStoredSession ? localStorage.getItem("userRole") || "" : "",
     };
   });
 
@@ -316,7 +373,7 @@ function App() {
       if (!isMounted || isRestoring) return;
       setSession({
         isLoading: false,
-        role: hasAuthSession() ? localStorage.getItem("userRole") || "" : ""
+        role: hasAuthSession() ? localStorage.getItem("userRole") || "" : "",
       });
     };
 

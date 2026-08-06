@@ -48,6 +48,19 @@ const AdminSidebar = ({ collapsed, onToggleCollapsed }) => {
     }
   };
 
+  const renderLogoutButton = (className = "admin-logout-button") => (
+    <button
+      className={className}
+      type="button"
+      onClick={handleLogout}
+      title={collapsed ? "Đăng xuất" : undefined}
+      aria-label="Đăng xuất"
+    >
+      <LogOut size={20} strokeWidth={1.8} className="admin-nav-icon" />
+      {!collapsed && <span className="admin-logout-label">Đăng xuất</span>}
+    </button>
+  );
+
   const renderNavItem = ({ icon: Icon, label, to, children }) => {
     if (children?.length) {
       const isGroupActive = children.some((child) => location.pathname.startsWith(child.to));
@@ -127,20 +140,16 @@ const AdminSidebar = ({ collapsed, onToggleCollapsed }) => {
       </button>
 
       <nav className="admin-sidebar-nav">
-        <ul className="admin-nav-list">{navItems.map(renderNavItem)}</ul>
+        <ul className="admin-nav-list">
+          {navItems.map(renderNavItem)}
+          <li className="admin-mobile-logout-item">
+            {renderLogoutButton("admin-logout-button admin-mobile-logout-button")}
+          </li>
+        </ul>
       </nav>
 
       <div className="admin-sidebar-footer">
-        <button
-          className="admin-logout-button"
-          type="button"
-          onClick={handleLogout}
-          title={collapsed ? "Đăng xuất" : undefined}
-          aria-label="Đăng xuất"
-        >
-          <LogOut size={20} strokeWidth={1.8} className="admin-nav-icon" />
-          {!collapsed && <span className="admin-logout-label">Đăng xuất</span>}
-        </button>
+        {renderLogoutButton()}
       </div>
     </aside>
   );

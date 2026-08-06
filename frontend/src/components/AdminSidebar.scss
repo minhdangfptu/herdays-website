@@ -9,12 +9,14 @@ $active-bg: rgba(255, 255, 255, 0.3);
   display: flex;
   flex-direction: column;
   width: 240px;
-  min-height: 100vh;
+  min-height: 0;
   height: 100vh;
+  height: 100dvh;
   background-color: white;
-  z-index: 1000;
+  z-index: 1100;
   position: fixed;
   inset: 0 auto 0 0;
+  isolation: isolate;
   transition: width 0.3s ease;
   flex-shrink: 0;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.1);
@@ -96,8 +98,9 @@ $active-bg: rgba(255, 255, 255, 0.3);
 
   // ── Navigation ───────────────────────────────────────────────
   .admin-sidebar-nav {
-    flex: 1;
-    padding: 12px 8px;
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 12px 8px 76px;
     overflow-y: auto;
 
     &::-webkit-scrollbar {
@@ -116,6 +119,10 @@ $active-bg: rgba(255, 255, 255, 0.3);
     display: flex;
     flex-direction: column;
     gap: 4px;
+  }
+
+  .admin-mobile-logout-item {
+    display: none;
   }
 
   .admin-nav-item {
@@ -214,8 +221,14 @@ $active-bg: rgba(255, 255, 255, 0.3);
     display: flex;
     flex-direction: column;
     gap: 4px;
+    min-height: 56px;
     padding: 8px;
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+    background-color: #ffffff;
     border-top: 1px solid rgba(237, 119, 165, 0.18);
+    position: absolute;
+    inset: auto 0 0;
+    z-index: 1;
   }
 
   .admin-logout-button {
@@ -271,12 +284,40 @@ $active-bg: rgba(255, 255, 255, 0.3);
     font-family: "Roboto", sans-serif;
     box-shadow: 0 4px 12px rgba(237, 119, 165, 0.18);
     transition: background-color 0.2s ease, color 0.2s ease, box-shadow 0.2s ease;
-    z-index: 2;
+    z-index: 1101;
 
     &:hover {
       background-color: #fff5f8;
       color: #1a1a1a;
       box-shadow: 0 6px 16px rgba(237, 119, 165, 0.24);
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .admin-sidebar {
+    .admin-sidebar-nav {
+      padding-bottom: 12px;
+    }
+
+    .admin-mobile-logout-item {
+      display: block;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid rgba(237, 119, 165, 0.18);
+    }
+
+    .admin-mobile-logout-button {
+      color: #b4234f;
+
+      &:hover {
+        background-color: rgba(237, 119, 165, 0.12);
+        color: #8f183f;
+      }
+    }
+
+    .admin-sidebar-footer {
+      display: none;
     }
   }
 }
