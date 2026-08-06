@@ -170,6 +170,20 @@ export default function ChatWithAI() {
   const isLoggedIn = useMemo(() => hasAuthSession(), []);
 
   useEffect(() => {
+    const messagesContainer = messagesContainerRef.current;
+    if (!messagesContainer) return undefined;
+
+    const frameId = window.requestAnimationFrame(() => {
+      messagesContainer.scrollTo({
+        top: messagesContainer.scrollHeight,
+        behavior: 'smooth'
+      });
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [messages, isSending]);
+
+  useEffect(() => {
     if (!isLoggedIn) return undefined;
 
     let isActive = true;
@@ -457,7 +471,11 @@ export default function ChatWithAI() {
           </div>
         </div>
 
-        <div className="chat-ai-messages" ref={messagesContainerRef} data-lenis-prevent>
+        <div
+          ref={messagesContainerRef}
+          className="chat-ai-messages"
+          data-lenis-prevent
+        >
           {errorMessage && <div className="chat-ai-error">{errorMessage}</div>}
           {messages.map((message) => (
             <div key={message.id} className={`chat-ai-message-group ${message.type}`}>

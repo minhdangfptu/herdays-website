@@ -8,9 +8,44 @@ from motor.motor_asyncio import AsyncIOMotorClient
 
 from app.core.config import Settings
 from app.schemas.chat import KnowledgeFilters
+from app.services.text_utils import normalize_text
 
 
 logger = logging.getLogger(__name__)
+
+LEXICAL_STOP_WORDS = {
+    "ai",
+    "ban",
+    "bi",
+    "cho",
+    "co",
+    "cua",
+    "dang",
+    "den",
+    "duoc",
+    "gai",
+    "gi",
+    "giup",
+    "hay",
+    "khong",
+    "la",
+    "lam",
+    "minh",
+    "mot",
+    "nen",
+    "nhu",
+    "thang",
+    "thi",
+    "toi",
+    "va",
+    "ve",
+}
+LEXICAL_QUERY_EXPANSIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
+    ("den thang", ("kinh", "nguyệt")),
+    ("toi thang", ("kinh", "nguyệt")),
+    ("ky kinh", ("kinh", "nguyệt")),
+    ("hanh kinh", ("kinh", "nguyệt")),
+)
 
 
 @dataclass(slots=True)
@@ -21,6 +56,7 @@ class KnowledgeChunkResult:
     url: str | None
     content: str
     score: float | None
+    tags: tuple[str, ...] = ()
 
 
 class KnowledgeRepository:
@@ -90,10 +126,11 @@ class KnowledgeRepository:
         match_filter: dict[str, Any],
         limit: int,
     ) -> list[KnowledgeChunkResult]:
-        tokens = build_search_tokens(query_text)
-        if not tokens:
+        search_terms = build_search_terms(query_text)
+        if not search_terms:
             return []
 
+        tokens = [re.escape(term) for term in search_terms]
         token_filters = [
             {
                 "$or": [
@@ -107,13 +144,13 @@ class KnowledgeRepository:
 
         pipeline = [
             {"$match": {"$and": [match_filter, {"$or": token_filters}]}},
-            {"$addFields": {"titleMatch": {"$regexMatch": {"input": "$title", "regex": tokens[0], "options": "i"}}}},
-            {"$sort": {"titleMatch": -1, "updatedAt": -1, "createdAt": -1}},
+            {"$sort": {"updatedAt": -1, "createdAt": -1}},
             {"$project": project_fields(score=None)},
-            {"$limit": limit},
+            {"$limit": min(max(limit * 40, 100), 200)},
         ]
 
-        return await collect_chunks(self._collection.aggregate(pipeline))
+        chunks = await collect_chunks(self._collection.aggregate(pipeline))
+        return rank_lexical_results(chunks, search_terms, limit)
 
     async def replace_source_chunks(self, source_id: str, chunks: list[dict[str, Any]]) -> int:
         if self._collection is None:
@@ -153,15 +190,70 @@ def build_match_filter(filters: KnowledgeFilters) -> dict[str, Any]:
 
 
 def build_search_tokens(query_text: str) -> list[str]:
-    raw_tokens = re.findall(r"[\w]+", query_text.lower(), flags=re.UNICODE)
-    tokens = []
+    return [re.escape(term) for term in build_search_terms(query_text)]
+
+
+def build_search_terms(query_text: str) -> list[str]:
+    normalized_query = normalize_text(query_text)
+    terms: list[str] = []
+
+    for phrase, expansions in LEXICAL_QUERY_EXPANSIONS:
+        if phrase in normalized_query:
+            terms.extend(expansions)
+
+    raw_tokens = re.findall(r"[\w]+", query_text.casefold(), flags=re.UNICODE)
     for token in raw_tokens:
-        if len(token) < 3:
+        normalized_token = normalize_text(token)
+        if len(normalized_token) < 3 or normalized_token in LEXICAL_STOP_WORDS:
             continue
-        escaped = re.escape(token)
-        if escaped not in tokens:
-            tokens.append(escaped)
-    return tokens[:5]
+        terms.append(token)
+
+    unique_terms: list[str] = []
+    seen: set[str] = set()
+    for term in terms:
+        key = term.casefold()
+        if key in seen:
+            continue
+        seen.add(key)
+        unique_terms.append(term)
+
+    return unique_terms[:12]
+
+
+def tokenize_result_text(value: str) -> set[str]:
+    return set(re.findall(r"[\w]+", value.casefold(), flags=re.UNICODE))
+
+
+def count_term_hits(terms: list[str], value: str) -> int:
+    tokens = tokenize_result_text(value)
+    return sum(1 for term in terms if term.casefold() in tokens)
+
+
+def rank_lexical_results(
+    chunks: list[KnowledgeChunkResult],
+    search_terms: list[str],
+    limit: int,
+) -> list[KnowledgeChunkResult]:
+    best_by_source: dict[str, tuple[int, int, KnowledgeChunkResult]] = {}
+
+    for position, chunk in enumerate(chunks):
+        title_hits = count_term_hits(search_terms, chunk.title)
+        tag_hits = count_term_hits(search_terms, " ".join(chunk.tags))
+        content_hits = count_term_hits(search_terms, chunk.content)
+        lexical_score = (title_hits * 6) + (tag_hits * 4) + content_hits
+        if lexical_score <= 0:
+            continue
+
+        current = best_by_source.get(chunk.source_id)
+        if current is None or lexical_score > current[0]:
+            chunk.score = float(lexical_score)
+            best_by_source[chunk.source_id] = (lexical_score, position, chunk)
+
+    ranked = sorted(
+        best_by_source.values(),
+        key=lambda item: (-item[0], item[1]),
+    )
+    return [item[2] for item in ranked[:limit]]
 
 
 def project_fields(score: Any) -> dict[str, Any]:
@@ -172,6 +264,7 @@ def project_fields(score: Any) -> dict[str, Any]:
         "title": 1,
         "url": 1,
         "content": 1,
+        "tags": 1,
     }
     if score is not None:
         project["score"] = score
@@ -189,6 +282,7 @@ async def collect_chunks(cursor: Any) -> list[KnowledgeChunkResult]:
                 url=item.get("url"),
                 content=item["content"],
                 score=item.get("score"),
+                tags=tuple(item.get("tags") or ()),
             )
         )
     return chunks
