@@ -19,6 +19,58 @@ const assertStockAvailable = (box, quantity) => {
 
 const getProductId = (item) => item.productId._id?.toString() || item.productId.toString();
 
+const getConfigurationKey = (customizedProducts = []) => (
+  customizedProducts
+    .map((item) => ({
+      productId: item.productId?._id?.toString() || item.productId?.toString(),
+      quantity: Number(item.quantity) || 0
+    }))
+    .filter(({ productId, quantity }) => productId && quantity > 0)
+    .sort((first, second) => first.productId.localeCompare(second.productId))
+    .map(({ productId, quantity }) => `${productId}:${quantity}`)
+    .join('|') || 'default'
+);
+
+const ensureCartItemMetadata = (cart) => {
+  let hasChanges = false;
+
+  cart.items.forEach((item) => {
+    if (!item._id) {
+      item._id = new mongoose.Types.ObjectId();
+      hasChanges = true;
+    }
+
+    const configurationKey = item.configurationKey || getConfigurationKey(item.customizedProducts);
+    if (item.configurationKey !== configurationKey) {
+      item.configurationKey = configurationKey;
+      hasChanges = true;
+    }
+  });
+
+  return hasChanges;
+};
+
+const getBoxQuantityInCart = (cart, boxId, excludedItemId = null) => (
+  cart.items
+    .filter((item) => (
+      item.boxId.toString() === boxId.toString()
+      && (!excludedItemId || item._id?.toString() !== excludedItemId.toString())
+    ))
+    .reduce((total, item) => total + (Number(item.quantity) || 0), 0)
+);
+
+const findCartItem = (cart, cartItemId) => {
+  const itemById = cart.items.find((item) => item._id?.toString() === cartItemId.toString());
+  if (itemById) return itemById;
+
+  const matchingItems = cart.items.filter((item) => item.boxId.toString() === cartItemId.toString());
+  if (matchingItems.length > 1) {
+    throw new HttpError(400, 'Cart item id is required when a box has multiple configurations');
+  }
+
+  return matchingItems[0] || null;
+};
+
 const getDefaultSelectedItems = (box) => {
   const selectedItems = [];
   const selectedGroups = new Set();
@@ -100,7 +152,14 @@ const normalizeCustomizedProducts = (box, customizedProducts) => {
 };
 
 const populateCart = async (cart) => {
-  await cart.populate('items.boxId');
+  if (ensureCartItemMetadata(cart)) await cart.save();
+  await cart.populate({
+    path: 'items.boxId',
+    populate: {
+      path: 'products.productId',
+      select: 'productName unit thumbnail price category quantity'
+    }
+  });
   await cart.populate({
     path: 'items.customizedProducts.productId',
     select: 'productName price thumbnail'
@@ -133,59 +192,78 @@ export const addToCart = async (userId, boxId, quantity = 1, customizedProducts)
     cart = new Cart({ userId, items: [] });
   }
 
-  const existingItem = cart.items.find(item => item.boxId.toString() === boxId);
-  const nextQuantity = (existingItem?.quantity || 0) + requestedQuantity;
-  assertStockAvailable(box, nextQuantity);
+  ensureCartItemMetadata(cart);
+
+  const configurationKey = getConfigurationKey(normalizedCustomizedProducts);
+  const existingItem = cart.items.find((item) => (
+    item.boxId.toString() === boxId
+    && (item.configurationKey || getConfigurationKey(item.customizedProducts)) === configurationKey
+  ));
+  const nextBoxQuantity = getBoxQuantityInCart(cart, boxId) + requestedQuantity;
+  assertStockAvailable(box, nextBoxQuantity);
+
+  let targetItem;
 
   if (existingItem) {
-    existingItem.quantity = nextQuantity;
+    existingItem.quantity = (existingItem.quantity || 0) + requestedQuantity;
     existingItem.customizedProducts = normalizedCustomizedProducts;
+    existingItem.configurationKey = configurationKey;
+    targetItem = existingItem;
   } else {
-    cart.items.push({
+    targetItem = cart.items.create({
       boxId,
       quantity: requestedQuantity,
-      customizedProducts: normalizedCustomizedProducts
+      customizedProducts: normalizedCustomizedProducts,
+      configurationKey
     });
+    cart.items.push(targetItem);
   }
 
   await cart.save();
-  return populateCart(cart);
+  return {
+    cart: await populateCart(cart),
+    cartItemId: targetItem._id.toString()
+  };
 };
 
-export const updateCartItem = async (userId, boxId, quantity) => {
+export const updateCartItem = async (userId, cartItemId, quantity) => {
   const nextQuantity = normalizeCartQuantity(quantity);
 
-  if (!mongoose.Types.ObjectId.isValid(boxId)) {
-    throw new HttpError(400, 'Invalid boxId');
+  if (!mongoose.Types.ObjectId.isValid(cartItemId)) {
+    throw new HttpError(400, 'Invalid cartItemId');
   }
 
-  const [cart, box] = await Promise.all([
-    Cart.findOne({ userId }),
-    Box.findById(boxId)
-  ]);
+  const cart = await Cart.findOne({ userId });
 
   if (!cart) throw new HttpError(404, 'Cart not found');
 
-  const item = cart.items.find(item => item.boxId.toString() === boxId);
+  ensureCartItemMetadata(cart);
+  const item = findCartItem(cart, cartItemId);
   if (!item) throw new HttpError(404, 'Item not found in cart');
 
+  const box = await Box.findById(item.boxId);
   if (!box) throw new HttpError(404, 'Box not found');
-  assertStockAvailable(box, nextQuantity);
+  assertStockAvailable(
+    box,
+    getBoxQuantityInCart(cart, item.boxId, item._id) + nextQuantity
+  );
 
   item.quantity = nextQuantity;
   await cart.save();
   return populateCart(cart);
 };
 
-export const removeFromCart = async (userId, boxId) => {
-  if (!mongoose.Types.ObjectId.isValid(boxId)) {
-    throw new HttpError(400, 'Invalid boxId');
+export const removeFromCart = async (userId, cartItemId) => {
+  if (!mongoose.Types.ObjectId.isValid(cartItemId)) {
+    throw new HttpError(400, 'Invalid cartItemId');
   }
 
   const cart = await Cart.findOne({ userId });
   if (!cart) throw new HttpError(404, 'Cart not found');
 
-  const itemIndex = cart.items.findIndex(item => item.boxId.toString() === boxId);
+  ensureCartItemMetadata(cart);
+  const item = findCartItem(cart, cartItemId);
+  const itemIndex = item ? cart.items.indexOf(item) : -1;
   if (itemIndex === -1) throw new HttpError(404, 'Item not found in cart');
 
   cart.items.splice(itemIndex, 1);

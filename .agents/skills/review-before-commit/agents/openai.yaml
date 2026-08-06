@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review Before Commit"
+  short_description: "Review git changes before committing"
+  default_prompt: "Review the current changes against the previous version before commit, highlight important differences, risks, validation gaps, and commit readiness."

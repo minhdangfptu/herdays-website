@@ -18,9 +18,7 @@ import {
   getCartBoxQuantities,
   hasAuthSession,
   marketplaceApi,
-  profileApi,
 } from "../../services/apiService.js";
-import { isBoxCompatibleWithTarget } from "../../utils/boxTarget.js";
 import { Skeleton } from "../../components/Skeleton.jsx";
 import { ShimmerButton } from "../../components/magic-ui/ShimmerButton.jsx";
 import { MotionCard } from "../../motion/MotionPrimitives.jsx";
@@ -243,7 +241,6 @@ export default function BoxCustomize() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isAdding, setIsAdding] = useState(false);
   const [cartBoxQuantities, setCartBoxQuantities] = useState({});
-  const [targetStatus, setTargetStatus] = useState("");
   const [activeCategory, setActiveCategory] = useState("");
   const [isBoxPickerOpen, setIsBoxPickerOpen] = useState(false);
   const [highlightedBoxId, setHighlightedBoxId] = useState(boxId || "");
@@ -261,15 +258,12 @@ export default function BoxCustomize() {
       setErrorMessage("");
 
       try {
-        const [boxList, productList, boxResult, cartResult, profileResult] = await Promise.all([
+        const [boxList, productList, boxResult, cartResult] = await Promise.all([
           getAllMarketplaceItems(marketplaceApi.listBoxes),
           getAllMarketplaceItems(marketplaceApi.listProducts),
           boxId ? marketplaceApi.getBox(boxId) : Promise.resolve(null),
           hasAuthSession()
             ? cartApi.getCart().catch(() => null)
-            : Promise.resolve(null),
-          hasAuthSession()
-            ? profileApi.getProfile()
             : Promise.resolve(null)
         ]);
 
@@ -297,13 +291,13 @@ export default function BoxCustomize() {
             });
           });
 
-        const nextTargetStatus = profileResult?.targetStatus || '';
-        const allowedBoxes = boxList.filter((boxOption) => (
-          isBoxCompatibleWithTarget(boxOption, nextTargetStatus)
-        ))
-
-        setTargetStatus(nextTargetStatus)
-        setBoxes(allowedBoxes)
+        // Tạm comment nghiệp vụ lọc box theo mục tiêu của người dùng.
+        // Khi cần bật lại, khôi phục targetStatus và filter isBoxCompatibleWithTarget.
+        // const allowedBoxes = boxList.filter((boxOption) => (
+        //   isBoxCompatibleWithTarget(boxOption, nextTargetStatus)
+        // ));
+        // setBoxes(allowedBoxes);
+        setBoxes(boxList)
         setProducts(nextProducts)
         setCartBoxQuantities(getCartBoxQuantities(cartResult))
 
@@ -314,19 +308,16 @@ export default function BoxCustomize() {
           return
         }
 
-        if (!nextTargetStatus) {
-          setBox(null)
-          setSelectedItems([])
-          setErrorMessage('Vui lòng hoàn thành mục tiêu cá nhân trước khi tùy chỉnh box.')
-          return
-        }
-
-        if (boxResult && !isBoxCompatibleWithTarget(boxResult, nextTargetStatus)) {
-          setBox(null)
-          setSelectedItems([])
-          setErrorMessage('Bạn chỉ có thể tùy chỉnh box phù hợp với mục tiêu của mình.')
-          return
-        }
+        // Tạm comment guard chỉ cho phép tùy chỉnh box phù hợp với targetStatus.
+        // if (!nextTargetStatus) {
+        //   setBox(boxResult);
+        //   setSelectedItems(initialProducts);
+        //   return;
+        // }
+        // if (boxResult && !isBoxCompatibleWithTarget(boxResult, nextTargetStatus)) {
+        //   setErrorMessage('Box này không phù hợp với mục tiêu hiện tại.');
+        //   return;
+        // }
 
         setBox(boxResult)
         setSelectedItems(initialProducts);
@@ -732,10 +723,12 @@ export default function BoxCustomize() {
       return;
     }
 
-    if (!isBoxCompatibleWithTarget(box, targetStatus)) {
-      toast.error('Bạn chỉ có thể tùy chỉnh box phù hợp với mục tiêu của mình.')
-      return
-    }
+    // Tạm comment guard mua box theo targetStatus để mọi box trong danh sách
+    // đều có thể được tùy chỉnh và mua.
+    // if (!isBoxCompatibleWithTarget(box, targetStatus)) {
+    //   toast.error('Box này không phù hợp với mục tiêu hiện tại.');
+    //   return;
+    // }
 
     if (availableBoxQuantity <= 0) {
       toast.error("Box này đã hết hàng.");
@@ -787,7 +780,11 @@ export default function BoxCustomize() {
       setCartBoxQuantities(getCartBoxQuantities(cart));
       await flyAnimation;
       toast.success("Đã thêm box vào giỏ hàng.");
-      navigate("/check-out");
+      navigate("/check-out", {
+        state: cart.addedCartItemId
+          ? { selectedCartItemIds: [String(cart.addedCartItemId)] }
+          : undefined,
+      });
     } catch (error) {
       toast.error(error.message || "Không thể thêm box vào giỏ hàng.");
     } finally {

@@ -279,6 +279,10 @@ function AdminOrderDetailModal({ order, isLoading, onClose, onOrderUpdated }) {
     createdAtInput &&
     createdAtInput !== toDateTimeLocalValue(order.createdAt),
   );
+  const subscriptionMonths = Number(order?.subscriptionMonths) || 1;
+  const subtotalAmount = Number(order?.subtotalAmount ?? order?.totalAmount) || 0;
+  const discountPercent = Number(order?.discountPercent) || 0;
+  const discountAmount = Number(order?.discountAmount) || 0;
 
   const handleCreatedAtUpdate = async () => {
     if (!order || !createdAtInput) {
@@ -414,6 +418,25 @@ function AdminOrderDetailModal({ order, isLoading, onClose, onOrderUpdated }) {
               </div>
             </div>
 
+            <div className="grid gap-3 rounded-xl border border-pink-100 bg-pink-50/50 p-4 sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Gói đăng ký</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">{subscriptionMonths} tháng</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Tạm tính</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">{formatCurrency(subtotalAmount)}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Giảm giá{discountPercent ? ` (${discountPercent}%)` : ""}</p>
+                <p className="mt-1 text-sm font-bold text-emerald-600">-{formatCurrency(discountAmount)}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Sau giảm giá</p>
+                <p className="mt-1 text-sm font-extrabold text-pink-500">{formatCurrency(order.totalAmount)}</p>
+              </div>
+            </div>
+
             <div>
               <h3 className="mb-3 text-sm font-extrabold text-slate-800">
                 Sản phẩm trong đơn
@@ -428,12 +451,12 @@ function AdminOrderDetailModal({ order, isLoading, onClose, onOrderUpdated }) {
                             (item.isBox ? "Box trong đơn hàng" : "Sản phẩm")}
                         </p>
                         <p className="mt-1 text-xs font-semibold text-slate-500">
-                          Số lượng box: {item.quantity}
+                          Số lượng box: {item.quantity} · Đơn giá/tháng: {formatCurrency(item.price)}
                         </p>
                       </div>
                       <p className="text-sm font-extrabold text-slate-700">
                         {formatCurrency(
-                          Number(item.price) * Number(item.quantity),
+                          Number(item.price) * Number(item.quantity) * subscriptionMonths,
                         )}
                       </p>
                     </div>

@@ -41,7 +41,9 @@ export const getCartBoxQuantities = (cart) => (
   (cart?.items || []).reduce((acc, item) => {
     const box = item.boxId || {}
     const boxId = box._id || box.id || item.boxId
-    if (boxId) acc[String(boxId)] = Number(item.quantity) || 0
+    if (boxId) {
+      acc[String(boxId)] = (acc[String(boxId)] || 0) + (Number(item.quantity) || 0)
+    }
     return acc
   }, {})
 )
@@ -382,23 +384,23 @@ export const boxApi = {
 
 export const marketplaceApi = {
   listAll: async (params = {}) => {
-    const response = await request(`/marketplace${buildQuery(params)}`, { isAuthenticated: true })
+    const response = await request(`/marketplace${buildQuery(params)}`)
     return { items: response.data, pagination: response.meta }
   },
   listProducts: async (params = {}) => {
-    const response = await request(`/marketplace/products${buildQuery(params)}`, { isAuthenticated: true })
+    const response = await request(`/marketplace/products${buildQuery(params)}`)
     return { items: response.data, pagination: response.meta }
   },
   getProduct: async (id) => {
-    const response = await request(`/marketplace/products/${id}`, { isAuthenticated: true })
+    const response = await request(`/marketplace/products/${id}`)
     return response.data
   },
   listBoxes: async (params = {}) => {
-    const response = await request(`/marketplace/boxes${buildQuery(params)}`, { isAuthenticated: true })
+    const response = await request(`/marketplace/boxes${buildQuery(params)}`)
     return { items: response.data, pagination: response.meta }
   },
   getBox: async (id) => {
-    const response = await request(`/marketplace/boxes/${id}`, { isAuthenticated: true })
+    const response = await request(`/marketplace/boxes/${id}`)
     return response.data
   }
 }
@@ -417,17 +419,17 @@ export const cartApi = {
     notifyCartChanged(response.data)
     return response.data
   },
-  updateItem: async ({ boxId, quantity }) => {
+  updateItem: async ({ cartItemId, boxId, quantity }) => {
     const response = await request('/cart', {
       method: 'PUT',
-      body: { boxId, quantity },
+      body: { cartItemId: cartItemId || boxId, quantity },
       isAuthenticated: true
     })
     notifyCartChanged(response.data)
     return response.data
   },
-  removeItem: async (boxId) => {
-    const response = await request(`/cart/${boxId}`, {
+  removeItem: async (cartItemId) => {
+    const response = await request(`/cart/${cartItemId}`, {
       method: 'DELETE',
       isAuthenticated: true
     })
@@ -453,10 +455,10 @@ export const orderApi = {
     const response = await request(`/orders/${id}`, { isAuthenticated: true })
     return response.data
   },
-  createFromCart: async ({ paymentMethod = 'bank_transfer', lovelyMessage = '', boxIds, subscriptionMonths = 1 } = {}) => {
+  createFromCart: async ({ paymentMethod = 'bank_transfer', lovelyMessage = '', cartItemIds, boxIds, subscriptionMonths = 1 } = {}) => {
     const response = await request('/orders', {
       method: 'POST',
-      body: { paymentMethod, lovelyMessage, boxIds, subscriptionMonths },
+      body: { paymentMethod, lovelyMessage, cartItemIds, boxIds, subscriptionMonths },
       isAuthenticated: true
     })
     return response.data

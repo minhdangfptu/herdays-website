@@ -141,6 +141,10 @@ const orderSchema = new mongoose.Schema(
       min: 0,
       default: 0
     },
+    inventoryAdjusted: {
+      type: Boolean,
+      default: false
+    },
     paymentMethod: {
       type: String,
       default: null

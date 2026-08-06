@@ -83,6 +83,63 @@ const getSubscriptionDiscount = (subscriptionMonths = 1) => (
   SUBSCRIPTION_DISCOUNTS.get(Number(subscriptionMonths)) || 0
 );
 
+const getProductStockDemand = (items = []) => {
+  const demandByProductId = new Map();
+
+  items.forEach((item) => {
+    const boxQuantity = Number(item.quantity) || 0;
+    if (boxQuantity <= 0) return;
+
+    const selectedById = new Map(
+      (item.customizedProducts || []).map((customizedProduct) => [
+        customizedProduct.productId?._id?.toString()
+          || customizedProduct.productId?.toString(),
+        Number(customizedProduct.quantity) || 0
+      ])
+    );
+
+    (item.boxSnapshot?.products || []).forEach((boxProduct) => {
+      const productId = boxProduct.productId?._id?.toString()
+        || boxProduct.productId?.toString();
+      if (!productId) return;
+
+      const isSelectable = boxProduct.isCustomizable === true
+        || Boolean(boxProduct.selectionGroup);
+      const productQuantity = isSelectable
+        ? selectedById.get(productId) || 0
+        : Number(boxProduct.quantity) || 1;
+
+      if (productQuantity <= 0) return;
+
+      demandByProductId.set(
+        productId,
+        (demandByProductId.get(productId) || 0) + productQuantity * boxQuantity
+      );
+    });
+  });
+
+  return demandByProductId;
+};
+
+const adjustProductStock = async (items, session, direction) => {
+  const demandByProductId = getProductStockDemand(items);
+  const stockUpdates = await Promise.all(
+    [...demandByProductId.entries()].map(([productId, quantity]) => (
+      Product.updateOne(
+        direction < 0
+          ? { _id: productId, quantity: { $gte: quantity } }
+          : { _id: productId },
+        { $inc: { quantity: direction * quantity } },
+        { session }
+      )
+    ))
+  );
+
+  if (direction < 0 && stockUpdates.some((result) => result.modifiedCount !== 1)) {
+    throw new HttpError(400, 'Some products do not have enough stock');
+  }
+};
+
 const createBoxSnapshot = (box) => ({
   boxName: box.boxName,
   thumbnail: box.thumbnail,
@@ -460,6 +517,7 @@ export const getOrdersByUser = async (userId) => {
 export const createOrderFromCart = async (userId, {
   paymentMethod = 'bank_transfer',
   lovelyMessage = '',
+  cartItemIds,
   boxIds,
   subscriptionMonths = 1
 } = {}) => {
@@ -473,12 +531,17 @@ export const createOrderFromCart = async (userId, {
         throw new HttpError(400, 'Cart is empty');
       }
 
-      const selectedBoxIdSet = Array.isArray(boxIds) && boxIds.length > 0
+      const selectedCartItemIdSet = Array.isArray(cartItemIds) && cartItemIds.length > 0
+        ? new Set(cartItemIds.map((cartItemId) => cartItemId.toString()))
+        : null;
+      const selectedBoxIdSet = !selectedCartItemIdSet && Array.isArray(boxIds) && boxIds.length > 0
         ? new Set(boxIds.map((boxId) => boxId.toString()))
         : null;
-      const selectedCartItems = selectedBoxIdSet
-        ? cart.items.filter((item) => selectedBoxIdSet.has(item.boxId.toString()))
-        : cart.items;
+      const selectedCartItems = selectedCartItemIdSet
+        ? cart.items.filter((item) => selectedCartItemIdSet.has(item._id.toString()))
+        : selectedBoxIdSet
+          ? cart.items.filter((item) => selectedBoxIdSet.has(item.boxId.toString()))
+          : cart.items;
 
       if (selectedCartItems.length === 0) {
         throw new HttpError(400, 'Selected cart items are empty');
@@ -507,7 +570,11 @@ export const createOrderFromCart = async (userId, {
         };
       });
 
-      const subtotalAmount = items.reduce((total, item) => total + item.price * item.quantity, 0);
+      const monthlySubtotalAmount = items.reduce(
+        (total, item) => total + item.price * item.quantity,
+        0,
+      );
+      const subtotalAmount = monthlySubtotalAmount * Number(subscriptionMonths);
       const discountPercent = getSubscriptionDiscount(subscriptionMonths);
       const discountAmount = Math.round((subtotalAmount * discountPercent) / 100);
       const totalAmount = subtotalAmount - discountAmount;
@@ -520,6 +587,7 @@ export const createOrderFromCart = async (userId, {
         subscriptionMonths: Number(subscriptionMonths),
         discountPercent,
         discountAmount,
+        inventoryAdjusted: true,
         paymentMethod,
         lovelyMessage
       }], { session });
@@ -536,7 +604,11 @@ export const createOrderFromCart = async (userId, {
         throw new HttpError(400, 'Some items do not have enough stock');
       }
 
-      if (selectedBoxIdSet) {
+      await adjustProductStock(items, session, -1);
+
+      if (selectedCartItemIdSet) {
+        cart.items = cart.items.filter((item) => !selectedCartItemIdSet.has(item._id.toString()));
+      } else if (selectedBoxIdSet) {
         cart.items = cart.items.filter((item) => !selectedBoxIdSet.has(item.boxId.toString()));
       } else {
         cart.items = [];
@@ -587,6 +659,11 @@ export const cancelOrderForUser = async (id, userId) => {
           { session }
         )
       )));
+
+      if (order.inventoryAdjusted) {
+        await adjustProductStock(order.items, session, 1);
+        order.inventoryAdjusted = false;
+      }
 
       order.orderStatus = ORDER_STATUS.CANCELLED;
       order.deleteAt = null;
@@ -640,6 +717,11 @@ export const updateOrderStatus = async (id, status) => {
             { session }
           )
         )));
+
+        if (order.inventoryAdjusted) {
+          await adjustProductStock(order.items, session, 1);
+          order.inventoryAdjusted = false;
+        }
       }
 
       order.orderStatus = status;
