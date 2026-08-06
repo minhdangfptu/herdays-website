@@ -17,7 +17,9 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
 // Main Container
 .chat-ai-container {
   display: flex;
-  height: 90vh;
+  height: calc(100dvh - 65px);
+  min-height: 0;
+  overflow: hidden;
   background-color: $chat-ai-white;
   font-family: $chat-ai-font;
 
@@ -253,6 +255,9 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
   flex: 1;
   display: flex;
   flex-direction: column;
+  min-width: 0;
+  min-height: 0;
+  overflow: hidden;
   background-color: #fff4f9;
 
   @media (max-width: 768px) {
@@ -263,6 +268,7 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
 // Header
 .chat-ai-header {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   padding: 20px;
@@ -321,7 +327,12 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
 
 .chat-ai-messages {
   flex: 1;
+  min-height: 0;
   overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   padding: 24px 32px;
   display: flex;
   flex-direction: column;
@@ -709,6 +720,7 @@ $chat-ai-font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-seri
 
 // Input Area
 .chat-ai-input-area {
+  flex-shrink: 0;
   padding: 20px 32px 32px;
 
   @media (max-width: 768px) {
