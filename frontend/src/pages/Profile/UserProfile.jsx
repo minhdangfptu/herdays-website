@@ -77,6 +77,10 @@ function OrderDetailModal({ order, isLoading, onClose }) {
     label: order?.orderStatus || "Không xác định",
     className: "bg-slate-100 text-slate-500",
   };
+  const subscriptionMonths = Number(order?.subscriptionMonths) || 1;
+  const subtotalAmount = Number(order?.subtotalAmount ?? order?.totalAmount) || 0;
+  const discountPercent = Number(order?.discountPercent) || 0;
+  const discountAmount = Number(order?.discountAmount) || 0;
 
   return (
     <div className="fixed inset-x-0 bottom-0 top-[65px] z-50 flex items-start justify-center overflow-y-auto bg-slate-950/40 px-4 py-6" onClick={onClose}>
@@ -135,6 +139,25 @@ function OrderDetailModal({ order, isLoading, onClose }) {
               </div>
             </div>
 
+            <div className="grid gap-3 rounded-xl border border-pink-100 bg-pink-50/50 p-4 sm:grid-cols-2">
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Gói đăng ký</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">{subscriptionMonths} tháng</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Tạm tính</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">{formatOrderCurrency(subtotalAmount)}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Giảm giá{discountPercent ? ` (${discountPercent}%)` : ""}</p>
+                <p className="mt-1 text-sm font-bold text-emerald-600">-{formatOrderCurrency(discountAmount)}</p>
+              </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">Sau giảm giá</p>
+                <p className="mt-1 text-sm font-extrabold text-[#ed77a5]">{formatOrderCurrency(order.totalAmount)}</p>
+              </div>
+            </div>
+
             <div>
               <h3 className="mb-3 text-sm font-extrabold text-slate-800">Sản phẩm</h3>
               <div className="divide-y divide-slate-100 rounded-xl border border-slate-100">
@@ -150,10 +173,12 @@ function OrderDetailModal({ order, isLoading, onClose }) {
                       )}
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-bold text-slate-800">{item.itemName || (item.isBox ? "Box trong đơn hàng" : "Sản phẩm")}</p>
-                        <p className="mt-1 text-xs font-medium text-slate-400">Số lượng: {item.quantity}</p>
+                        <p className="mt-1 text-xs font-medium text-slate-400">
+                          Số lượng: {item.quantity} · Đơn giá/tháng: {formatOrderCurrency(item.price)}
+                        </p>
                       </div>
                       <p className="text-right text-sm font-extrabold text-slate-700">
-                        {formatOrderCurrency(Number(item.price) * Number(item.quantity))}
+                        {formatOrderCurrency(Number(item.price) * Number(item.quantity) * subscriptionMonths)}
                       </p>
                     </div>
                     {item.isBox && (

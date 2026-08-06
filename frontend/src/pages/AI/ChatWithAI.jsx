@@ -12,8 +12,9 @@ import {
   FiThumbsDown
 } from 'react-icons/fi';
 
-import { blogApi, chatApi, hasAuthSession } from '../../services/apiService.js';
+import { blogApi, chatApi, hasAuthSession, profileApi } from '../../services/apiService.js';
 import { Skeleton } from '../../components/Skeleton.jsx';
+import avatarDefault from '../../assets/avatar_default.png';
 import './ChatWithAI.scss';
 
 const BLOG_SUGGESTION_LIMIT = 3;
@@ -160,6 +161,7 @@ export default function ChatWithAI() {
   const [inputValue, setInputValue] = useState('');
   const [conversationId, setConversationId] = useState(null);
   const [conversationHistory, setConversationHistory] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
   const [isSending, setIsSending] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
@@ -179,6 +181,37 @@ export default function ChatWithAI() {
     });
 
     return () => window.cancelAnimationFrame(frameId);
+  }, [messages, isSending]);
+
+  useEffect(() => {
+    if (!isLoggedIn) return undefined;
+
+    let isActive = true;
+
+    const fetchProfile = async () => {
+      try {
+        const profile = await profileApi.getProfile();
+        if (isActive) setUserProfile(profile);
+      } catch (error) {
+        if (isActive) setErrorMessage(error.message);
+      }
+    };
+
+    fetchProfile();
+
+    return () => {
+      isActive = false;
+    };
+  }, [isLoggedIn]);
+
+  useEffect(() => {
+    const messagesContainer = messagesContainerRef.current;
+    if (!messagesContainer) return;
+
+    messagesContainer.scrollTo({
+      top: messagesContainer.scrollHeight,
+      behavior: 'smooth'
+    });
   }, [messages, isSending]);
 
   useEffect(() => {
@@ -364,13 +397,17 @@ export default function ChatWithAI() {
     setErrorMessage('');
   };
 
+  const userDisplayName = isLoggedIn
+    ? userProfile?.fullName || userProfile?.email || 'Tài khoản HERDAYS'
+    : 'Khách';
+
   return (
     <div className="chat-ai-container">
-      <div className="chat-ai-sidebar">
+      <div className="chat-ai-sidebar" data-lenis-prevent>
         <div className="chat-ai-user-profile">
-          <div className="chat-ai-user-avatar">H</div>
+          <img className="chat-ai-user-avatar" src={avatarDefault} alt={userDisplayName} />
           <div className="chat-ai-user-info">
-            <h3>{isLoggedIn ? 'Tài khoản HERDAYS' : 'Khách'}</h3>
+            <h3>{userDisplayName}</h3>
             <p>{isLoggedIn ? 'Lịch sử hội thoại được lưu' : 'Hội thoại khách trong 24 giờ'}</p>
           </div>
         </div>

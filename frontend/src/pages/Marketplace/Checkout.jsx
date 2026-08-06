@@ -22,35 +22,70 @@ const formatCurrency = (value) =>
 const normalizeCartItem = (item) => {
   const box = item.boxId || {};
   const boxId = box._id || box.id || item.boxId;
+  const cartItemId =
+    item._id || item.cartItemId || item.id || item.configurationKey || boxId;
   const stock = Number(box.quantity) || 0;
   const quantity = item.quantity || 1;
   const customizedProducts = Array.isArray(item.customizedProducts)
     ? item.customizedProducts
     : [];
-  const customizationExtra = customizedProducts.reduce((total, customizedProduct) => {
-    const productId = customizedProduct.productId?._id
-      || customizedProduct.productId?.id
-      || customizedProduct.productId;
-    const boxProduct = (box.products || []).find((product) => {
-      const boxProductId = product.productId?._id
-        || product.productId?.id
-        || product.productId;
-      return String(boxProductId) === String(productId);
-    });
+  const customizationExtra = customizedProducts.reduce(
+    (total, customizedProduct) => {
+      const productId =
+        customizedProduct.productId?._id ||
+        customizedProduct.productId?.id ||
+        customizedProduct.productId;
+      const boxProduct = (box.products || []).find((product) => {
+        const boxProductId =
+          product.productId?._id || product.productId?.id || product.productId;
+        return String(boxProductId) === String(productId);
+      });
 
-    if (!boxProduct?.isCustomizable) return total;
+      if (!boxProduct?.isCustomizable) return total;
 
-    const selectedQuantity = Number(customizedProduct.quantity) || 0;
-    return total + selectedQuantity * (Number(customizedProduct.productId?.price) || 0);
-  }, 0);
+      const selectedQuantity = Number(customizedProduct.quantity) || 0;
+      return (
+        total +
+        selectedQuantity *
+          (Number(customizedProduct.productId?.price) ||
+            Number(boxProduct?.price) ||
+            0)
+      );
+    },
+    0,
+  );
+
+  const customizationLabel = customizedProducts
+    .map((customizedProduct) => {
+      const productId =
+        customizedProduct.productId?._id ||
+        customizedProduct.productId?.id ||
+        customizedProduct.productId;
+      const boxProduct = (box.products || []).find((product) => {
+        const boxProductId =
+          product.productId?._id || product.productId?.id || product.productId;
+        return String(boxProductId) === String(productId);
+      });
+      const productName =
+        customizedProduct.productId?.productName ||
+        boxProduct?.productId?.productName ||
+        boxProduct?.productName ||
+        "Sản phẩm";
+
+      return `${productName} x${customizedProduct.quantity}`;
+    })
+    .join(", ");
 
   return {
-    id: String(boxId),
+    id: String(cartItemId),
+    boxId: String(boxId),
     name: box.boxName || "HerDays Box",
+    category: box.category || "Subscription Box",
     quantity,
     stock,
     remainingStock: Math.max(stock - quantity, 0),
     price: (Number(box.price) || 0) + customizationExtra,
+    customizationLabel,
     image:
       box.thumbnail ||
       `https://placehold.co/160x160/f8c4d8/ffffff?text=${encodeURIComponent(box.boxName || "Box")}`,
@@ -64,23 +99,34 @@ const SUBSCRIPTION_PLANS = [
   { months: 12, label: "12 tháng", discount: 20, badge: "Tốt nhất" },
 ];
 
+const getInitialSubscriptionMonths = (value) => {
+  const months = Number(value);
+  return [1, 3, 6, 12].includes(months) ? months : 1;
+};
+
 export default function Checkout() {
   const location = useLocation();
-  const hasSelectedBoxIds = Array.isArray(location.state?.selectedBoxIds);
-  const initialSelectedBoxIds = useMemo(
+  const hasSelectedCartItemIds = Array.isArray(
+    location.state?.selectedCartItemIds,
+  );
+  const initialSelectedCartItemIds = useMemo(
     () =>
-      Array.isArray(location.state?.selectedBoxIds)
-        ? location.state.selectedBoxIds.map(String)
+      Array.isArray(location.state?.selectedCartItemIds)
+        ? location.state.selectedCartItemIds.map(String)
         : [],
     [location.state],
   );
   const [cartItems, setCartItems] = useState([]);
-  const [selectedBoxIds, setSelectedBoxIds] = useState(initialSelectedBoxIds);
+  const [selectedCartItemIds, setSelectedCartItemIds] = useState(
+    initialSelectedCartItemIds,
+  );
   const [loading, setLoading] = useState(true);
-  const [updatingBoxId, setUpdatingBoxId] = useState("");
+  const [updatingCartItemId, setUpdatingCartItemId] = useState("");
   const [isCheckingOut, setIsCheckingOut] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
-  const [selectedPlan, setSelectedPlan] = useState(1);
+  const [selectedPlan, setSelectedPlan] = useState(() =>
+    getInitialSubscriptionMonths(location.state?.subscriptionMonths),
+  );
   const [profileAddress, setProfileAddress] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [addressOption, setAddressOption] = useState("profile");
@@ -105,15 +151,13 @@ export default function Checkout() {
         if (!isMounted) return;
         const nextItems = (cart.items || []).map(normalizeCartItem);
         const validIds = nextItems.map((item) => String(item.id));
-        const filteredSelectedIds = initialSelectedBoxIds.filter((boxId) =>
-          validIds.includes(String(boxId)),
+        const filteredSelectedIds = initialSelectedCartItemIds.filter(
+          (cartItemId) => validIds.includes(String(cartItemId)),
         );
 
         setCartItems(nextItems);
-        setSelectedBoxIds(
-          hasSelectedBoxIds
-            ? filteredSelectedIds
-            : validIds,
+        setSelectedCartItemIds(
+          hasSelectedCartItemIds ? filteredSelectedIds : validIds,
         );
       })
       .catch((error) => {
@@ -129,7 +173,7 @@ export default function Checkout() {
     return () => {
       isMounted = false;
     };
-  }, [hasSelectedBoxIds, initialSelectedBoxIds, navigate]);
+  }, [hasSelectedCartItemIds, initialSelectedCartItemIds, navigate]);
 
   useEffect(() => {
     let isMounted = true;
@@ -158,8 +202,9 @@ export default function Checkout() {
   }, []);
 
   const selectedCartItems = useMemo(
-    () => cartItems.filter((item) => selectedBoxIds.includes(String(item.id))),
-    [cartItems, selectedBoxIds],
+    () =>
+      cartItems.filter((item) => selectedCartItemIds.includes(String(item.id))),
+    [cartItems, selectedCartItemIds],
   );
 
   const subtotal = useMemo(
@@ -170,13 +215,20 @@ export default function Checkout() {
       ),
     [selectedCartItems],
   );
+  const selectedCartQuantity = useMemo(
+    () => selectedCartItems.reduce((sum, item) => sum + item.quantity, 0),
+    [selectedCartItems],
+  );
 
   const selectedPlanData =
     SUBSCRIPTION_PLANS.find((plan) => plan.months === selectedPlan) ||
     SUBSCRIPTION_PLANS[0];
   const discountPercent = selectedPlanData.discount;
-  const discountAmount = (subtotal * discountPercent) / 100;
-  const orderTotal = subtotal - discountAmount;
+  const subscriptionSubtotal = subtotal * selectedPlanData.months;
+  const discountAmount = Math.round(
+    (subscriptionSubtotal * discountPercent) / 100,
+  );
+  const orderTotal = subscriptionSubtotal - discountAmount;
   const selectedAddress =
     addressOption === "profile" ? profileAddress.trim() : newAddress.trim();
   const isAddressReady =
@@ -186,8 +238,7 @@ export default function Checkout() {
     selectedCartItems.length === 0 ||
     isCheckingOut ||
     isAddressLoading ||
-    isSavingAddress ||
-    !isAddressReady;
+    isSavingAddress;
 
   const handleQuantityChange = async (item, quantity) => {
     if (quantity < 1) return;
@@ -196,27 +247,27 @@ export default function Checkout() {
       return;
     }
 
-    const boxId = item.id;
-    setUpdatingBoxId(boxId);
+    const cartItemId = item.id;
+    setUpdatingCartItemId(cartItemId);
 
     try {
-      const cart = await cartApi.updateItem({ boxId, quantity });
+      const cart = await cartApi.updateItem({ cartItemId, quantity });
       setCartItems((cart.items || []).map(normalizeCartItem));
     } catch (error) {
       toast.error(error.message || "Không thể cập nhật sản phẩm thanh toán.");
     } finally {
-      setUpdatingBoxId("");
+      setUpdatingCartItemId("");
     }
   };
 
-  const handleRemove = async (boxId) => {
-    setUpdatingBoxId(boxId);
+  const handleRemove = async (cartItemId) => {
+    setUpdatingCartItemId(cartItemId);
 
     try {
-      const cart = await cartApi.removeItem(boxId);
+      const cart = await cartApi.removeItem(cartItemId);
       const nextItems = (cart.items || []).map(normalizeCartItem);
       setCartItems(nextItems);
-      setSelectedBoxIds((current) =>
+      setSelectedCartItemIds((current) =>
         current.filter((id) =>
           nextItems.some((item) => String(item.id) === String(id)),
         ),
@@ -225,16 +276,16 @@ export default function Checkout() {
     } catch (error) {
       toast.error(error.message || "Không thể xóa sản phẩm.");
     } finally {
-      setUpdatingBoxId("");
+      setUpdatingCartItemId("");
     }
   };
 
-  const toggleSelectItem = (boxId) => {
-    const normalizedBoxId = String(boxId);
-    setSelectedBoxIds((current) =>
-      current.includes(normalizedBoxId)
-        ? current.filter((id) => id !== normalizedBoxId)
-        : [...current, normalizedBoxId],
+  const toggleSelectItem = (cartItemId) => {
+    const normalizedCartItemId = String(cartItemId);
+    setSelectedCartItemIds((current) =>
+      current.includes(normalizedCartItemId)
+        ? current.filter((id) => id !== normalizedCartItemId)
+        : [...current, normalizedCartItemId],
     );
   };
 
@@ -274,9 +325,7 @@ export default function Checkout() {
 
     if (isAddressLoading || isSavingAddress) return;
     if (!selectedAddress || (addressOption === "new" && !isNewAddressSaved)) {
-      toast.error(
-        "Vui lòng chọn hoặc lưu địa chỉ giao hàng trước khi thanh toán.",
-      );
+      toast.error("Vui lòng cập nhật địa chỉ");
       return;
     }
 
@@ -285,15 +334,15 @@ export default function Checkout() {
     try {
       const order = await orderApi.createFromCart({
         paymentMethod: "bank_transfer",
-        boxIds: selectedBoxIds,
+        cartItemIds: selectedCartItemIds,
         subscriptionMonths: selectedPlan,
       });
       const nextItems = cartItems.filter(
-        (item) => !selectedBoxIds.includes(String(item.id)),
+        (item) => !selectedCartItemIds.includes(String(item.id)),
       );
       setCartItems(nextItems);
       notifyCartChanged({ items: nextItems });
-      setSelectedBoxIds([]);
+      setSelectedCartItemIds([]);
       navigate("/qr-payment", {
         state: {
           amount: order.totalAmount,
@@ -349,7 +398,7 @@ export default function Checkout() {
             <div className="herdays-checkout-left">
               <div className="herdays-checkout-card">
                 <h2 className="herdays-checkout-card-title">
-                  Sản phẩm đặt mua ({selectedCartItems.length})
+                  Sản phẩm đặt mua ({selectedCartQuantity})
                 </h2>
 
                 {selectedCartItems.length === 0 ? (
@@ -366,7 +415,7 @@ export default function Checkout() {
                         {/* <label className="product-select" aria-label="Chọn sản phẩm thanh toán">
                           <input
                             type="checkbox"
-                            checked={selectedBoxIds.includes(String(item.id))}
+                            checked={selectedCartItemIds.includes(String(item.id))}
                             onChange={() => toggleSelectItem(item.id)}
                           />
                         </label> */}
@@ -375,13 +424,29 @@ export default function Checkout() {
                         </div>
                         <div className="product-info-checkout">
                           <h3 className="product-name">{item.name}</h3>
+                          <p
+                            style={{ fontWeight: "600" }}
+                            className="product-quantity"
+                          >
+                            Số lượng box: {item.quantity}
+                          </p>
+                          {item.customizationLabel && (
+                            <p
+                              style={{
+                                fontSize: "12px",
+                                color: "#4b5563",
+                              }}
+                            >
+                              Sản phẩm: {item.customizationLabel}
+                            </p>
+                          )}
                           {/* <p className="product-stock-note">
                             Còn trongkho: {item.stock} - Còn lại sau khi thêm: {item.remainingStock}
                           </p> */}
                           {/* <div className="product-quantity-control">
                             <button
                               type="button"
-                              disabled={updatingBoxId === item.id || item.quantity <= 1}
+                              disabled={updatingCartItemId === item.id || item.quantity <= 1}
                               onClick={() => handleQuantityChange(item, item.quantity - 1)}
                             >
                               -
@@ -389,7 +454,7 @@ export default function Checkout() {
                             <span>{item.quantity}</span>
                             <button
                               type="button"
-                              disabled={updatingBoxId === item.id || item.quantity >= item.stock}
+                              disabled={updatingCartItemId === item.id || item.quantity >= item.stock}
                               onClick={() => handleQuantityChange(item, item.quantity + 1)}
                             >
                               +
@@ -398,7 +463,7 @@ export default function Checkout() {
                           <button
                             className="product-remove"
                             type="button"
-                            disabled={updatingBoxId === item.id}
+                            disabled={updatingCartItemId === item.id}
                             onClick={() => handleRemove(item.id)}
                           >
                             Xóa
@@ -511,6 +576,7 @@ export default function Checkout() {
                         />
                         {newAddress.trim() && (
                           <button
+                            style={{ cursor: "pointer" }}
                             type="button"
                             className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-[#ed77a5] px-4 text-xs font-bold text-white transition hover:bg-[#d95f91] disabled:cursor-not-allowed disabled:opacity-60"
                             disabled={isSavingAddress}
@@ -542,9 +608,11 @@ export default function Checkout() {
 
                 <div className="herdays-checkout-summary">
                   <div className="summary-row">
-                    <span className="summary-label">Tạm tính</span>
+                    <span className="summary-label">
+                      Tạm tính ({selectedPlanData.months} tháng)
+                    </span>
                     <span className="summary-value">
-                      {formatCurrency(subtotal)}
+                      {formatCurrency(subscriptionSubtotal)}
                     </span>
                   </div>
 
@@ -577,7 +645,11 @@ export default function Checkout() {
                     className="herdays-checkout-btn"
                     type="button"
                     disabled={isCheckoutDisabled}
-                    title={!isAddressReady ? "Vui lòng chọn hoặc lưu địa chỉ giao hàng" : undefined}
+                    title={
+                      !isAddressReady
+                        ? "Vui lòng chọn hoặc lưu địa chỉ giao hàng"
+                        : undefined
+                    }
                     onClick={handleCheckout}
                   >
                     {isCheckingOut ? "Đang tạo đơn..." : "Xác nhận thanh toán"}

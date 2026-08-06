@@ -7,13 +7,7 @@ import {
   getCartBoxQuantities,
   hasAuthSession,
   marketplaceApi,
-  profileApi,
 } from "../../services/apiService.js";
-import {
-  canAccessAllBoxes,
-  isBoxCompatibleWithTarget,
-  targetStatusLabels,
-} from "../../utils/boxTarget.js";
 import { CardGridSkeleton } from "../../components/Skeleton.jsx";
 import { ShimmerButton } from "../../components/magic-ui/ShimmerButton.jsx";
 import { MotionCard, Reveal } from "../../motion/MotionPrimitives.jsx";
@@ -47,9 +41,9 @@ const getAllMarketplaceBoxes = async () => {
   if (totalPages === 1) return firstPage.items || [];
 
   const remainingPages = await Promise.all(
-    Array.from({ length: totalPages - 1 }, (_, index) => (
-      marketplaceApi.listBoxes({ page: index + 2, limit: 50 })
-    ))
+    Array.from({ length: totalPages - 1 }, (_, index) =>
+      marketplaceApi.listBoxes({ page: index + 2, limit: 50 }),
+    ),
   );
 
   return [
@@ -64,7 +58,6 @@ function Marketplace() {
   const [errorMessage, setErrorMessage] = useState("");
   const [addingBoxId, setAddingBoxId] = useState("");
   const [cartBoxQuantities, setCartBoxQuantities] = useState({});
-  const [targetStatus, setTargetStatus] = useState("");
   const boxImageRefs = useRef({});
   const navigate = useNavigate();
 
@@ -76,20 +69,16 @@ function Marketplace() {
       setErrorMessage("");
 
       try {
-        const [allBoxes, cartResult, profileResult] = await Promise.all([
+        const [allBoxes, cartResult] = await Promise.all([
           getAllMarketplaceBoxes(),
           hasAuthSession()
             ? cartApi.getCart().catch(() => null)
-            : Promise.resolve(null),
-          hasAuthSession()
-            ? profileApi.getProfile().catch(() => null)
             : Promise.resolve(null),
         ]);
 
         if (!isMounted) return;
         setBoxes(allBoxes);
         setCartBoxQuantities(getCartBoxQuantities(cartResult));
-        setTargetStatus(profileResult?.targetStatus || "");
       } catch (error) {
         if (isMounted)
           setErrorMessage(error.message || "Không thể tải marketplace.");
@@ -106,11 +95,13 @@ function Marketplace() {
   }, []);
 
   const visibleBoxes = useMemo(() => {
-    if (!targetStatus || canAccessAllBoxes(targetStatus)) return boxes;
-    return boxes.filter((box) => isBoxCompatibleWithTarget(box, targetStatus));
-  }, [boxes, targetStatus]);
+    // Tạm comment nghiệp vụ lọc box theo mục tiêu của người dùng.
+    // Khi cần bật lại, khôi phục việc đọc targetStatus và filter theo isBoxCompatibleWithTarget.
+    // if (!targetStatus || canAccessAllBoxes(targetStatus)) return boxes;
+    // return boxes.filter((box) => isBoxCompatibleWithTarget(box, targetStatus));
+    return boxes;
+  }, [boxes]);
 
-  const goalLabel = targetStatusLabels[targetStatus] || "";
   const firstBoxId = visibleBoxes[0]?.id;
 
   const getAvailableBoxQuantity = (box) =>
@@ -242,14 +233,14 @@ function Marketplace() {
             giỏ hàng.
           </p>
         </Reveal>
-        {goalLabel && (
+        {/* {goalLabel && (
           <div className="marketplace-hero__goals" aria-label="Mục tiêu sản phẩm">
             <span className="marketplace-hero__goal">
               <span>Mục tiêu: </span>
               {goalLabel}
             </span>
           </div>
-        )}
+        )} */}
       </section>
 
       {loading && (
@@ -281,7 +272,9 @@ function Marketplace() {
             </Reveal>
             <div className="marketplace-grid">
               {visibleBoxes.length === 0 ? (
-                <p className="marketplace-status">Chưa có box phù hợp với mục tiêu của bạn.</p>
+                <p className="marketplace-status">
+                  Hiện chưa có box nào để hiển thị.
+                </p>
               ) : (
                 visibleBoxes.map((box) => renderBoxCard(box))
               )}

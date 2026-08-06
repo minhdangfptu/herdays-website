@@ -4,6 +4,18 @@ import HttpError from '../utils/httpError.js';
 
 const VALID_PAYMENT_METHODS = ['bank_transfer', 'qr_transfer', 'cod'];
 
+const validateIdArray = (value, fieldName, idName) => {
+  if (!Array.isArray(value)) throw new HttpError(400, `${fieldName} must be an array`);
+
+  const ids = [...new Set(value.map((id) => String(id).trim()).filter(Boolean))];
+  if (ids.some((id) => !mongoose.isValidObjectId(id))) {
+    throw new HttpError(400, `${fieldName} contains an invalid ${idName}`);
+  }
+  if (ids.length === 0) throw new HttpError(400, `${fieldName} must include at least one ${idName}`);
+
+  return ids;
+};
+
 export const validateOrderId = (id) => {
   if (!mongoose.isValidObjectId(id)) throw new HttpError(400, 'orderId is invalid');
   return id;
@@ -78,15 +90,11 @@ export const validateCreateOrder = (body) => {
   }
 
   if (payload.boxIds !== undefined && payload.boxIds !== null) {
-    if (!Array.isArray(payload.boxIds)) throw new HttpError(400, 'boxIds must be an array');
+    result.boxIds = validateIdArray(payload.boxIds, 'boxIds', 'boxId');
+  }
 
-    result.boxIds = [...new Set(payload.boxIds.map((boxId) => String(boxId).trim()).filter(Boolean))];
-
-    if (result.boxIds.some((boxId) => !mongoose.isValidObjectId(boxId))) {
-      throw new HttpError(400, 'boxIds contains an invalid boxId');
-    }
-
-    if (result.boxIds.length === 0) throw new HttpError(400, 'boxIds must include at least one boxId');
+  if (payload.cartItemIds !== undefined && payload.cartItemIds !== null) {
+    result.cartItemIds = validateIdArray(payload.cartItemIds, 'cartItemIds', 'cartItemId');
   }
 
   return result;

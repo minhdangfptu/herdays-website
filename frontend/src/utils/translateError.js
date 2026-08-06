@@ -65,6 +65,7 @@ const TRANSLATIONS = {
   'Box is out of stock': 'Box nay da het hang.',
   'Requested quantity exceeds available stock': 'Số lượng hàng vượt quá hàng có sẵn.',
   'Customized product quantity exceeds available stock': 'Số lượng sản phẩm thêm vượt quá tồn kho hiện có.',
+  'Some products do not have enough stock': 'Một số sản phẩm không đủ tồn kho.',
   'Quantity must be an integer': 'Số lượng phải là số nguyên.',
   'Quantity must be at least 1': 'Số lượng phải lớn hơn hoặc bằng 1.',
 

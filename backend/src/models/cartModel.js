@@ -29,9 +29,14 @@ const cartItemSchema = new mongoose.Schema(
         }
       ],
       default: []
+    },
+    configurationKey: {
+      type: String,
+      trim: true,
+      default: null,
+      maxlength: 2000
     }
-  },
-  { _id: false }
+  }
 );
 
 const cartSchema = new mongoose.Schema(

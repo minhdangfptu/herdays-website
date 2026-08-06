@@ -16,10 +16,12 @@ export const getCart = async (req, res, next) => {
 export const addToCart = async (req, res, next) => {
   try {
     const { boxId, quantity = 1, customizedProducts } = req.body;
-    const cart = await cartService.addToCart(req.user.id, boxId, quantity, customizedProducts);
+    const result = await cartService.addToCart(req.user.id, boxId, quantity, customizedProducts);
+    const data = result.cart.toObject({ depopulate: false });
+    data.addedCartItemId = result.cartItemId;
     sendSuccess(res, {
       message: 'Thêm vào giỏ hàng thành công',
-      data: cart
+      data
     });
   } catch (error) {
     next(error);
@@ -28,8 +30,8 @@ export const addToCart = async (req, res, next) => {
 
 export const updateCartItem = async (req, res, next) => {
   try {
-    const { boxId, quantity } = req.body;
-    const cart = await cartService.updateCartItem(req.user.id, boxId, quantity);
+    const { cartItemId = req.body.boxId, quantity } = req.body;
+    const cart = await cartService.updateCartItem(req.user.id, cartItemId, quantity);
     sendSuccess(res, {
       message: 'Cập nhật giỏ hàng thành công',
       data: cart
@@ -41,8 +43,8 @@ export const updateCartItem = async (req, res, next) => {
 
 export const removeFromCart = async (req, res, next) => {
   try {
-    const { boxId } = req.params;
-    const cart = await cartService.removeFromCart(req.user.id, boxId);
+    const { cartItemId } = req.params;
+    const cart = await cartService.removeFromCart(req.user.id, cartItemId);
     sendSuccess(res, {
       message: 'Xóa khỏi giỏ hàng thành công',
       data: cart

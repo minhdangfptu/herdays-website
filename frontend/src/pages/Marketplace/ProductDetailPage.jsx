@@ -1,164 +1,208 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
-import toast from 'react-hot-toast'
-import { FiMinus, FiPlus, FiStar } from 'react-icons/fi'
-import { MdKeyboardArrowRight } from 'react-icons/md'
-import { cartApi, getCartBoxQuantities, hasAuthSession, marketplaceApi } from '../../services/apiService.js'
-import { Skeleton } from '../../components/Skeleton.jsx'
-import { flyToCart, getCartTargetElement, getFlyToCartSourceRect } from '../../utils/flyToCart.js'
-import './ProductDetailPage.scss'
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
+import { FiMinus, FiPlus, FiStar } from "react-icons/fi";
+import { MdKeyboardArrowRight } from "react-icons/md";
+import {
+  cartApi,
+  getCartBoxQuantities,
+  hasAuthSession,
+  marketplaceApi,
+} from "../../services/apiService.js";
+import { Skeleton } from "../../components/Skeleton.jsx";
+import {
+  flyToCart,
+  getCartTargetElement,
+  getFlyToCartSourceRect,
+} from "../../utils/flyToCart.js";
+import "./ProductDetailPage.scss";
 
 const formatCurrency = (value) => {
-  if (value === null || value === undefined || value === '') return 'Đang cập nhật'
+  if (value === null || value === undefined || value === "")
+    return "Đang cập nhật";
 
-  return new Intl.NumberFormat('vi-VN', {
-    style: 'currency',
-    currency: 'VND',
-    maximumFractionDigits: 0
-  }).format(Number(value) || 0)
-}
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+    maximumFractionDigits: 0,
+  }).format(Number(value) || 0);
+};
 
-const getItemName = (item) => item?.boxName || item?.productName || item?.name || 'HerDays item'
+const getItemName = (item) =>
+  item?.boxName || item?.productName || item?.name || "HerDays item";
 
 const getItemImage = (item) =>
-  item?.thumbnail || item?.image || `https://placehold.co/520x520/f8c4d8/ffffff?text=${encodeURIComponent(getItemName(item))}`
+  item?.thumbnail ||
+  item?.image ||
+  `https://placehold.co/520x520/f8c4d8/ffffff?text=${encodeURIComponent(getItemName(item))}`;
 
-const SUBSCRIPTIONS = ['1 tháng', '3 tháng', '6 tháng', '12 tháng']
+const SUBSCRIPTIONS = ["1 tháng", "3 tháng", "6 tháng", "12 tháng"];
+
+const getSubscriptionMonths = (subscription) => {
+  const months = Number.parseInt(String(subscription), 10);
+  return [1, 3, 6, 12].includes(months) ? months : 1;
+};
 
 export default function ProductDetailPage() {
-  const { type, itemId, productId } = useParams()
-  const location = useLocation()
-  const navigate = useNavigate()
-  const resolvedId = itemId || productId
-  const [selectedSubscription, setSelectedSubscription] = useState(SUBSCRIPTIONS[2])
-  const [quantity, setQuantity] = useState(1)
-  const [item, setItem] = useState(null)
-  const [itemType, setItemType] = useState(type || '')
-  const [loading, setLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [isAdding, setIsAdding] = useState(false)
-  const [cartBoxQuantities, setCartBoxQuantities] = useState({})
-  const productImageRef = useRef(null)
+  const { type, itemId, productId } = useParams();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const resolvedId = itemId || productId;
+  const [selectedSubscription, setSelectedSubscription] = useState(
+    SUBSCRIPTIONS[2],
+  );
+  const [quantity, setQuantity] = useState(1);
+  const [item, setItem] = useState(null);
+  const [itemType, setItemType] = useState(type || "");
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isAdding, setIsAdding] = useState(false);
+  const [cartBoxQuantities, setCartBoxQuantities] = useState({});
+  const productImageRef = useRef(null);
 
   useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
 
     const loadDetail = async () => {
-      setLoading(true)
-      setErrorMessage('')
+      setLoading(true);
+      setErrorMessage("");
 
       try {
-        let result
-        let nextType = type
+        let result;
+        let nextType = type;
 
-        if (type === 'product') {
-          result = await marketplaceApi.getProduct(resolvedId)
-        } else if (type === 'box') {
-          result = await marketplaceApi.getBox(resolvedId)
+        if (type === "product") {
+          result = await marketplaceApi.getProduct(resolvedId);
+        } else if (type === "box") {
+          result = await marketplaceApi.getBox(resolvedId);
         } else {
           try {
-            result = await marketplaceApi.getBox(resolvedId)
-            nextType = 'box'
+            result = await marketplaceApi.getBox(resolvedId);
+            nextType = "box";
           } catch {
-            result = await marketplaceApi.getProduct(resolvedId)
-            nextType = 'product'
+            result = await marketplaceApi.getProduct(resolvedId);
+            nextType = "product";
           }
         }
 
         const cartResult = hasAuthSession()
           ? await cartApi.getCart().catch(() => null)
-          : null
+          : null;
 
-        if (!isMounted) return
-        setItem(result)
-        setItemType(nextType || result?.type || '')
-        setCartBoxQuantities(getCartBoxQuantities(cartResult))
+        if (!isMounted) return;
+        setItem(result);
+        setItemType(nextType || result?.type || "");
+        setCartBoxQuantities(getCartBoxQuantities(cartResult));
       } catch (error) {
-        if (isMounted) setErrorMessage(error.message || 'Không thể tải chi tiết sản phẩm.')
+        if (isMounted)
+          setErrorMessage(error.message || "Không thể tải chi tiết sản phẩm.");
       } finally {
-        if (isMounted) setLoading(false)
+        if (isMounted) setLoading(false);
       }
-    }
+    };
 
-    if (resolvedId) loadDetail()
+    if (resolvedId) loadDetail();
 
     return () => {
-      isMounted = false
-    }
-  }, [resolvedId, type])
+      isMounted = false;
+    };
+  }, [resolvedId, type]);
 
-  const relatedProducts = useMemo(() => (
-    (item?.products || []).map((product) => ({
-      id: product.productId,
-      name: product.productName || 'Sản phẩm trong box',
-      subtitle: product.category || item?.category || 'HerDays',
-      thumbnail: product.thumbnail,
-      quantity: product.quantity || 1
-    }))
-  ), [item])
+  const relatedProducts = useMemo(
+    () =>
+      (item?.products || []).map((product) => ({
+        id: product.productId,
+        name: product.productName || "Sản phẩm trong box",
+        subtitle: product.category || item?.category || "HerDays",
+        thumbnail: product.thumbnail,
+        quantity: product.quantity || 1,
+      })),
+    [item],
+  );
 
   const updateQuantity = (newQuantity) => {
-    if (newQuantity < 1) return
-    if (itemType === 'box') {
-      const currentCartQuantity = cartBoxQuantities[String(item?.id)] || 0
-      const availableQuantity = Math.max((Number(item?.quantity) || 0) - currentCartQuantity, 0)
-      if (newQuantity > availableQuantity) return
+    if (newQuantity < 1) return;
+    if (itemType === "box") {
+      const currentCartQuantity = cartBoxQuantities[String(item?.id)] || 0;
+      const availableQuantity = Math.max(
+        (Number(item?.quantity) || 0) - currentCartQuantity,
+        0,
+      );
+      if (newQuantity > availableQuantity) return;
     }
-    setQuantity(newQuantity)
-  }
+    setQuantity(newQuantity);
+  };
 
   const handleAddToCart = async () => {
-    if (itemType !== 'box') {
-      toast.error('Giỏ hàng hiện chỉ hỗ trợ thêm box.')
-      return
+    if (itemType !== "box") {
+      toast.error("Giỏ hàng hiện chỉ hỗ trợ thêm box.");
+      return;
     }
 
     if (!hasAuthSession()) {
-      toast.error('Vui lòng đăng nhập để thêm box vào giỏ hàng.')
-      navigate('/login')
-      return
+      toast.error("Vui lòng đăng nhập để thêm box vào giỏ hàng.");
+      navigate("/login");
+      return;
     }
 
-    const currentCartQuantity = cartBoxQuantities[String(item.id)] || 0
-    const availableQuantity = Math.max((Number(item.quantity) || 0) - currentCartQuantity, 0)
+    const currentCartQuantity = cartBoxQuantities[String(item.id)] || 0;
+    const availableQuantity = Math.max(
+      (Number(item.quantity) || 0) - currentCartQuantity,
+      0,
+    );
     if (availableQuantity <= 0) {
-      toast.error('Box này đã đạt tới số lượng có thể thêm.')
-      return
+      toast.error("Box này đã đạt tới số lượng có thể thêm.");
+      return;
     }
 
     if (quantity > availableQuantity) {
-      toast.error('Số lượng vượt quá tồn kho hiện có.')
-      setQuantity(Math.max(availableQuantity, 1))
-      return
+      toast.error("Số lượng vượt quá tồn kho hiện có.");
+      setQuantity(Math.max(availableQuantity, 1));
+      return;
     }
 
-    setIsAdding(true)
-    const flySourceRect = getFlyToCartSourceRect(productImageRef.current)
+    setIsAdding(true);
+    const flySourceRect = getFlyToCartSourceRect(productImageRef.current);
 
     try {
-      const cart = await cartApi.addItem({ boxId: item.id, quantity })
-      const nextCartBoxQuantities = getCartBoxQuantities(cart)
-      const nextAvailableQuantity = Math.max((Number(item.quantity) || 0) - (nextCartBoxQuantities[String(item.id)] || 0), 0)
+      const cart = await cartApi.addItem({ boxId: item.id, quantity });
+      const nextCartBoxQuantities = getCartBoxQuantities(cart);
+      const nextAvailableQuantity = Math.max(
+        (Number(item.quantity) || 0) -
+          (nextCartBoxQuantities[String(item.id)] || 0),
+        0,
+      );
       const flyAnimation = flyToCart({
         sourceRect: flySourceRect,
         targetElement: getCartTargetElement(),
         imageUrl: getItemImage(item),
-        label: getItemName(item)
-      })
-      setCartBoxQuantities(nextCartBoxQuantities)
-      setQuantity(nextAvailableQuantity > 0 ? Math.min(quantity, nextAvailableQuantity) : 1)
-      await flyAnimation
-      toast.success('Đã thêm box vào giỏ hàng.')
+        label: getItemName(item),
+      });
+      setCartBoxQuantities(nextCartBoxQuantities);
+      setQuantity(
+        nextAvailableQuantity > 0
+          ? Math.min(quantity, nextAvailableQuantity)
+          : 1,
+      );
+      await flyAnimation;
+      toast.success("Đã thêm box vào giỏ hàng.");
+      navigate("/cart", {
+        state: { subscriptionMonths: getSubscriptionMonths(selectedSubscription) },
+      });
     } catch (error) {
-      toast.error(error.message || 'Không thể thêm box vào giỏ hàng.')
+      toast.error(error.message || "Không thể thêm box vào giỏ hàng.");
     } finally {
-      setIsAdding(false)
+      setIsAdding(false);
     }
-  }
+  };
 
   if (loading) {
     return (
-      <div className="product-detail-page product-detail-page--loading" role="status" aria-label="Đang tải chi tiết">
+      <div
+        className="product-detail-page product-detail-page--loading"
+        role="status"
+        aria-label="Đang tải chi tiết"
+      >
         <div className="product-detail-breadcrumb">
           <Skeleton className="product-detail-skeleton product-detail-skeleton--crumb product-detail-skeleton--crumb-short" />
           <Skeleton className="product-detail-skeleton product-detail-skeleton--arrow" />
@@ -185,7 +229,7 @@ export default function ProductDetailPage() {
               <Skeleton className="product-detail-skeleton product-detail-skeleton--price" />
               <Skeleton className="product-detail-skeleton product-detail-skeleton--divider" />
               <Skeleton className="product-detail-skeleton product-detail-skeleton--description" />
-              {type === 'box' && (
+              {type === "box" && (
                 <div className="product-detail-skeleton-subscription">
                   <Skeleton className="product-detail-skeleton product-detail-skeleton--subscription-label" />
                   <div className="product-detail-skeleton-subscription-options">
@@ -204,28 +248,38 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   if (errorMessage || !item) {
     return (
       <div className="product-detail-page">
-        <p className="product-detail-status product-detail-status--error">{errorMessage || 'Không tìm thấy sản phẩm.'}</p>
+        <p className="product-detail-status product-detail-status--error">
+          {errorMessage || "Không tìm thấy sản phẩm."}
+        </p>
       </div>
-    )
+    );
   }
 
-  const isBox = itemType === 'box'
-  const currentCartQuantity = isBox ? cartBoxQuantities[String(item.id)] || 0 : 0
+  const isBox = itemType === "box";
+  const currentCartQuantity = isBox
+    ? cartBoxQuantities[String(item.id)] || 0
+    : 0;
   const availableQuantity = isBox
     ? Math.max((Number(item.quantity) || 0) - currentCartQuantity, 0)
-    : Number(item.quantity) || 0
-  const ratingValue = Number(item.rating ?? item.averageRating)
-  const hasRating = Number.isFinite(ratingValue) && ratingValue > 0
-  const normalizedRating = Math.min(Math.max(ratingValue, 0), 5)
-  const productCategory = item.category || (isBox ? 'Subscription Box' : 'HerDays marketplace')
-  const parentBoxId = item.boxId || item.parentBoxId || item.box?.id || location.state?.boxId
-  const parentBoxName = item.boxName || item.parentBoxName || item.box?.boxName || location.state?.boxName
+    : Number(item.quantity) || 0;
+  const ratingValue = Number(item.rating ?? item.averageRating);
+  const hasRating = Number.isFinite(ratingValue) && ratingValue > 0;
+  const normalizedRating = Math.min(Math.max(ratingValue, 0), 5);
+  const productCategory =
+    item.category || (isBox ? "Subscription Box" : "HerDays marketplace");
+  const parentBoxId =
+    item.boxId || item.parentBoxId || item.box?.id || location.state?.boxId;
+  const parentBoxName =
+    item.boxName ||
+    item.parentBoxName ||
+    item.box?.boxName ||
+    location.state?.boxName;
 
   return (
     <div className="product-detail-page">
@@ -234,7 +288,9 @@ export default function ProductDetailPage() {
         <MdKeyboardArrowRight />
         <Link to="/marketplace">Cửa hàng</Link>
         <MdKeyboardArrowRight />
-        <span className="product-detail-breadcrumb-active">{getItemName(item)}</span>
+        <span className="product-detail-breadcrumb-active">
+          {getItemName(item)}
+        </span>
       </div>
 
       <div className="product-detail-container">
@@ -244,7 +300,7 @@ export default function ProductDetailPage() {
               <div className="product-detail-image-topline">
                 <span className="product-detail-image-context">Hình ảnh</span>
                 <span className="product-detail-image-count">
-                  {isBox ? `${relatedProducts.length} sản phẩm` : 'HerDays'}
+                  {isBox ? `${relatedProducts.length} sản phẩm` : "HerDays"}
                 </span>
               </div>
               <img
@@ -256,7 +312,9 @@ export default function ProductDetailPage() {
                 height="600"
               />
               <p className="product-detail-image-caption">
-                {isBox ? 'Một lựa chọn chăm sóc được sắp xếp cho bạn.' : 'Sản phẩm chăm sóc từ HerDays.'}
+                {isBox
+                  ? "Một chăm sóc phù hợp với bạn."
+                  : "Sản phẩm chăm sóc từ HerDays."}
               </p>
             </div>
           </div>
@@ -265,32 +323,46 @@ export default function ProductDetailPage() {
             <p className="product-detail-kicker">{productCategory}</p>
             <h1 className="product-detail-title">{getItemName(item)}</h1>
 
-            <div className={`product-detail-rating ${hasRating ? '' : 'product-detail-rating--empty'}`}>
+            <div
+              className={`product-detail-rating ${hasRating ? "" : "product-detail-rating--empty"}`}
+            >
               {hasRating ? (
                 <>
-                  <div role="img" className="product-detail-stars" aria-label={`Đánh giá ${normalizedRating} trên 5`}>
+                  <div
+                    role="img"
+                    className="product-detail-stars"
+                    aria-label={`Đánh giá ${normalizedRating} trên 5`}
+                  >
                     {[...Array(5)].map((_, i) => (
                       <FiStar
                         key={i}
-                        className={`product-detail-star ${i < Math.round(normalizedRating) ? 'product-detail-star-filled' : ''}`}
+                        className={`product-detail-star ${i < Math.round(normalizedRating) ? "product-detail-star-filled" : ""}`}
                       />
                     ))}
                   </div>
-                  <span className="product-detail-rating-text">{normalizedRating}/5</span>
+                  <span className="product-detail-rating-text">
+                    {normalizedRating}/5
+                  </span>
                 </>
               ) : (
-                <span className="product-detail-rating-text">Chưa có đánh giá</span>
+                <span className="product-detail-rating-text">
+                  Chưa có đánh giá
+                </span>
               )}
             </div>
 
             <div className="product-detail-price-section">
-              <span className="product-detail-current-price">{formatCurrency(item.price)}</span>
+              <span className="product-detail-current-price">
+                {formatCurrency(item.price)}
+              </span>
               {!isBox && item.unit && (
                 <span className="product-detail-unit">/ {item.unit}</span>
               )}
               {isBox && (
                 <span className="product-detail-discount">
-                  {availableQuantity > 0 ? `Còn ${availableQuantity}` : 'Hết hàng'}
+                  {availableQuantity > 0
+                    ? `Còn ${availableQuantity}`
+                    : "Hết hàng"}
                 </span>
               )}
             </div>
@@ -301,20 +373,23 @@ export default function ProductDetailPage() {
               <h2 className="product-detail-description-heading">Mô tả</h2>
               <div className="product-detail-description-block">
                 <p className="product-detail-description">
-                  {item.description || 'Sản phẩm HerDays được đồng bộ trực tiếp từ backend marketplace.'}
+                  {item.description ||
+                    "Sản phẩm HerDays được đồng bộ trực tiếp từ backend marketplace."}
                 </p>
               </div>
             </div>
 
             {isBox && (
               <div className="product-detail-subscription">
-                <span className="product-detail-subscription-label">Đăng ký định kỳ</span>
+                <span className="product-detail-subscription-label">
+                  Đăng ký định kỳ
+                </span>
                 <div className="product-detail-subscription-options">
                   {SUBSCRIPTIONS.map((subscription) => (
                     <button
                       key={subscription}
                       type="button"
-                      className={`product-detail-subscription-btn ${selectedSubscription === subscription ? 'product-detail-subscription-btn-active' : ''}`}
+                      className={`product-detail-subscription-btn ${selectedSubscription === subscription ? "product-detail-subscription-btn-active" : ""}`}
                       aria-pressed={selectedSubscription === subscription}
                       onClick={() => setSelectedSubscription(subscription)}
                     >
@@ -361,7 +436,11 @@ export default function ProductDetailPage() {
                 disabled={!isBox || isAdding || availableQuantity <= 0}
                 onClick={handleAddToCart}
               >
-                {isAdding ? 'Đang thêm...' : isBox ? 'Thêm vào giỏ hàng' : 'Sản phẩm lẻ'}
+                {isAdding
+                  ? "Đang thêm..."
+                  : isBox
+                    ? "Thêm vào giỏ hàng"
+                    : "Sản phẩm lẻ"}
               </button>
             </div>
 
@@ -376,7 +455,10 @@ export default function ProductDetailPage() {
                     Quay lại Box “{parentBoxName}”
                   </Link>
                 )}
-                <Link to="/marketplace" className="product-detail-single-note-link">
+                <Link
+                  to="/marketplace"
+                  className="product-detail-single-note-link"
+                >
                   Quay lại trang danh sách subcription box
                 </Link>
               </div>
@@ -388,10 +470,17 @@ export default function ProductDetailPage() {
           <div className="product-detail-related-section">
             <div className="product-detail-related-header">
               <div className="product-detail-related-header-copy">
-                <h2 className="product-detail-related-title">Sản phẩm có trong Box</h2>
-                <span className="product-detail-related-scroll-hint">Cuộn để khám phá</span>
+                <h2 className="product-detail-related-title">
+                  Sản phẩm có trong Box
+                </h2>
+                <span className="product-detail-related-scroll-hint">
+                  Cuộn để khám phá
+                </span>
               </div>
-              <Link to={`/box-customize/${item.id}`} className="product-detail-related-customize">
+              <Link
+                to={`/box-customize/${item.id}`}
+                className="product-detail-related-customize"
+              >
                 Tùy chỉnh
               </Link>
             </div>
@@ -402,7 +491,9 @@ export default function ProductDetailPage() {
               aria-label="Danh sách sản phẩm trong box"
             >
               {relatedProducts.length === 0 ? (
-                <p className="product-detail-status">Box này chưa có sản phẩm con.</p>
+                <p className="product-detail-status">
+                  Box này chưa có sản phẩm con.
+                </p>
               ) : (
                 relatedProducts.map((relatedProduct, index) => (
                   <Link
@@ -422,12 +513,17 @@ export default function ProductDetailPage() {
                     </div>
                     <div className="product-detail-related-info">
                       <div className="product-detail-related-topline">
-                        <p className="product-detail-related-subtitle">{relatedProduct.subtitle}</p>
+                        <p className="product-detail-related-subtitle">
+                          {relatedProduct.subtitle}
+                        </p>
                         <span className="product-detail-related-quantity">
-                          {String(index + 1).padStart(2, '0')} · ×{relatedProduct.quantity}
+                          {String(index + 1).padStart(2, "0")} · ×
+                          {relatedProduct.quantity}
                         </span>
                       </div>
-                      <h3 className="product-detail-related-name">{relatedProduct.name}</h3>
+                      <h3 className="product-detail-related-name">
+                        {relatedProduct.name}
+                      </h3>
                     </div>
                   </Link>
                 ))
@@ -437,5 +533,5 @@ export default function ProductDetailPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

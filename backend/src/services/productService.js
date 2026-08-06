@@ -3,6 +3,28 @@ import Box from '../models/boxModel.js';
 import HttpError from '../utils/httpError.js';
 import { PRODUCT_CATEGORIES } from '../constants/productCategories.js';
 
+const legacyBoxCategoriesByName = {
+  'box dau': 'Chăm sóc kỳ kinh',
+  'box mam': 'Đang mong con',
+  'box bau': 'Đang trong thai kỳ'
+};
+
+const getBoxCategory = (box) => {
+  const category = box.category?.trim();
+  if (category && !['Subcription Box', 'Subscription Box'].includes(category)) {
+    return category;
+  }
+
+  const normalizedName = String(box.boxName || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
+
+  return legacyBoxCategoriesByName[normalizedName] || category;
+};
+
 const mapProduct = (p) => ({
   id: p._id,
   productName: p.productName,
@@ -42,7 +64,7 @@ const mapBox = (b) => ({
   price: b.price,
   quantity: b.quantity,
   description: b.description,
-  category: b.category,
+  category: getBoxCategory(b),
   productCategories: b.productCategories || [],
   products: (b.products || []).map(mapBoxProduct),
   type: 'box',

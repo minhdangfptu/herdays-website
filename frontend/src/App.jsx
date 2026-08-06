@@ -265,6 +265,7 @@ function AppRoutes({ session }) {
           <Route path="/download-app" element={<DownloadAppPage />} />
           <Route path="/tools" element={<Tools />} />
           <Route path="/tools/:toolId" element={<Tools />} />
+          <Route path="/marketplace" element={<Marketplace />} />
           <Route
             element={
               <RequireAuth role={session.role}>
@@ -273,7 +274,6 @@ function AppRoutes({ session }) {
             }
           >
             <Route path="/chat-with-herbot" element={<ChatWithAI />} />
-            <Route path="/marketplace" element={<Marketplace />} />
             <Route path="/check-out" element={<Checkout />} />
             <Route path="/qr-payment" element={<QRPayment />} />
             <Route path="/complete-transaction" element={<CompleteTransactionPage />} />
