@@ -18,29 +18,70 @@ import { getLatestChatQuizContext } from './quizService.js';
 const GUEST_SESSION_TTL_MS = 24 * 60 * 60 * 1000;
 const MEMBER_HISTORY_LIMIT = 50;
 const BLOG_CITATION_LIMIT = 3;
-const BLOG_SEARCH_LIMIT = 80;
 const SHOP_BOX_CANDIDATE_LIMIT = 20;
 const BLOG_STOP_WORDS = new Set([
+  'ai',
   'ban',
   'bai',
+  'bi',
   'biet',
   'cho',
   'co',
   'cua',
+  'dang',
+  'den',
   'duoc',
+  'gai',
   'gi',
   'giup',
+  'hay',
   'hoi',
   'khong',
   'la',
+  'lam',
+  'minh',
   'mot',
   'nay',
+  'nen',
   'nhu',
+  'thang',
+  'thi',
   'toi',
   'trong',
   'va',
   've'
 ]);
+const BLOG_QUERY_EXPANSIONS = [
+  { patterns: ['den thang', 'toi thang', 'ky kinh', 'hanh kinh'], terms: ['kinh', 'nguyet'] }
+];
+const BLOG_TOPIC_HINTS = [
+  {
+    slug: 'chu-ky-kinh-nguyet',
+    patterns: [
+      'den thang',
+      'toi thang',
+      'ky kinh',
+      'hanh kinh',
+      'kinh nguyet',
+      'dau bung kinh',
+      'pms',
+      'rong kinh',
+      'tre kinh'
+    ]
+  },
+  {
+    slug: 'ivf-ho-tro-sinh-san',
+    patterns: ['ivf', 'thu tinh trong ong nghiem', 'chuyen phoi', 'choc hut trung']
+  },
+  {
+    slug: 'thai-ky',
+    patterns: ['mang thai', 'thai ky', 'me bau', 'thai may', 'chuyen da']
+  },
+  {
+    slug: 'chuan-bi-mang-thai-thu-thai',
+    patterns: ['thu thai', 'chuan bi mang thai', 'muon co thai', 'canh trung', 'rụng trứng']
+  }
+];
 
 const buildError = (statusCode, message) => {
   const error = new Error(message);
@@ -64,6 +105,22 @@ const tokenize = (value = '') => normalizeText(value)
   .split(/[^a-z0-9]+/)
   .filter((word) => word.length > 2 && !BLOG_STOP_WORDS.has(word));
 
+const buildBlogQueryTokens = (value = '') => {
+  const normalized = normalizeText(value);
+  const expandedTerms = BLOG_QUERY_EXPANSIONS
+    .filter(({ patterns }) => patterns.some((pattern) => normalized.includes(pattern)))
+    .flatMap(({ terms }) => terms);
+
+  return [...new Set([...expandedTerms, ...tokenize(value)])];
+};
+
+const getBlogTopicHint = (value = '') => {
+  const normalized = normalizeText(value);
+  return BLOG_TOPIC_HINTS.find(({ patterns }) => (
+    patterns.some((pattern) => normalized.includes(normalizeText(pattern)))
+  ))?.slug || null;
+};
+
 const toPlainText = (value = '') => sanitizeHtml(value, {
   allowedTags: [],
   allowedAttributes: {}
@@ -80,8 +137,6 @@ const buildBlogPostUrl = (post) => {
 const buildBoxDetailUrl = (boxId) => `/product-detail/box/${boxId}`;
 
 const buildBoxCustomizeUrl = (boxId) => `/box-customize/${boxId}`;
-
-const hasBlogCitation = (citations = []) => citations.some((citation) => citation?.sourceType === 'blog');
 
 const getTokenHitCount = (queryTokens, text) => {
   const textTokens = new Set(tokenize(text));
@@ -170,27 +225,34 @@ const getAvailableBoxCandidates = async () => {
 };
 
 const buildFallbackBlogCitations = async (userMessage, citations = []) => {
-  if (hasBlogCitation(citations)) return citations;
+  const preservedCitations = citations.filter((citation) => citation?.sourceType !== 'blog');
+  const queryTokens = buildBlogQueryTokens(userMessage);
+  if (queryTokens.length === 0) return preservedCitations;
 
-  const queryTokens = tokenize(userMessage);
-  if (queryTokens.length === 0) return citations;
+  const topicHint = getBlogTopicHint(userMessage);
 
   const posts = await BlogPost.find({ status: 'Published' })
     .select('title content postTopicId createdAt')
     .populate('postTopicId', 'name slug')
     .sort({ createdAt: -1 })
-    .limit(BLOG_SEARCH_LIMIT)
     .lean();
 
   const fallbackCitations = posts
     .map((post) => {
       const topicName = post.postTopicId?.name || '';
       const topicSlug = post.postTopicId?.slug || '';
+      if (topicHint && topicSlug !== topicHint) return null;
+
       const plainContent = toPlainText(post.content);
-      const titleScore = getTokenHitCount(queryTokens, post.title) * 3;
-      const topicScore = getTokenHitCount(queryTokens, `${topicName} ${topicSlug}`) * 2;
-      const contentScore = getTokenHitCount(queryTokens, plainContent);
-      const score = titleScore + topicScore + contentScore;
+      const titleHits = getTokenHitCount(queryTokens, post.title);
+      const topicHits = getTokenHitCount(queryTokens, `${topicName} ${topicSlug}`);
+      const contentHits = getTokenHitCount(queryTokens, plainContent);
+      const score = (titleHits * 6)
+        + (topicHits * 4)
+        + Math.min(contentHits, 6)
+        + (topicHint ? 12 : 0);
+
+      if (titleHits === 0 && topicHits === 0 && contentHits < 2) return null;
 
       return {
         sourceId: `blog:${post._id.toString()}`,
@@ -201,12 +263,20 @@ const buildFallbackBlogCitations = async (userMessage, citations = []) => {
         score
       };
     })
-    .filter((citation) => citation.score > 0)
+    .filter(Boolean)
     .sort((a, b) => b.score - a.score)
     .slice(0, BLOG_CITATION_LIMIT);
 
-  return [...citations, ...fallbackCitations];
+  return [...preservedCitations, ...fallbackCitations];
 };
+
+const haveSameCitationSources = (left = [], right = []) => (
+  left.length === right.length
+  && left.every((citation, index) => (
+    citation?.sourceId === right[index]?.sourceId
+    && citation?.sourceType === right[index]?.sourceType
+  ))
+);
 
 const hydrateMessagesWithFallbackBlogCitations = async (messages) => {
   let previousUserMessage = '';
@@ -220,7 +290,6 @@ const hydrateMessagesWithFallbackBlogCitations = async (messages) => {
     if (
       message.role !== 'assistant'
       || !previousUserMessage
-      || hasBlogCitation(message.citations)
       || (message.recommendedProducts || []).length > 0
       || hasShopIntent(previousUserMessage)
     ) {
@@ -228,7 +297,7 @@ const hydrateMessagesWithFallbackBlogCitations = async (messages) => {
     }
 
     const citations = await buildFallbackBlogCitations(previousUserMessage, message.citations || []);
-    if (citations.length === (message.citations || []).length) continue;
+    if (haveSameCitationSources(citations, message.citations || [])) continue;
 
     message.citations = citations;
     await message.save();

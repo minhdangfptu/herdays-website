@@ -7,7 +7,7 @@ def compact_text(value: str) -> str:
 
 
 def normalize_text(value: str) -> str:
-    decomposed = unicodedata.normalize("NFD", value)
+    decomposed = unicodedata.normalize("NFD", value).replace("đ", "d").replace("Đ", "D")
     ascii_text = decomposed.encode("ascii", "ignore").decode("ascii")
     return compact_text(ascii_text.lower())
 

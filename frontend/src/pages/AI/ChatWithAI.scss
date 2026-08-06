@@ -23,7 +23,6 @@ $chat-ai-font:
 .chat-ai-container {
   display: flex;
   height: calc(100svh - 65px);
-  height: calc(100dvh - 65px);
   min-height: 0;
   background-color: $chat-ai-white;
   font-family: $chat-ai-font;
@@ -288,6 +287,7 @@ $chat-ai-font:
   flex-direction: column;
   min-width: 0;
   min-height: 0;
+  overflow: hidden;
   background-color: #fff4f9;
 
   @media (max-width: 768px) {
@@ -298,6 +298,7 @@ $chat-ai-font:
 // Header
 .chat-ai-header {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: space-between;
   padding: 20px;
@@ -344,7 +345,9 @@ $chat-ai-font:
   font-weight: 600;
   line-height: 1.2;
   cursor: pointer;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 
   &:hover {
     background-color: darken($chat-ai-primary-pink, 8%);
@@ -360,9 +363,12 @@ $chat-ai-font:
 
 .chat-ai-messages {
   flex: 1;
-  overflow-y: auto;
   min-height: 0;
+  overflow-y: auto;
   overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
   padding: 24px 32px;
   display: flex;
   flex-direction: column;
@@ -822,6 +828,7 @@ $chat-ai-font:
 
 // Input Area
 .chat-ai-input-area {
+  flex-shrink: 0;
   padding: 20px 32px 32px;
 
   @media (max-width: 768px) {
@@ -837,7 +844,9 @@ $chat-ai-font:
   border: 1px solid rgba(241, 118, 169, 0.72);
   border-radius: 14px;
   background-color: $chat-ai-white;
-  transition: background-color 0.3s ease, border-color 0.3s ease;
+  transition:
+    background-color 0.3s ease,
+    border-color 0.3s ease;
 
   &:focus-within {
     border-color: $chat-ai-primary-pink;
