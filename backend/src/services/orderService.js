@@ -313,6 +313,7 @@ const mapOrder = (order, itemMap) => ({
   userId: order.userId?._id || order.userId,
   user: mapUser(order.userId),
   recipientName: order.recipientName,
+  recipientPhone: order.recipientPhone,
   items: order.items.map((item) => mapOrderItem(item, itemMap)),
   totalAmount: order.totalAmount,
   subtotalAmount: order.subtotalAmount ?? order.totalAmount,
@@ -380,7 +381,7 @@ const buildOrderExportRows = (orders) => orders.map((order) => {
     price: Number(order.subtotalAmount ?? order.totalAmount) || 0,
     quantity,
     total: Number(order.totalAmount) || 0,
-    phone: order.user?.phone || '',
+    phone: order.recipientPhone || order.user?.phone || '',
     address: order.user?.address || 'Chưa cập nhật'
   };
 });
@@ -510,6 +511,7 @@ export const getOrdersByUser = async (userId) => {
 
 export const createOrderFromCart = async (userId, {
   recipientName,
+  recipientPhone,
   paymentMethod = 'bank_transfer',
   lovelyMessage = '',
   cartItemIds,
@@ -577,6 +579,7 @@ export const createOrderFromCart = async (userId, {
       [createdOrder] = await Order.create([{
         userId,
         recipientName,
+        recipientPhone,
         items,
         totalAmount,
         subtotalAmount,

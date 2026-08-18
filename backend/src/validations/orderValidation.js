@@ -78,6 +78,21 @@ export const validateCreateOrder = (body) => {
   }
   result.recipientName = recipientName;
 
+  const recipientPhone = String(payload.recipientPhone ?? '').trim().replace(/[\s().-]/g, '');
+  if (!recipientPhone) {
+    throw new HttpError(400, 'recipientPhone is required');
+  }
+
+  if (/^0\d{9}$/.test(recipientPhone)) {
+    result.recipientPhone = recipientPhone;
+  } else if (/^\+84\d{9}$/.test(recipientPhone)) {
+    result.recipientPhone = `0${recipientPhone.slice(3)}`;
+  } else if (/^84\d{9}$/.test(recipientPhone)) {
+    result.recipientPhone = `0${recipientPhone.slice(2)}`;
+  } else {
+    throw new HttpError(400, 'Invalid Vietnamese phone format');
+  }
+
   if (payload.paymentMethod !== undefined && payload.paymentMethod !== null && payload.paymentMethod !== '') {
     const paymentMethod = String(payload.paymentMethod).trim();
     if (!VALID_PAYMENT_METHODS.includes(paymentMethod)) {

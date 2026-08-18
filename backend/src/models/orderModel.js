@@ -113,6 +113,12 @@ const orderSchema = new mongoose.Schema(
       maxlength: 100,
       default: null
     },
+    recipientPhone: {
+      type: String,
+      trim: true,
+      maxlength: 10,
+      default: null
+    },
     items: {
       type: [orderItemSchema],
       required: true,
