@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Loader2, MapPin, Phone, RefreshCw, Save, UserRound } from "lucide-react";
+import { MapPin, Phone, RefreshCw, UserRound } from "lucide-react";
 import {
   cartApi,
   hasAuthSession,
@@ -151,8 +151,6 @@ export default function Checkout() {
   const [newAddress, setNewAddress] = useState("");
   const [addressOption, setAddressOption] = useState("profile");
   const [isAddressLoading, setIsAddressLoading] = useState(true);
-  const [isSavingAddress, setIsSavingAddress] = useState(false);
-  const [isNewAddressSaved, setIsNewAddressSaved] = useState(false);
   const [addressError, setAddressError] = useState("");
   const navigate = useNavigate();
 
@@ -255,14 +253,11 @@ export default function Checkout() {
   const orderTotal = subscriptionSubtotal - discountAmount;
   const selectedAddress =
     addressOption === "profile" ? profileAddress.trim() : newAddress.trim();
-  const isAddressReady =
-    Boolean(selectedAddress) &&
-    (addressOption === "profile" || isNewAddressSaved);
+  const isAddressReady = Boolean(selectedAddress);
   const isCheckoutDisabled =
     selectedCartItems.length === 0 ||
     isCheckingOut ||
-    isAddressLoading ||
-    isSavingAddress;
+    isAddressLoading;
 
   const handleQuantityChange = async (item, quantity) => {
     if (quantity < 1) return;
@@ -313,34 +308,6 @@ export default function Checkout() {
     );
   };
 
-  const handleSaveAddress = async () => {
-    const trimmedAddress = newAddress.trim();
-    if (!trimmedAddress) {
-      toast.error("Vui lòng nhập địa chỉ giao hàng.");
-      return false;
-    }
-
-    setIsSavingAddress(true);
-    try {
-      const result = await profileApi.updateProfile({
-        address: trimmedAddress,
-      });
-      const nextAddress = result.profile?.address || trimmedAddress;
-      setProfileAddress(nextAddress);
-      setNewAddress(nextAddress);
-      setIsNewAddressSaved(true);
-      setAddressOption("profile");
-      setAddressError("");
-      toast.success("Đã lưu địa chỉ giao hàng.");
-      return true;
-    } catch (error) {
-      toast.error(error.message || "Không thể lưu địa chỉ giao hàng.");
-      return false;
-    } finally {
-      setIsSavingAddress(false);
-    }
-  };
-
   const handleCheckout = async () => {
     if (selectedCartItems.length === 0) {
       toast.error("Sản phẩm thanh toán đang trống.");
@@ -358,9 +325,9 @@ export default function Checkout() {
       return;
     }
 
-    if (isAddressLoading || isSavingAddress) return;
-    if (!selectedAddress || (addressOption === "new" && !isNewAddressSaved)) {
-      toast.error("Vui lòng cập nhật địa chỉ");
+    if (isAddressLoading) return;
+    if (!selectedAddress) {
+      toast.error("Vui lòng nhập địa chỉ giao hàng.");
       return;
     }
 
@@ -370,6 +337,7 @@ export default function Checkout() {
       const order = await orderApi.createFromCart({
         recipientName: normalizedRecipientName,
         recipientPhone,
+        shippingAddress: selectedAddress,
         paymentMethod: "bank_transfer",
         cartItemIds: selectedCartItemIds,
         subscriptionMonths: selectedPlan,
@@ -647,11 +615,7 @@ export default function Checkout() {
                         name="shipping-address-option"
                         value="new"
                         checked={addressOption === "new"}
-                        onChange={() => {
-                          setAddressOption("new");
-                          setNewAddress("");
-                          setIsNewAddressSaved(false);
-                        }}
+                        onChange={() => setAddressOption("new")}
                       />
                       <span className="text-sm font-bold text-slate-800">
                         Nhập địa chỉ mới
@@ -663,30 +627,14 @@ export default function Checkout() {
                         <textarea
                           className="min-h-[82px] w-full resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold leading-6 text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:ring-4 focus:ring-pink-50"
                           value={newAddress}
-                          disabled={isSavingAddress}
+                          disabled={isCheckingOut}
                           maxLength={255}
                           placeholder="Nhập địa chỉ nhận hàng của bạn"
-                          onChange={(event) => {
-                            setNewAddress(event.target.value);
-                            setIsNewAddressSaved(false);
-                          }}
+                          onChange={(event) => setNewAddress(event.target.value)}
                         />
-                        {newAddress.trim() && (
-                          <button
-                            style={{ cursor: "pointer" }}
-                            type="button"
-                            className="inline-flex min-h-9 items-center justify-center gap-2 rounded-lg bg-[#ed77a5] px-4 text-xs font-bold text-white transition hover:bg-[#d95f91] disabled:cursor-not-allowed disabled:opacity-60"
-                            disabled={isSavingAddress}
-                            onClick={handleSaveAddress}
-                          >
-                            {isSavingAddress ? (
-                              <Loader2 className="animate-spin" size={14} />
-                            ) : (
-                              <Save size={14} />
-                            )}
-                            Lưu
-                          </button>
-                        )}
+                        <p className="m-0 text-xs font-medium text-slate-400">
+                          Địa chỉ này chỉ được lưu cho đơn hàng hiện tại.
+                        </p>
                       </div>
                     )}
                   </div>
@@ -748,7 +696,7 @@ export default function Checkout() {
                         : !/^0\d{9}$/.test(recipientPhone)
                         ? "Vui lòng nhập số điện thoại hợp lệ"
                         : !isAddressReady
-                        ? "Vui lòng chọn hoặc lưu địa chỉ giao hàng"
+                        ? "Vui lòng chọn hoặc nhập địa chỉ giao hàng"
                         : undefined
                     }
                     onClick={handleCheckout}

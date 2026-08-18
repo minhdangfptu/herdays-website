@@ -119,6 +119,12 @@ const orderSchema = new mongoose.Schema(
       maxlength: 10,
       default: null
     },
+    shippingAddress: {
+      type: String,
+      trim: true,
+      maxlength: 255,
+      default: null
+    },
     items: {
       type: [orderItemSchema],
       required: true,

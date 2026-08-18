@@ -93,6 +93,17 @@ export const validateCreateOrder = (body) => {
     throw new HttpError(400, 'Invalid Vietnamese phone format');
   }
 
+  const shippingAddress = typeof payload.shippingAddress === 'string'
+    ? payload.shippingAddress.trim()
+    : '';
+  if (!shippingAddress) {
+    throw new HttpError(400, 'shippingAddress is required');
+  }
+  if (shippingAddress.length > 255) {
+    throw new HttpError(400, 'shippingAddress must not exceed 255 characters');
+  }
+  result.shippingAddress = shippingAddress;
+
   if (payload.paymentMethod !== undefined && payload.paymentMethod !== null && payload.paymentMethod !== '') {
     const paymentMethod = String(payload.paymentMethod).trim();
     if (!VALID_PAYMENT_METHODS.includes(paymentMethod)) {

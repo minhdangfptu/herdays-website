@@ -413,7 +413,9 @@ function AdminOrderDetailModal({ order, isLoading, onClose, onOrderUpdated }) {
               <div>
                 <p className="text-xs font-semibold text-slate-400">Địa chỉ</p>
                 <p className="mt-1 text-sm font-bold text-slate-700">
-                  {order.user?.address || "Chưa cập nhật"}
+                  {order.shippingAddress ||
+                    order.user?.address ||
+                    "Chưa cập nhật"}
                 </p>
               </div>
               <div>
@@ -820,7 +822,9 @@ function AdminOrdersPage() {
                       </td>
                       <td className="max-w-[220px] px-5 py-4 text-sm font-semibold text-slate-600">
                         <span className="line-clamp-2">
-                          {order.user?.address || "Chưa cập nhật"}
+                          {order.shippingAddress ||
+                            order.user?.address ||
+                            "Chưa cập nhật"}
                         </span>
                       </td>
                       <td className="max-w-[260px] px-5 py-4 text-sm font-semibold text-slate-600">

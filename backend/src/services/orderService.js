@@ -314,6 +314,7 @@ const mapOrder = (order, itemMap) => ({
   user: mapUser(order.userId),
   recipientName: order.recipientName,
   recipientPhone: order.recipientPhone,
+  shippingAddress: order.shippingAddress,
   items: order.items.map((item) => mapOrderItem(item, itemMap)),
   totalAmount: order.totalAmount,
   subtotalAmount: order.subtotalAmount ?? order.totalAmount,
@@ -382,7 +383,7 @@ const buildOrderExportRows = (orders) => orders.map((order) => {
     quantity,
     total: Number(order.totalAmount) || 0,
     phone: order.recipientPhone || order.user?.phone || '',
-    address: order.user?.address || 'Chưa cập nhật'
+    address: order.shippingAddress || order.user?.address || 'Chưa cập nhật'
   };
 });
 
@@ -512,6 +513,7 @@ export const getOrdersByUser = async (userId) => {
 export const createOrderFromCart = async (userId, {
   recipientName,
   recipientPhone,
+  shippingAddress,
   paymentMethod = 'bank_transfer',
   lovelyMessage = '',
   cartItemIds,
@@ -580,6 +582,7 @@ export const createOrderFromCart = async (userId, {
         userId,
         recipientName,
         recipientPhone,
+        shippingAddress,
         items,
         totalAmount,
         subtotalAmount,
