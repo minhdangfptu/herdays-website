@@ -312,6 +312,7 @@ const mapOrder = (order, itemMap) => ({
   id: order._id,
   userId: order.userId?._id || order.userId,
   user: mapUser(order.userId),
+  recipientName: order.recipientName,
   items: order.items.map((item) => mapOrderItem(item, itemMap)),
   totalAmount: order.totalAmount,
   subtotalAmount: order.subtotalAmount ?? order.totalAmount,
@@ -374,7 +375,7 @@ const buildOrderExportRows = (orders) => orders.map((order) => {
   return {
     date: toVietnamExcelDate(order.createdAt),
     orderCode: String(order.id || '').slice(-5).toUpperCase(),
-    customer: order.user?.fullName || order.user?.email || 'Người dùng',
+    customer: order.recipientName || order.user?.fullName || order.user?.email || 'Người dùng',
     productType: productText || 'Đơn hàng',
     price: Number(order.subtotalAmount ?? order.totalAmount) || 0,
     quantity,
@@ -508,6 +509,7 @@ export const getOrdersByUser = async (userId) => {
 };
 
 export const createOrderFromCart = async (userId, {
+  recipientName,
   paymentMethod = 'bank_transfer',
   lovelyMessage = '',
   cartItemIds,
@@ -565,7 +567,7 @@ export const createOrderFromCart = async (userId, {
 
       const monthlySubtotalAmount = items.reduce(
         (total, item) => total + item.price * item.quantity,
-        0,
+        0
       );
       const subtotalAmount = monthlySubtotalAmount * Number(subscriptionMonths);
       const discountPercent = getSubscriptionDiscount(subscriptionMonths);
@@ -574,6 +576,7 @@ export const createOrderFromCart = async (userId, {
 
       [createdOrder] = await Order.create([{
         userId,
+        recipientName,
         items,
         totalAmount,
         subtotalAmount,

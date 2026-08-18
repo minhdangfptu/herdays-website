@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Loader2, MapPin, RefreshCw, Save } from "lucide-react";
+import { Loader2, MapPin, RefreshCw, Save, UserRound } from "lucide-react";
 import {
   cartApi,
   hasAuthSession,
@@ -127,6 +127,7 @@ export default function Checkout() {
   const [selectedPlan, setSelectedPlan] = useState(() =>
     getInitialSubscriptionMonths(location.state?.subscriptionMonths),
   );
+  const [recipientName, setRecipientName] = useState("");
   const [profileAddress, setProfileAddress] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [addressOption, setAddressOption] = useState("profile");
@@ -182,7 +183,9 @@ export default function Checkout() {
       .getProfile()
       .then((profile) => {
         if (!isMounted) return;
+        const nextRecipientName = profile?.fullName?.trim() || "";
         const nextAddress = profile?.address?.trim() || "";
+        setRecipientName(nextRecipientName);
         setProfileAddress(nextAddress);
         setAddressOption("profile");
         setAddressError("");
@@ -323,6 +326,12 @@ export default function Checkout() {
       return;
     }
 
+    const normalizedRecipientName = recipientName.trim().replace(/\s+/g, " ");
+    if (!normalizedRecipientName) {
+      toast.error("Vui lòng nhập tên người nhận.");
+      return;
+    }
+
     if (isAddressLoading || isSavingAddress) return;
     if (!selectedAddress || (addressOption === "new" && !isNewAddressSaved)) {
       toast.error("Vui lòng cập nhật địa chỉ");
@@ -333,6 +342,7 @@ export default function Checkout() {
 
     try {
       const order = await orderApi.createFromCart({
+        recipientName: normalizedRecipientName,
         paymentMethod: "bank_transfer",
         cartItemIds: selectedCartItemIds,
         subscriptionMonths: selectedPlan,
@@ -506,10 +516,10 @@ export default function Checkout() {
                   </span>
                   <div>
                     <p className="m-0 text-sm font-bold text-slate-800">
-                      Địa chỉ giao hàng
+                      Thông tin giao hàng
                     </p>
                     <p className="m-0 text-xs font-medium text-slate-400">
-                      Chọn địa chỉ bạn muốn sử dụng
+                      Nhập tên người nhận và chọn địa chỉ
                     </p>
                   </div>
                 </div>
@@ -518,6 +528,33 @@ export default function Checkout() {
                   <Skeleton className="h-[82px] w-full rounded-xl" />
                 ) : (
                   <div className="space-y-3">
+                    <div>
+                      <label
+                        htmlFor="checkout-recipient-name"
+                        className="mb-1.5 block text-xs font-bold text-slate-600"
+                      >
+                        Tên người nhận <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <UserRound
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                          size={16}
+                        />
+                        <input
+                          id="checkout-recipient-name"
+                          type="text"
+                          autoComplete="name"
+                          required
+                          maxLength={100}
+                          value={recipientName}
+                          disabled={isCheckingOut}
+                          placeholder="Nhập tên người nhận"
+                          className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:bg-slate-100"
+                          onChange={(event) => setRecipientName(event.target.value)}
+                        />
+                      </div>
+                    </div>
+
                     <label
                       className={`flex cursor-pointer items-start gap-3 rounded-xl border px-4 py-3 transition ${addressOption === "profile" ? "border-pink-300 bg-pink-50/60" : "border-slate-200 bg-white hover:border-pink-200"}`}
                     >
@@ -646,7 +683,9 @@ export default function Checkout() {
                     type="button"
                     disabled={isCheckoutDisabled}
                     title={
-                      !isAddressReady
+                      !recipientName.trim()
+                        ? "Vui lòng nhập tên người nhận"
+                        : !isAddressReady
                         ? "Vui lòng chọn hoặc lưu địa chỉ giao hàng"
                         : undefined
                     }

@@ -69,6 +69,15 @@ export const validateCreateOrder = (body) => {
   const payload = body && typeof body === 'object' && !Array.isArray(body) ? body : {};
   const result = {};
 
+  const recipientName = String(payload.recipientName ?? '').trim().replace(/\s+/g, ' ');
+  if (!recipientName) {
+    throw new HttpError(400, 'recipientName is required');
+  }
+  if (recipientName.length > 100) {
+    throw new HttpError(400, 'recipientName must not exceed 100 characters');
+  }
+  result.recipientName = recipientName;
+
   if (payload.paymentMethod !== undefined && payload.paymentMethod !== null && payload.paymentMethod !== '') {
     const paymentMethod = String(payload.paymentMethod).trim();
     if (!VALID_PAYMENT_METHODS.includes(paymentMethod)) {

@@ -118,6 +118,12 @@ function OrderDetailModal({ order, isLoading, onClose }) {
           <div className="space-y-6 p-6">
             <div className="grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-2">
               <div>
+                <p className="text-xs font-semibold text-slate-400">Tên người nhận</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">
+                  {order.recipientName || "Chưa cập nhật"}
+                </p>
+              </div>
+              <div>
                 <p className="text-xs font-semibold text-slate-400">Ngày đặt hàng</p>
                 <p className="mt-1 text-sm font-bold text-slate-700">{formatOrderDate(order.createdAt)}</p>
               </div>
