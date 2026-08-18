@@ -107,6 +107,12 @@ const orderSchema = new mongoose.Schema(
       ref: 'User',
       required: true
     },
+    recipientName: {
+      type: String,
+      trim: true,
+      maxlength: 100,
+      default: null
+    },
     items: {
       type: [orderItemSchema],
       required: true,

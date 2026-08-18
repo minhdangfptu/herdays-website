@@ -359,10 +359,13 @@ function AdminOrderDetailModal({ order, isLoading, onClose, onOrderUpdated }) {
             <div className="grid gap-4 rounded-xl bg-slate-50 p-4 sm:grid-cols-2">
               <div>
                 <p className="text-xs font-semibold text-slate-400">
-                  Khách hàng
+                  Tên người nhận
                 </p>
                 <p className="mt-1 text-sm font-bold text-slate-700">
-                  {order.user?.fullName || order.user?.email || "Người dùng"}
+                  {order.recipientName ||
+                    order.user?.fullName ||
+                    order.user?.email ||
+                    "Người dùng"}
                 </p>
               </div>
               <div className="sm:col-span-2">
@@ -798,7 +801,8 @@ function AdminOrdersPage() {
                       </td>
                       <td className="px-5 py-4">
                         <p className="text-sm font-bold text-slate-800">
-                          {order.user?.fullName ||
+                          {order.recipientName ||
+                            order.user?.fullName ||
                             order.user?.email ||
                             "Người dùng"}
                         </p>
