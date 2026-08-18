@@ -124,6 +124,12 @@ function OrderDetailModal({ order, isLoading, onClose }) {
                 </p>
               </div>
               <div>
+                <p className="text-xs font-semibold text-slate-400">Số điện thoại người nhận</p>
+                <p className="mt-1 text-sm font-bold text-slate-700">
+                  {order.recipientPhone || "Chưa cập nhật"}
+                </p>
+              </div>
+              <div>
                 <p className="text-xs font-semibold text-slate-400">Ngày đặt hàng</p>
                 <p className="mt-1 text-sm font-bold text-slate-700">{formatOrderDate(order.createdAt)}</p>
               </div>

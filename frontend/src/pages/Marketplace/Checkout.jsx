@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
-import { Loader2, MapPin, RefreshCw, Save, UserRound } from "lucide-react";
+import { Loader2, MapPin, Phone, RefreshCw, Save, UserRound } from "lucide-react";
 import {
   cartApi,
   hasAuthSession,
@@ -18,6 +18,24 @@ const formatCurrency = (value) =>
     currency: "VND",
     maximumFractionDigits: 0,
   }).format(Number(value) || 0);
+
+const formatVietnamPhoneForInput = (value) => {
+  const normalizedPhone = String(value || "")
+    .trim()
+    .replace(/[\s().-]/g, "");
+
+  if (/^0\d{9}$/.test(normalizedPhone)) return normalizedPhone;
+  if (/^\+84\d{9}$/.test(normalizedPhone)) {
+    return `0${normalizedPhone.slice(3)}`;
+  }
+  if (/^84\d{9}$/.test(normalizedPhone)) {
+    return `0${normalizedPhone.slice(2)}`;
+  }
+  return "";
+};
+
+const normalizeRecipientPhoneInput = (value) =>
+  value.replace(/\D/g, "").slice(0, 10);
 
 const normalizeCartItem = (item) => {
   const box = item.boxId || {};
@@ -128,6 +146,7 @@ export default function Checkout() {
     getInitialSubscriptionMonths(location.state?.subscriptionMonths),
   );
   const [recipientName, setRecipientName] = useState("");
+  const [recipientPhone, setRecipientPhone] = useState("");
   const [profileAddress, setProfileAddress] = useState("");
   const [newAddress, setNewAddress] = useState("");
   const [addressOption, setAddressOption] = useState("profile");
@@ -184,8 +203,10 @@ export default function Checkout() {
       .then((profile) => {
         if (!isMounted) return;
         const nextRecipientName = profile?.fullName?.trim() || "";
+        const nextRecipientPhone = formatVietnamPhoneForInput(profile?.phone);
         const nextAddress = profile?.address?.trim() || "";
         setRecipientName(nextRecipientName);
+        setRecipientPhone(nextRecipientPhone);
         setProfileAddress(nextAddress);
         setAddressOption("profile");
         setAddressError("");
@@ -332,6 +353,11 @@ export default function Checkout() {
       return;
     }
 
+    if (!/^0\d{9}$/.test(recipientPhone)) {
+      toast.error("Số điện thoại Việt Nam phải có 10 chữ số và bắt đầu bằng 0.");
+      return;
+    }
+
     if (isAddressLoading || isSavingAddress) return;
     if (!selectedAddress || (addressOption === "new" && !isNewAddressSaved)) {
       toast.error("Vui lòng cập nhật địa chỉ");
@@ -343,6 +369,7 @@ export default function Checkout() {
     try {
       const order = await orderApi.createFromCart({
         recipientName: normalizedRecipientName,
+        recipientPhone,
         paymentMethod: "bank_transfer",
         cartItemIds: selectedCartItemIds,
         subscriptionMonths: selectedPlan,
@@ -519,7 +546,7 @@ export default function Checkout() {
                       Thông tin giao hàng
                     </p>
                     <p className="m-0 text-xs font-medium text-slate-400">
-                      Nhập tên người nhận và chọn địa chỉ
+                      Nhập tên, số điện thoại và chọn địa chỉ
                     </p>
                   </div>
                 </div>
@@ -551,6 +578,39 @@ export default function Checkout() {
                           placeholder="Nhập tên người nhận"
                           className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:bg-slate-100"
                           onChange={(event) => setRecipientName(event.target.value)}
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label
+                        htmlFor="checkout-recipient-phone"
+                        className="mb-1.5 block text-xs font-bold text-slate-600"
+                      >
+                        Số điện thoại <span className="text-red-500">*</span>
+                      </label>
+                      <div className="relative">
+                        <Phone
+                          className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400"
+                          size={16}
+                        />
+                        <input
+                          id="checkout-recipient-phone"
+                          type="tel"
+                          inputMode="numeric"
+                          autoComplete="tel"
+                          required
+                          pattern="0[0-9]{9}"
+                          maxLength={10}
+                          value={recipientPhone}
+                          disabled={isCheckingOut}
+                          placeholder="Nhập số điện thoại người nhận"
+                          className="w-full rounded-xl border border-slate-200 bg-white py-3 pl-10 pr-4 text-sm font-semibold text-slate-700 outline-none transition placeholder:text-slate-400 focus:border-pink-300 focus:ring-4 focus:ring-pink-50 disabled:cursor-not-allowed disabled:bg-slate-100"
+                          onChange={(event) =>
+                            setRecipientPhone(
+                              normalizeRecipientPhoneInput(event.target.value),
+                            )
+                          }
                         />
                       </div>
                     </div>
@@ -685,6 +745,8 @@ export default function Checkout() {
                     title={
                       !recipientName.trim()
                         ? "Vui lòng nhập tên người nhận"
+                        : !/^0\d{9}$/.test(recipientPhone)
+                        ? "Vui lòng nhập số điện thoại hợp lệ"
                         : !isAddressReady
                         ? "Vui lòng chọn hoặc lưu địa chỉ giao hàng"
                         : undefined

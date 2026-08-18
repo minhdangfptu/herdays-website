@@ -368,6 +368,14 @@ function AdminOrderDetailModal({ order, isLoading, onClose, onOrderUpdated }) {
                     "Người dùng"}
                 </p>
               </div>
+              <div>
+                <p className="text-xs font-semibold text-slate-400">
+                  Số điện thoại
+                </p>
+                <p className="mt-1 text-sm font-bold text-slate-700">
+                  {order.recipientPhone || order.user?.phone || "--"}
+                </p>
+              </div>
               <div className="sm:col-span-2">
                 <p className="text-xs font-semibold text-slate-400">
                   Ngày đặt hàng
@@ -808,7 +816,7 @@ function AdminOrdersPage() {
                         </p>
                       </td>
                       <td className="whitespace-nowrap px-5 py-4 text-sm font-semibold text-slate-600">
-                        {order.user?.phone || "--"}
+                        {order.recipientPhone || order.user?.phone || "--"}
                       </td>
                       <td className="max-w-[220px] px-5 py-4 text-sm font-semibold text-slate-600">
                         <span className="line-clamp-2">

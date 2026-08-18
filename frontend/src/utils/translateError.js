@@ -49,6 +49,7 @@ const TRANSLATIONS = {
   'fullName is required': 'Họ và tên không được để trống.',
   'recipientName is required': 'Vui lòng nhập tên người nhận.',
   'recipientName must not exceed 100 characters': 'Tên người nhận không được vượt quá 100 ký tự.',
+  'recipientPhone is required': 'Vui lòng nhập số điện thoại người nhận.',
   'E12000': 'Email đã được sử dụng cho tài khoản khác.',
   'P12000': 'Số điện thoại đã được sử dụng cho tài khoản khác.',
   'Invalid Vietnamese phone format': 'Số điện thoại Việt Nam phải có 10 chữ số và bắt đầu bằng 0.',
